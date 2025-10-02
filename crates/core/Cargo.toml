@@ -1,0 +1,10 @@
+[package]
+name = "sawa-core"
+version = "0.1.0"
+edition.workspace = true
+
+[dependencies]
+chrono = { version = "0.4", features = ["serde"] }
+iso_currency = "0.5.3"
+url = "2.5.7"
+uuid = { version = "1", features = ["v7"] }

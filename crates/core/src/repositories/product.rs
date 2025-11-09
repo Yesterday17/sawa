@@ -1,8 +1,9 @@
-use std::future::Future;
-
 use crate::{
     error::RepositoryError,
-    models::product::{Product, ProductId, ProductVariant, ProductVariantId},
+    models::{
+        misc::TagId,
+        product::{Product, ProductId, ProductVariant, ProductVariantId},
+    },
 };
 
 /// Repository for the Product aggregate.
@@ -46,6 +47,28 @@ pub trait ProductVariantRepository: Send + Sync + 'static {
     fn find_by_product_id(
         &self,
         product_id: &ProductId,
+    ) -> impl Future<Output = Result<Vec<ProductVariant>, RepositoryError>> + Send;
+
+    /// Find all variants with a specific tag.
+    ///
+    /// This is useful for queries like "all items tagged with 'Hatsune Miku'".
+    fn find_by_tag(
+        &self,
+        tag_id: &TagId,
+    ) -> impl Future<Output = Result<Vec<ProductVariant>, RepositoryError>> + Send;
+
+    /// Find all variants that have ALL of the specified tags.
+    ///
+    /// This is useful for queries like "all 'Hatsune Miku' items from '2024 Birthday' event".
+    fn find_by_tags_all(
+        &self,
+        tag_ids: &[TagId],
+    ) -> impl Future<Output = Result<Vec<ProductVariant>, RepositoryError>> + Send;
+
+    /// Find all variants that have ANY of the specified tags.
+    fn find_by_tags_any(
+        &self,
+        tag_ids: &[TagId],
     ) -> impl Future<Output = Result<Vec<ProductVariant>, RepositoryError>> + Send;
 
     /// Find all variants.

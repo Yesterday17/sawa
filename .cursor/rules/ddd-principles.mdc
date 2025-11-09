@@ -84,6 +84,8 @@ pub struct OrderItem {
 ### Repository Traits
 
 ```rust
+// Note: In Rust 2024, Future is in the prelude - no import needed
+
 pub trait SomeRepository: Send + Sync + 'static {
     fn find_by_id(
         &self,
@@ -97,7 +99,10 @@ pub trait SomeRepository: Send + Sync + 'static {
 }
 ```
 
-**Important:** All repository traits must be `Send + Sync + 'static`.
+**Important:**
+
+- All repository traits must be `Send + Sync + 'static`
+- Do NOT import `std::future::Future` - it's in the prelude in Rust 2024
 
 ### Repository Per Aggregate Root
 

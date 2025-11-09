@@ -11,4 +11,11 @@ pub struct Media {
     pub url: Url,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct MediaId(pub NonNilUuid);
+
+impl MediaId {
+    pub fn new() -> Self {
+        Self(uuid::NonNilUuid::new(uuid::Uuid::now_v7()).expect("UUID v7 should never be nil"))
+    }
+}

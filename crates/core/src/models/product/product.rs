@@ -45,11 +45,11 @@ impl Product {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct ProductId(pub NonNilUuid);
 
 impl ProductId {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Self(NonNilUuid::new(Uuid::now_v7()).expect("UUID v7 should never be nil"))
     }
 }

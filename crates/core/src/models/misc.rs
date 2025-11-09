@@ -9,3 +9,6 @@ pub use address::*;
 
 mod media;
 pub use media::*;
+
+mod tag;
+pub use tag::*;

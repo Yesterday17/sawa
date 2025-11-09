@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use uuid::NonNilUuid;
+use uuid::{NonNilUuid, Uuid};
 
 use crate::models::misc::{MediaId, NonEmptyString};
 
@@ -28,8 +28,17 @@ pub struct User {
     pub updated_at: DateTime<Utc>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct UserId(pub NonNilUuid);
 
+impl UserId {
+    pub fn new() -> Self {
+        Self(NonNilUuid::new(Uuid::now_v7()).expect("UUID v7 should never be nil"))
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct Username(pub String);
 
+#[derive(Debug, Clone)]
 pub struct Email(pub String);

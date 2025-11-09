@@ -171,6 +171,33 @@ Status should describe current state, not actions:
 - Good: `Pending`, `Completed`, `Cancelled`
 - Bad: `WaitingForPayment`, `HasBeenCompleted`
 
+## Rust 2024 Edition Features
+
+### Async Traits - Future in Prelude
+
+In Rust 2024, `Future` trait is in the prelude, so you don't need to import it.
+
+```rust
+// ✅ Good - Future is in prelude
+pub trait SomeRepository: Send + Sync + 'static {
+    fn find(&self, id: &Id) -> impl Future<Output = Result<T>> + Send;
+    fn save(&self, entity: &T) -> impl Future<Output = Result<()>> + Send;
+}
+
+// ❌ Bad - Don't import Future
+use std::future::Future;  // Not needed in Rust 2024!
+
+pub trait SomeRepository: Send + Sync + 'static {
+    fn find(&self, id: &Id) -> impl Future<Output = Result<T>> + Send;
+}
+```
+
+**Key Points:**
+
+- `Future` is in the prelude in Rust 2024
+- No need to import `std::future::Future`
+- Cleaner, more ergonomic async trait definitions
+
 ## Common Anti-Patterns
 
 - ❌ Do NOT use raw u32 for quantities (use NonZeroU32)
@@ -179,3 +206,4 @@ Status should describe current state, not actions:
 - ❌ Do NOT derive PartialEq/Eq for enums and value objects
 - ❌ Do NOT add error variants until actually needed
 - ❌ Do NOT use array indices for entity references (unstable)
+- ❌ Do NOT import `std::future::Future` in Rust 2024 (not needed)

@@ -13,5 +13,8 @@ pub use purchase_order::*;
 mod user_transaction;
 pub use user_transaction::*;
 
+mod tag;
+pub use tag::*;
+
 mod media;
 pub use media::*;

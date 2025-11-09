@@ -3,7 +3,7 @@ use std::num::NonZeroU32;
 use uuid::{NonNilUuid, Uuid};
 
 use crate::models::{
-    misc::{MediaId, NonEmptyString, Price},
+    misc::{MediaId, NonEmptyString, Price, TagId},
     product::ProductId,
 };
 
@@ -33,6 +33,12 @@ pub struct ProductVariant {
     /// The media items associated with the product variant.
     pub medias: Vec<MediaId>,
 
+    /// Tags associated with this variant (characters, series, themes, etc.).
+    ///
+    /// This enables flexible categorization and filtering.
+    /// Examples: character names, series names, brands, event names, etc.
+    pub tags: Vec<TagId>,
+
     /// The price of the product variant.
     ///
     /// It might be None if:
@@ -53,11 +59,11 @@ pub struct ProductVariant {
     pub sort_order: i32,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct ProductVariantId(pub NonNilUuid);
 
 impl ProductVariantId {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Self(NonNilUuid::new(Uuid::now_v7()).expect("UUID v7 should never be nil"))
     }
 }
@@ -84,6 +90,7 @@ impl ProductVariant {
             name,
             description: String::new(),
             medias: Vec::new(),
+            tags: Vec::new(),
             price: None,
             mystery_box: None,
             sort_order: 0,
@@ -109,6 +116,7 @@ impl ProductVariant {
             name,
             description: String::new(),
             medias: Vec::new(),
+            tags: Vec::new(),
             price: None,
             mystery_box: Some(MysteryBoxConfig {
                 items_count,
@@ -136,5 +144,22 @@ impl ProductVariant {
     /// Set the sort order of this variant.
     pub fn set_sort_order(&mut self, sort_order: i32) {
         self.sort_order = sort_order;
+    }
+
+    /// Add a tag to this variant.
+    pub fn add_tag(&mut self, tag_id: TagId) {
+        if !self.tags.contains(&tag_id) {
+            self.tags.push(tag_id);
+        }
+    }
+
+    /// Remove a tag from this variant.
+    pub fn remove_tag(&mut self, tag_id: &TagId) {
+        self.tags.retain(|id| id != tag_id);
+    }
+
+    /// Check if this variant has a specific tag.
+    pub fn has_tag(&self, tag_id: &TagId) -> bool {
+        self.tags.contains(tag_id)
     }
 }

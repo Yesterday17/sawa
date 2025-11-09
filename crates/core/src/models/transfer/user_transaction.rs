@@ -36,7 +36,7 @@ pub struct UserTransaction {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct UserTransactionId(pub NonNilUuid);
 
 impl UserTransactionId {

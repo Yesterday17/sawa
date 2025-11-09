@@ -36,7 +36,7 @@ pub struct PurchaseOrder {
     pub cancelled_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct PurchaseOrderId(pub NonNilUuid);
 
 impl PurchaseOrderId {

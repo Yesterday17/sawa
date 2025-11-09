@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use uuid::NonNilUuid;
+use uuid::{NonNilUuid, Uuid};
 
 use crate::models::{
     product::ProductVariantId, purchase::PurchaseOrderId, transfer::OwnershipTransfer, user::UserId,
@@ -36,7 +36,14 @@ pub struct ProductInstance {
     pub status_history: Vec<ProductInstanceStatusHistory>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ProductInstanceId(pub NonNilUuid);
+
+impl ProductInstanceId {
+    pub fn new() -> Self {
+        Self(NonNilUuid::new(Uuid::now_v7()).expect("UUID v7 should never be nil"))
+    }
+}
 
 #[derive(Debug, Clone, Copy)]
 pub enum ProductInstanceStatus {

@@ -1,0 +1,204 @@
+---
+globs: crates/core/**/*.rs
+alwaysApply: false
+---
+
+# DDD Architecture Principles
+
+## Aggregate Design Rules
+
+### Independent Aggregates
+
+Each aggregate root is independently loadable and modifiable:
+
+- Each aggregate has its own Repository
+- Aggregates reference each other through IDs, not object references
+- Modifications to one aggregate don't require loading others
+
+### Aggregate Composition
+
+**Embed sub-entities:**
+
+```rust
+// ✅ Good - embed
+pub struct Order {
+    pub items: Vec<OrderItem>,
+}
+
+// ❌ Bad - reference by ID
+pub struct Order {
+    pub item_ids: Vec<OrderItemId>,
+}
+```
+
+**Reference other aggregates:**
+
+```rust
+// ✅ Good - reference by ID
+pub struct Order {
+    pub user_id: UserId,  // Reference to User aggregate
+}
+
+// ❌ Bad - embed
+pub struct Order {
+    pub user: User,
+}
+```
+
+### Entity vs Value Object Decision
+
+Ask these questions:
+
+1. **Identity:** Do two objects with identical attributes represent the same thing?
+
+   - No → Entity (needs ID)
+   - Yes → Value Object (no ID)
+
+2. **Lifecycle:** Does it have independent lifecycle?
+
+   - Yes → Entity
+   - No → Value Object
+
+3. **Replaceability:** Can it be freely replaced if values are equal?
+   - Yes → Value Object
+   - No → Entity
+
+### Sub-entity Identification
+
+For entities within an aggregate that don't need global reference:
+
+- Use `seq: u32` instead of UUID
+- Provides stable reference within aggregate
+- Lighter weight than UUID
+- Sufficient for aggregate-internal needs
+
+```rust
+pub struct OrderItem {
+    pub seq: u32,  // Stable ID within order
+    // ...
+}
+```
+
+## Repository Pattern
+
+### Repository Traits
+
+```rust
+pub trait SomeRepository: Send + Sync + 'static {
+    fn find_by_id(
+        &self,
+        id: &SomeId,
+    ) -> impl Future<Output = Result<Option<Some>, RepositoryError>> + Send;
+
+    fn save(
+        &self,
+        entity: &Some,
+    ) -> impl Future<Output = Result<(), RepositoryError>> + Send;
+}
+```
+
+**Important:** All repository traits must be `Send + Sync + 'static`.
+
+### Repository Per Aggregate Root
+
+- Each aggregate root has its own Repository
+- Repositories handle ONLY their aggregate
+- Cross-aggregate queries go through application services
+- Read-only query repositories are separate if needed
+
+## Data Patterns
+
+### Snapshot Pattern
+
+When recording historical data, ALWAYS snapshot configuration that may change:
+
+```rust
+pub struct OrderItem {
+    pub unit_price: Price,  // Snapshot at order time
+    pub config_snapshot: Option<Config>,  // Snapshot of config
+}
+```
+
+Historical records must remain accurate even if referenced entities change.
+
+### History Tracking
+
+**For sequential state changes - don't store from_status:**
+
+```rust
+pub struct StatusHistory {
+    pub status: Status,  // New status only
+    pub changed_at: DateTime<Utc>,
+}
+```
+
+Derive `from_status` from previous array element.
+
+**For independent events - store both:**
+
+```rust
+pub struct Transfer {
+    pub from_user_id: Option<UserId>,
+    pub to_user_id: UserId,
+    pub transferred_at: DateTime<Utc>,
+}
+```
+
+### Avoid Parallel Arrays
+
+**Bad:**
+
+```rust
+pub items: Vec<ItemId>,
+pub prices: Vec<Price>,  // Parallel array
+```
+
+**Good:**
+
+```rust
+pub items: Vec<OrderItem>,
+
+pub struct OrderItem {
+    pub item_id: ItemId,
+    pub price: Price,
+}
+```
+
+## Testing Principles
+
+- Test domain logic in isolation (no I/O)
+- Test repository implementations separately
+- Use in-memory repositories for integration tests
+- Test state transitions exhaustively
+
+## Common Patterns
+
+### Creating Entities
+
+```rust
+impl SomeEntity {
+    pub fn new(required_fields) -> Self {
+        Self {
+            id: SomeId::new(),
+            field: required_fields,
+            created_at: Utc::now(),
+        }
+    }
+}
+```
+
+### State Transitions
+
+```rust
+impl SomeEntity {
+    pub fn transition(&mut self) -> Result<(), DomainError> {
+        match self.status {
+            Status::Valid => {
+                self.status = Status::Next;
+                Ok(())
+            }
+            _ => Err(DomainError::InvalidStatusTransition)
+        }
+    }
+}
+```

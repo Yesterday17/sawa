@@ -1,18 +1,36 @@
 use std::num::NonZeroU32;
 
-use uuid::NonNilUuid;
+use chrono::{DateTime, Utc};
+use uuid::{NonNilUuid, Uuid};
 
 use crate::models::{
     misc::Price,
     product::{MysteryBoxConfig, ProductInstanceId, ProductVariantId},
+    transfer::UserTransactionId,
+    user::UserId,
 };
 
 /// A single item in a purchase order.
 pub struct PurchaseOrderItem {
     pub id: PurchaseOrderItemId,
 
-    /// Which variant to purchase
-    pub product_variant_id: ProductVariantId,
+    /// The variant of the product to purchase
+    pub purchased_variant_id: ProductVariantId,
+
+    /// All items in this order item
+    ///
+    /// Invariants:
+    /// - For regular items: SHOULD be equal to `product_variant_id` * `quantity`
+    /// - For mystery boxes: length SHOULD equal `quantity * mystery_box_snapshot.count`
+    ///   - Each variant SHOULD be in `mystery_box_snapshot.possible_variants` (soft requirement)
+    ///
+    /// Note: Validation is lenient to allow for:
+    /// - Special promotions/bonuses
+    /// - User errors that can be corrected later
+    pub ordered_items: Vec<OrderedItem>,
+
+    /// Item status
+    pub status: PurchaseOrderItemStatus,
 
     /// Snapshot of mystery box config at time of purchase
     /// If Some, this item was a mystery box purchase
@@ -23,35 +41,23 @@ pub struct PurchaseOrderItem {
     pub quantity: NonZeroU32,
 
     /// Price at time of order (snapshot, immutable)
-    pub unit_price: Price,
-
-    /// Results of opening the mystery box (user input)
-    ///
-    /// Invariants:
-    /// - For mystery boxes: length SHOULD equal `quantity * mystery_box_snapshot.count`
-    /// - For regular items: SHOULD be empty
-    /// - Each variant SHOULD be in `mystery_box_snapshot.possible_variants` (soft requirement)
-    ///
-    /// Note: Validation is lenient to allow for:
-    /// - Special promotions/bonuses
-    /// - User errors that can be corrected later
-    pub received_items: Vec<ProductVariantId>,
-
-    /// Product instances created for this order item
-    /// Empty until order is fulfilled
-    pub created_instances: Vec<ProductInstanceId>,
-
-    /// Item status
-    pub status: PurchaseOrderItemStatus,
+    pub unit_price: Option<Price>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PurchaseOrderItemId(pub NonNilUuid);
+
+impl PurchaseOrderItemId {
+    pub fn new() -> Self {
+        Self(NonNilUuid::new(Uuid::now_v7()).expect("UUID v7 should never be nil"))
+    }
+}
 
 /// The status of a purchase order item.
 #[derive(Debug, Clone, Copy)]
 pub enum PurchaseOrderItemStatus {
-    /// Mystery box waiting for user to fill in what they received
-    /// Regular items skip this status
+    /// Waiting for user to fill in `ordered_items`
+    /// Regular items skip this status and go directly to `Pending`
     AwaitingInput,
 
     /// All information complete, ready to create instances
@@ -63,4 +69,35 @@ pub enum PurchaseOrderItemStatus {
 
     /// Cancelled
     Cancelled,
+}
+
+/// A variant pending instance creation, with ownership assignment
+pub struct OrderedItem {
+    /// Sequence number within this order item
+    /// This provides a stable reference that won't change even if items are removed
+    pub seq: u32,
+
+    /// The variant to create instance for
+    pub variant_id: ProductVariantId,
+
+    /// The ultimate owner of items in this order item
+    ///
+    /// - If None: belongs to order.receiver_id (default)
+    /// - If Some(user_id): will be transferred to this user after delivery
+    ///
+    /// When order is fulfilled:
+    /// 1. Instances are created with owner = order.receiver_id
+    /// 2. If target_owner_id.is_some(), auto-create UserTransaction
+    pub target_owner_id: Option<UserId>,
+
+    /// The created instance (None until fulfilled)
+    pub instance_id: Option<ProductInstanceId>,
+    /// The timestamp when the instance was created
+    pub fulfilled_at: Option<DateTime<Utc>>,
+
+    /// The transaction that will transfer this item to target owner
+    /// None if: 1) target_owner_id is None (belongs to receiver)
+    ///       or 2) target_owner == receiver (no transfer needed)
+    ///       or 3) not yet fulfilled
+    pub transfer_transaction_id: Option<UserTransactionId>,
 }

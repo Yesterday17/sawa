@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use uuid::NonNilUuid;
+use uuid::{NonNilUuid, Uuid};
 
 use crate::models::{
     misc::{Address, Price},
@@ -10,8 +10,11 @@ use crate::models::{
 pub struct PurchaseOrder {
     pub id: PurchaseOrderId,
 
-    /// Which user is making this order
-    pub user_id: UserId,
+    /// The user who created the order
+    pub creator_id: UserId,
+
+    /// The user who will receive the items
+    pub receiver_id: UserId,
 
     /// The items being purchased
     pub items: Vec<PurchaseOrderItem>,
@@ -33,7 +36,14 @@ pub struct PurchaseOrder {
     pub cancelled_at: Option<DateTime<Utc>>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PurchaseOrderId(pub NonNilUuid);
+
+impl PurchaseOrderId {
+    pub fn new() -> Self {
+        Self(NonNilUuid::new(Uuid::now_v7()).expect("UUID v7 should never be nil"))
+    }
+}
 
 #[derive(Debug, Clone, Copy)]
 pub enum PurchaseOrderStatus {

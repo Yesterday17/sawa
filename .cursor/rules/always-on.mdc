@@ -1,0 +1,181 @@
+---
+globs: "**/*.rs"
+alwaysApply: true
+---
+
+# General Coding Standards - Always Apply
+
+## Language & Comments
+
+- **All code comments MUST be in English**
+- If you find non-English comments or awkward English, fix them immediately
+- Respond to user in Chinese, but write code/comments/docs in English
+
+## Type System & NewType Pattern
+
+### ⚠️ CRITICAL: ALWAYS Use NewType for Domain Concepts
+
+**Golden Rule:** If it has domain meaning, wrap it in a newtype. When in doubt, create a newtype.
+
+**Mandatory NewTypes:**
+
+```rust
+// ✅ ALL Entity IDs - ALWAYS newtype with UUID
+pub struct ProductId(pub NonNilUuid);
+pub struct UserId(pub NonNilUuid);
+
+// ✅ Domain primitives - ALWAYS newtype
+pub struct NonEmptyString(String);  // Strings that cannot be empty
+pub struct Email(String);           // Email addresses
+pub struct Username(String);        // Usernames
+
+// ✅ Quantities - ALWAYS use NonZeroU32 (never raw u32)
+pub quantity: NonZeroU32  // NOT u32
+pub count: NonZeroU32     // NOT u32
+```
+
+**Standard derives for newtypes:**
+
+```rust
+// For ALL ID types (mandatory)
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct SomeId(pub NonNilUuid);
+
+impl SomeId {
+    pub fn new() -> Self {
+        Self(NonNilUuid::new(Uuid::now_v7()).expect("UUID v7 should never be nil"))
+    }
+}
+```
+
+**When to create NewTypes:**
+
+- ✅ ALL entity IDs (no exceptions!)
+- ✅ ALL domain concepts (Email, Username, etc.)
+- ✅ Quantities with constraints (use NonZeroU32)
+- ✅ Values with validation rules (NonEmptyString)
+- ✅ Foreign keys
+
+**Benefits:**
+
+- Type safety: cannot mix ProductId with UserId
+- Self-documenting code
+- Compiler-enforced validation
+- Domain meaning is explicit
+
+## Derives
+
+**Standard derives for types:**
+
+```rust
+// Enums (NO PartialEq/Eq - use match or matches! macro)
+#[derive(Debug, Clone, Copy)]
+pub enum Status { }
+
+// ID types (PartialEq/Eq/Hash for HashMap keys)
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct SomeId(pub NonNilUuid);
+
+// Value objects (NO PartialEq/Eq)
+#[derive(Debug, Clone, Copy)]  // or just Clone for types with String
+pub struct Price { }
+
+// Entities (NO PartialEq/Eq)
+#[derive(Debug, Clone)]
+pub struct SomeEntity { }
+```
+
+**Why no PartialEq/Eq:**
+
+- For enums: Use `match` or `matches!` macro for comparison
+- For value objects: We never compare them
+- More explicit and maintainable
+
+**Enum comparison:**
+
+```rust
+// ✅ Good
+match item.status {
+    Status::Pending => { /* ... */ }
+    _ => { /* ... */ }
+}
+
+// ✅ Good
+if matches!(item.status, Status::Pending) { /* ... */ }
+
+// ❌ Bad - don't derive PartialEq
+if item.status == Status::Pending { /* ... */ }
+```
+
+## Documentation Guidelines
+
+### Code Comments Only
+
+- **DO NOT** create separate Markdown documentation files (README.md, GUIDE.md, etc.)
+- **DO** write comprehensive inline documentation using Rust doc comments
+- All necessary documentation should live within the code itself
+
+### Comments Style
+
+```rust
+/// Public API documentation (triple slash)
+///
+/// Explain what, why, and important invariants.
+pub struct Something { }
+
+// Internal implementation notes (double slash)
+// Explain tricky logic or non-obvious decisions
+fn internal_helper() { }
+```
+
+Always document:
+
+- Why a design decision was made
+- Invariants that must be maintained
+- Complex business logic
+- Usage examples for complex APIs
+
+## Error Handling
+
+Keep errors minimal - expand only when needed:
+
+```rust
+#[derive(Debug, thiserror::Error)]
+pub enum DomainError {
+    // Add specific variants as needed
+}
+```
+
+Don't create error variants until you actually need them.
+
+## Naming Conventions
+
+### Fields
+
+- `id` - Entity's own ID
+- `xxx_id` - Reference to another entity (e.g., `product_id`, `user_id`)
+- `xxx_at` - Timestamps (e.g., `created_at`, `completed_at`)
+- `xxx_snapshot` - Historical snapshot
+
+### Methods
+
+- `new()` - Constructor
+- `find_by_xxx()` - Repository queries
+- `save()` - Repository write
+- `set_xxx()` - Domain mutations
+
+### Status Naming
+
+Status should describe current state, not actions:
+
+- Good: `Pending`, `Completed`, `Cancelled`
+- Bad: `WaitingForPayment`, `HasBeenCompleted`
+
+## Common Anti-Patterns
+
+- ❌ Do NOT use raw u32 for quantities (use NonZeroU32)
+- ❌ Do NOT use String directly for IDs (use newtype)
+- ❌ Do NOT use parallel arrays (use cohesive structs)
+- ❌ Do NOT derive PartialEq/Eq for enums and value objects
+- ❌ Do NOT add error variants until actually needed
+- ❌ Do NOT use array indices for entity references (unstable)

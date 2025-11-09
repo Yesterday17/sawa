@@ -6,5 +6,6 @@ edition.workspace = true
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }
 iso_currency = "0.5.3"
+thiserror = "2.0.17"
 url = "2.5.7"
 uuid = { version = "1", features = ["v7"] }

@@ -1,0 +1,146 @@
+---
+globs: crates/core/**/*.rs
+alwaysApply: false
+---
+
+# Sawa Domain Model - Project Specific
+
+## Project Overview
+
+Sawa is a collectible/merchandise inventory management system.
+
+**Core Purpose:** Track user ownership of physical collectibles purchased from external suppliers, including mystery boxes (blind boxes) and regular items.
+
+**Key characteristic:** This is a **record-keeping system** - users manually input their purchases, system tracks ownership and transfers.
+
+## Aggregate Roots in This Project
+
+**Independent Aggregates:**
+
+- `Product` - Product catalog (does NOT contain variants)
+- `ProductVariant` - Product SKU (independent from Product)
+- `ProductInstance` - Individual owned items
+- `PurchaseOrder` - Purchase records (embeds OrderItems)
+- `User` - User accounts
+- `Media` - Media files
+- `UserTransaction` - User-to-user transfers
+
+**Why Product and ProductVariant are separate:**
+
+- Variants are modified frequently and independently
+- Loading entire Product just to update one variant is inefficient
+- Enables concurrent updates
+- Better performance
+
+## Domain Concepts
+
+**Product:**
+
+- Catalog-level information only
+- Has name, description, media
+- Does NOT contain variants
+
+**ProductVariant:**
+
+- Specific SKU/specification
+- Can be regular item or mystery box
+- Independent aggregate root
+
+**ProductInstance:**
+
+- ONE physical item owned by a user
+- Tracks transfers and status changes
+- `NotFound` = user physically lost the item
+
+**PurchaseOrder:**
+
+- Record of purchase from external supplier (NOT a shopping cart)
+- Has creator and receiver (may differ for group buys)
+- Embeds OrderedItems
+
+**OrderedItem:**
+
+- Sub-entity within PurchaseOrderItem
+- Uses `seq: u32` for identification (not UUID)
+- Tracks variant → instance creation
+- Has transfer_transaction_id for auto-created transfers
+
+## Status Enums in This Project
+
+```rust
+// PurchaseOrderStatus
+Incomplete → Completed
+          ↘ Cancelled
+
+// PurchaseOrderItemStatus
+AwaitingInput → Pending → Fulfilled
+             ↘ Cancelled
+
+// ProductInstanceStatus
+Active, Locked, Consumed, NotFound, Destroyed
+
+// TransactionStatus
+Pending → Completed
+       ↘ Cancelled
+```
+
+## Mystery Box Logic
+
+- User MANUALLY fills in what they received (not system random)
+- Snapshot mystery_box config in PurchaseOrderItem
+- No duplicate checking (user records reality)
+- Be lenient on validation (allow bonuses/errors)
+
+## System Flow
+
+```
+External Supplier (infinite inventory)
+    ↓ User purchases
+PurchaseOrder created (record)
+    ↓ User fills mystery box results
+OrderedItem specs ready
+    ↓ System fulfillment
+ProductInstances created
+    ↓ Auto-create UserTransactions (if needed)
+Ownership transfers
+```
+
+## Transaction Flow
+
+**Purchase Order Fulfillment:**
+
+1. User creates order
+2. Mystery boxes: user fills results → Pending
+3. Regular items: automatically Pending
+4. When ALL items Pending: can fulfill
+5. Creates ProductInstances
+6. Auto-creates UserTransactions if target_owner ≠ receiver
+
+**User-to-User Transfer:**
+
+1. Create UserTransaction
+2. Lock ProductInstances (status = Locked)
+3. Complete: transfer ownership, unlock
+4. Cancel: unlock instances
+
+## File Organization
+
+```
+crates/core/src/
+  models/
+    product/       - Product aggregate
+    purchase/      - Purchase order aggregate
+    transfer/      - Transfer entities
+    user/          - User aggregate
+    misc/          - Shared value objects
+  repositories/    - Repository traits
+  error.rs         - Errors
+```
+
+## Project-Specific Rules
+
+- Product and ProductVariant are separate aggregates
+- PurchaseOrder embeds PurchaseOrderItem (not IDs)
+- OrderedItem uses seq: u32 (not UUID)
+- Snapshot price and mystery_box config in orders
+- History arrays don't store from_status

@@ -265,12 +265,6 @@ macro_rules! test_all_repositories {
             }
 
             #[$crate::tokio::test]
-            async fn find_by_source_order() {
-                let repo = $transaction_repo;
-                $crate::suites::user_transaction::test_find_by_source_order(repo).await;
-            }
-
-            #[$crate::tokio::test]
             async fn delete() {
                 let repo = $transaction_repo;
                 $crate::suites::user_transaction::test_delete(repo).await;

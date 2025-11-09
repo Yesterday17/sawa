@@ -37,4 +37,3 @@ pub trait PurchaseOrderService: Send + Sync + 'static {
         req: &GetOrderRequest,
     ) -> impl Future<Output = Result<PurchaseOrder, GetOrderError>> + Send;
 }
-

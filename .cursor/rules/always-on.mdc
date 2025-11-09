@@ -142,16 +142,34 @@ Always document:
 
 ## Error Handling
 
-Keep errors minimal - expand only when needed:
+Use fine-grained, operation-specific error types:
 
 ```rust
+// ✅ Good - specific error for each operation
+#[derive(Debug, thiserror::Error)]
+pub enum FulfillOrderError {
+    #[error("Order not found")]
+    OrderNotFound,
+
+    #[error("Permission denied: user {user_id:?} cannot fulfill this order")]
+    PermissionDenied { user_id: UserId },
+
+    // ... other specific errors
+}
+
+// ❌ Bad - generic error
 #[derive(Debug, thiserror::Error)]
 pub enum DomainError {
-    // Add specific variants as needed
+    #[error("Something went wrong")]
+    GenericError,
 }
 ```
 
-Don't create error variants until you actually need them.
+**Principles:**
+
+- Each service operation has its own error type
+- Error variants should be specific and actionable
+- Include context in error messages (IDs, reasons, etc.)
 
 ## Naming Conventions
 

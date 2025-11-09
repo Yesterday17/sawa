@@ -7,6 +7,7 @@ use sawa_core::{
     errors::RepositoryError,
     models::{
         product::{ProductInstance, ProductInstanceId, ProductInstanceStatus, ProductVariantId},
+        purchase::PurchaseOrderLineItemId,
         user::UserId,
     },
     repositories::ProductInstanceRepository,
@@ -39,6 +40,19 @@ impl ProductInstanceRepository for InMemoryProductInstanceRepository {
     ) -> Result<Option<ProductInstance>, RepositoryError> {
         let instances = self.instances.read().unwrap();
         Ok(instances.get(id).cloned())
+    }
+
+    async fn find_by_line_item_id(
+        &self,
+        line_item_id: &PurchaseOrderLineItemId,
+    ) -> Result<Option<ProductInstance>, RepositoryError> {
+        let instances = self.instances.read().unwrap();
+        for instance in instances.values() {
+            if &instance.source_order_line_item_id == line_item_id {
+                return Ok(Some(instance.clone()));
+            }
+        }
+        Ok(None)
     }
 
     async fn find_by_owner(

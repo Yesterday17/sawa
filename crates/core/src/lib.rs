@@ -9,7 +9,6 @@
 //! - `models/` - Domain entities, value objects, aggregates
 //! - `repositories/` - Repository trait definitions (PORTS)
 //! - `services/` - Service trait definitions (PORTS)
-//! - `error.rs` - Domain and repository errors
 //!
 //! ## Dependencies
 //!

@@ -1,7 +1,7 @@
 use sawa_core::{
     models::{
         product::{ProductInstance, ProductInstanceId, ProductInstanceStatus, ProductVariantId},
-        purchase::PurchaseOrderId,
+        purchase::PurchaseOrderLineItemId,
         user::UserId,
     },
     repositories::ProductInstanceRepository,
@@ -13,7 +13,7 @@ fn create_test_instance(owner_id: UserId, variant_id: ProductVariantId) -> Produ
         variant_id,
         owner_id,
         status: ProductInstanceStatus::Active,
-        source_order_id: PurchaseOrderId::new(),
+        source_order_line_item_id: PurchaseOrderLineItemId::new(),
         created_at: chrono::Utc::now(),
         transfer_history: vec![],
         status_history: vec![],

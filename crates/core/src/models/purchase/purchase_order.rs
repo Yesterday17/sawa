@@ -11,10 +11,13 @@ use crate::models::{
 pub struct PurchaseOrder {
     pub id: PurchaseOrderId,
 
-    /// The user who created the order
+    /// The user who created the order. All items without a designated owner should belong to this user.
     pub creator_id: UserId,
 
-    /// The user who will receive the items
+    /// The user who will receive the items.
+    ///
+    /// Items will belong to this user first after fulfillment. Then an transaction will be created
+    /// automatically if items are designated for other users, or the receiver differs from the creator.
     pub receiver_id: UserId,
 
     /// The items being purchased

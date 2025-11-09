@@ -24,9 +24,6 @@ pub struct User {
 
     /// The timestamp when the user was created.
     pub created_at: DateTime<Utc>,
-
-    /// The timestamp when the user was last updated.
-    pub updated_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

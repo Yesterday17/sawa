@@ -1,7 +1,6 @@
 use sawa_core::{
     models::{
         product::ProductInstanceId,
-        purchase::PurchaseOrderId,
         transfer::{TransactionStatus, UserTransaction, UserTransactionId},
         user::UserId,
     },
@@ -26,11 +25,9 @@ fn create_test_transaction(
         items: vec![ProductInstanceId::new()],
         price: None,
         status,
-        source_order_id: Some(PurchaseOrderId::new()),
         created_at: chrono::Utc::now(),
         completed_at,
         cancelled_at,
-        updated_at: chrono::Utc::now(),
     }
 }
 
@@ -152,30 +149,6 @@ pub async fn test_find_by_to_user_with_status<R: UserTransactionRepository>(repo
         .unwrap();
     assert_eq!(pending.len(), 1);
     assert_eq!(pending[0].status, TransactionStatus::Pending);
-}
-
-/// Test find_by_source_order returns related transactions.
-pub async fn test_find_by_source_order<R: UserTransactionRepository>(repo: R) {
-    let order_id = PurchaseOrderId::new();
-    let user_a = UserId::new();
-    let user_b = UserId::new();
-
-    let mut tx1 = create_test_transaction(user_a, user_b, TransactionStatus::Pending);
-    tx1.source_order_id = Some(order_id);
-
-    let mut tx2 = create_test_transaction(user_a, user_b, TransactionStatus::Pending);
-    tx2.source_order_id = Some(order_id);
-
-    let tx3 = create_test_transaction(user_a, user_b, TransactionStatus::Pending);
-    // tx3 has different source_order_id
-
-    repo.save(&tx1).await.unwrap();
-    repo.save(&tx2).await.unwrap();
-    repo.save(&tx3).await.unwrap();
-
-    let related = repo.find_by_source_order(&order_id).await.unwrap();
-    assert_eq!(related.len(), 2);
-    assert!(related.iter().all(|t| t.source_order_id == Some(order_id)));
 }
 
 /// Test delete removes transaction.

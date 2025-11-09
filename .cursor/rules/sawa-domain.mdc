@@ -142,7 +142,6 @@ crates/
         trait_def.rs
         requests.rs
         errors.rs
-    errors.rs                - DomainError, RepositoryError
 
   application/               - Application layer (ADAPTERS)
     services.rs              - Unified Service struct
@@ -196,6 +195,50 @@ services/
 
 Good: `services.rs` manages `services/` directory
 Bad: `services/mod.rs`
+
+## Error Handling
+
+**Service Errors:**
+
+- Use specific error types for each service operation (FulfillOrderError, CreateOrderError, etc.)
+- Each error variant should include relevant context (IDs, reasons)
+- Service errors are defined alongside their service traits in `errors.rs`
+- Include PermissionDenied with user_id for authorization failures
+
+**Repository Errors:**
+
+- Use a single generic `RepositoryError` for all repositories
+- Includes business-relevant variants:
+  - `Duplicated { field, value }` - unique constraint violations
+  - `HasDependencies { details }` - foreign key constraints
+  - `Internal(String)` - infrastructure failures
+- Service layer can match on variants to provide specific errors
+
+**Example:**
+
+```rust
+// Service error includes Repository variant
+#[derive(Debug, thiserror::Error)]
+pub enum CreateUserError {
+    #[error("User not found")]
+    UserNotFound,
+
+    #[error("Email already exists")]
+    EmailExists,
+
+    #[error("Repository error: {0}")]
+    Repository(#[from] RepositoryError),
+}
+
+// Service handles Duplicated specially
+match user_repo.save(&user).await {
+    Err(RepositoryError::Duplicated { field, .. }) if field == "email" => {
+        Err(CreateUserError::EmailExists)
+    }
+    Err(e) => Err(CreateUserError::Repository(e)),
+    Ok(()) => Ok(user),
+}
+```
 
 ## Project-Specific Rules
 

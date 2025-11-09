@@ -2,6 +2,7 @@ use crate::{
     errors::RepositoryError,
     models::{
         product::{ProductInstance, ProductInstanceId, ProductInstanceStatus, ProductVariantId},
+        purchase::PurchaseOrderLineItemId,
         user::UserId,
     },
 };
@@ -14,6 +15,11 @@ pub trait ProductInstanceRepository: Send + Sync + 'static {
     fn find_by_id(
         &self,
         id: &ProductInstanceId,
+    ) -> impl Future<Output = Result<Option<ProductInstance>, RepositoryError>> + Send;
+
+    fn find_by_line_item_id(
+        &self,
+        line_item_id: &PurchaseOrderLineItemId,
     ) -> impl Future<Output = Result<Option<ProductInstance>, RepositoryError>> + Send;
 
     /// Find all instances owned by a user.

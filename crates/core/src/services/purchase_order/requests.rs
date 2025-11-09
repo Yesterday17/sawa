@@ -9,26 +9,52 @@ use crate::models::{
 
 /// Request to create a new purchase order.
 pub struct CreateOrderRequest {
-    pub creator_id: UserId,
-    pub receiver_id: UserId,
+    /// The user creating the order (will be set as creator_id).
+    pub user_id: UserId,
+
+    /// The user who will receive the shipment (default to creator).
+    /// Can be different for group buy scenarios.
+    pub receiver_id: Option<UserId>,
 }
 
 /// Request to add an item to an order.
 pub struct AddOrderItemRequest {
+    /// The user performing this operation.
+    pub user_id: UserId,
+
+    /// The order to add item to.
     pub order_id: PurchaseOrderId,
+
+    /// The variant to purchase.
     pub variant_id: ProductVariantId,
+
+    /// Quantity to purchase.
     pub quantity: NonZeroU32,
+
+    /// Price at time of order.
     pub unit_price: Option<Price>,
 }
 
 /// Request to submit mystery box results.
 pub struct SubmitMysteryBoxResultsRequest {
+    /// The user performing this operation.
+    pub user_id: UserId,
+
+    /// The order containing the mystery box.
     pub order_id: PurchaseOrderId,
+
+    /// The specific order item (mystery box).
     pub order_item_id: PurchaseOrderItemId,
+
+    /// What the user received from opening the box.
     pub received_variants: Vec<ProductVariantId>,
 }
 
 /// Request to get an order by ID.
 pub struct GetOrderRequest {
+    /// The user requesting the order.
+    pub user_id: UserId,
+
+    /// The order to retrieve.
     pub order_id: PurchaseOrderId,
 }

@@ -4,8 +4,9 @@ use super::{CancelOrderError, CancelOrderRequest, FulfillOrderError, FulfillOrde
 
 /// Service for managing purchase order lifecycle and state transitions (Port).
 ///
+///
 /// This service handles order state transitions:
-/// - Fulfillment: Creating ProductInstances from OrderedItems
+/// - Fulfillment: Creating [ProductInstance]s from [PurchaseOrderLineItem]s
 /// - Cancellation: Cancelling incomplete orders (user input errors, etc.)
 ///
 /// # State Transitions
@@ -15,7 +16,8 @@ use super::{CancelOrderError, CancelOrderRequest, FulfillOrderError, FulfillOrde
 /// Incomplete --cancel--> Cancelled
 /// ```
 ///
-/// Note: Completed orders CANNOT be cancelled.
+/// Note: Completed orders CANNOT be cancelled. For returns/refunds of completed
+/// orders, a separate refund flow should be implemented in the future.
 ///
 /// Responsibilities:
 /// - State validation before transitions

@@ -1,9 +1,7 @@
 use chrono::{DateTime, Utc};
 use uuid::{NonNilUuid, Uuid};
 
-use crate::models::{
-    misc::Price, product::ProductInstanceId, purchase::PurchaseOrderId, user::UserId,
-};
+use crate::models::{misc::Price, product::ProductInstanceId, user::UserId};
 
 #[derive(Debug, Clone)]
 pub struct UserTransaction {
@@ -24,17 +22,12 @@ pub struct UserTransaction {
     /// Transaction status
     pub status: TransactionStatus,
 
-    /// Which purchase order this transaction is associated with
-    pub source_order_id: Option<PurchaseOrderId>,
-
     /// The timestamp when the transaction was created.
     pub created_at: DateTime<Utc>,
     /// The timestamp when the transaction was completed.
     pub completed_at: Option<DateTime<Utc>>,
     /// The timestamp when the transaction was cancelled.
     pub cancelled_at: Option<DateTime<Utc>>,
-    /// The timestamp when the transaction was last updated.
-    pub updated_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

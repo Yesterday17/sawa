@@ -1,7 +1,6 @@
 use crate::{
     errors::RepositoryError,
     models::{
-        purchase::PurchaseOrderId,
         transfer::{TransactionStatus, UserTransaction, UserTransactionId},
         user::UserId,
     },
@@ -38,18 +37,15 @@ pub trait UserTransactionRepository: Send + Sync + 'static {
         status: Option<TransactionStatus>,
     ) -> impl Future<Output = Result<Vec<UserTransaction>, RepositoryError>> + Send;
 
-    /// Find all transactions created from a specific purchase order.
-    ///
-    /// This is used to track automatic transfers from group buy orders.
-    fn find_by_source_order(
-        &self,
-        order_id: &PurchaseOrderId,
-    ) -> impl Future<Output = Result<Vec<UserTransaction>, RepositoryError>> + Send;
-
     /// Save a transaction (create or update).
     fn save(
         &self,
         transaction: &UserTransaction,
+    ) -> impl Future<Output = Result<(), RepositoryError>> + Send;
+
+    fn save_batch(
+        &self,
+        transactions: &[UserTransaction],
     ) -> impl Future<Output = Result<(), RepositoryError>> + Send;
 
     /// Delete a transaction by its ID.

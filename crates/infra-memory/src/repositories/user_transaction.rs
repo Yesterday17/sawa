@@ -6,7 +6,6 @@ use std::{
 use sawa_core::{
     errors::RepositoryError,
     models::{
-        purchase::PurchaseOrderId,
         transfer::{TransactionStatus, UserTransaction, UserTransactionId},
         user::UserId,
     },
@@ -68,21 +67,17 @@ impl UserTransactionRepository for InMemoryUserTransactionRepository {
             .collect())
     }
 
-    async fn find_by_source_order(
-        &self,
-        order_id: &PurchaseOrderId,
-    ) -> Result<Vec<UserTransaction>, RepositoryError> {
-        let transactions = self.transactions.read().unwrap();
-        Ok(transactions
-            .values()
-            .filter(|t| t.source_order_id == Some(*order_id))
-            .cloned()
-            .collect())
-    }
-
     async fn save(&self, transaction: &UserTransaction) -> Result<(), RepositoryError> {
         let mut transactions = self.transactions.write().unwrap();
         transactions.insert(transaction.id, transaction.clone());
+        Ok(())
+    }
+
+    async fn save_batch(&self, transactions: &[UserTransaction]) -> Result<(), RepositoryError> {
+        let mut store = self.transactions.write().unwrap();
+        for transaction in transactions {
+            store.insert(transaction.id, transaction.clone());
+        }
         Ok(())
     }
 

@@ -2,7 +2,8 @@ use chrono::{DateTime, Utc};
 use uuid::{NonNilUuid, Uuid};
 
 use crate::models::{
-    product::ProductVariantId, purchase::PurchaseOrderId, transfer::OwnershipTransfer, user::UserId,
+    product::ProductVariantId, purchase::PurchaseOrderLineItemId, transfer::OwnershipTransfer,
+    user::UserId,
 };
 
 /// Represents a specific, individual item of a product variant.
@@ -24,8 +25,8 @@ pub struct ProductInstance {
     /// Status of this instance
     pub status: ProductInstanceStatus,
 
-    /// Which purchase order created this instance
-    pub source_order_id: PurchaseOrderId,
+    /// The line item that created this instance
+    pub source_order_line_item_id: PurchaseOrderLineItemId,
 
     /// When this instance was created (when order was fulfilled)
     pub created_at: DateTime<Utc>,

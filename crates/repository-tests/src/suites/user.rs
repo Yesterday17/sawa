@@ -18,7 +18,6 @@ fn create_test_user(username: &str, email: &str) -> User {
         password_hash: make_string("hash"),
         avatar: None,
         created_at: chrono::Utc::now(),
-        updated_at: chrono::Utc::now(),
     }
 }
 

@@ -10,6 +10,7 @@ use sawa_core::{
 };
 
 /// In-memory implementation of ProductRepository.
+#[derive(Clone)]
 pub struct InMemoryProductRepository {
     products: Arc<RwLock<HashMap<ProductId, Product>>>,
 }
@@ -51,4 +52,3 @@ impl ProductRepository for InMemoryProductRepository {
         Ok(())
     }
 }
-

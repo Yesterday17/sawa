@@ -8,3 +8,6 @@ edition = "2024"
 [workspace.dependencies]
 sawa-core = { path = "crates/core" }
 sawa-infra-memory = { path = "crates/infra-memory" }
+sawa-repository-tests = { path = "crates/repository-tests" }
+
+url = "2.5.7"

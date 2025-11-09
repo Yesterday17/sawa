@@ -13,6 +13,7 @@ use sawa_core::{
 };
 
 /// In-memory implementation of ProductVariantRepository.
+#[derive(Clone)]
 pub struct InMemoryProductVariantRepository {
     variants: Arc<RwLock<HashMap<ProductVariantId, ProductVariant>>>,
 }

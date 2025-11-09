@@ -13,6 +13,7 @@ use sawa_core::{
 };
 
 /// In-memory implementation of PurchaseOrderRepository.
+#[derive(Clone)]
 pub struct InMemoryPurchaseOrderRepository {
     orders: Arc<RwLock<HashMap<PurchaseOrderId, PurchaseOrder>>>,
 }
@@ -40,40 +41,17 @@ impl PurchaseOrderRepository for InMemoryPurchaseOrderRepository {
         Ok(orders.get(id).cloned())
     }
 
-    async fn find_by_user(&self, user_id: &UserId) -> Result<Vec<PurchaseOrder>, RepositoryError> {
-        let orders = self.orders.read().unwrap();
-        Ok(orders
-            .values()
-            .filter(|o| o.creator_id == *user_id || o.receiver_id == *user_id)
-            .cloned()
-            .collect())
-    }
-
-    async fn find_by_user_and_status(
+    async fn find_by_user(
         &self,
         user_id: &UserId,
-        status: PurchaseOrderStatus,
-    ) -> Result<Vec<PurchaseOrder>, RepositoryError> {
-        let orders = self.orders.read().unwrap();
-        Ok(orders
-            .values()
-            .filter(|o| {
-                (o.creator_id == *user_id || o.receiver_id == *user_id) && o.status == status
-            })
-            .cloned()
-            .collect())
-    }
-
-    async fn find_incomplete_by_user(
-        &self,
-        user_id: &UserId,
+        status: Option<PurchaseOrderStatus>,
     ) -> Result<Vec<PurchaseOrder>, RepositoryError> {
         let orders = self.orders.read().unwrap();
         Ok(orders
             .values()
             .filter(|o| {
                 (o.creator_id == *user_id || o.receiver_id == *user_id)
-                    && matches!(o.status, PurchaseOrderStatus::Incomplete)
+                    && status.map_or(true, |s| o.status == s)
             })
             .cloned()
             .collect())

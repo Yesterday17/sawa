@@ -10,6 +10,7 @@ use sawa_core::{
 };
 
 /// In-memory implementation of UserRepository.
+#[derive(Clone)]
 pub struct InMemoryUserRepository {
     users: Arc<RwLock<HashMap<UserId, User>>>,
 }

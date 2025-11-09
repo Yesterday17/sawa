@@ -13,6 +13,7 @@ use sawa_core::{
 };
 
 /// In-memory implementation of ProductInstanceRepository.
+#[derive(Clone)]
 pub struct InMemoryProductInstanceRepository {
     instances: Arc<RwLock<HashMap<ProductInstanceId, ProductInstance>>>,
 }

@@ -10,6 +10,7 @@ use sawa_core::{
 };
 
 /// In-memory implementation of TagRepository.
+#[derive(Clone)]
 pub struct InMemoryTagRepository {
     tags: Arc<RwLock<HashMap<TagId, Tag>>>,
 }
@@ -79,4 +80,3 @@ impl TagRepository for InMemoryTagRepository {
         Ok(())
     }
 }
-

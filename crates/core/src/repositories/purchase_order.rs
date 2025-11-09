@@ -18,24 +18,13 @@ pub trait PurchaseOrderRepository: Send + Sync + 'static {
     ) -> impl Future<Output = Result<Option<PurchaseOrder>, RepositoryError>> + Send;
 
     /// Find all orders for a specific user.
+    ///
+    /// If status is Some, only returns orders with that status.
+    /// If status is None, returns all orders.
     fn find_by_user(
         &self,
         user_id: &UserId,
-    ) -> impl Future<Output = Result<Vec<PurchaseOrder>, RepositoryError>> + Send;
-
-    /// Find all orders for a user with a specific status.
-    fn find_by_user_and_status(
-        &self,
-        user_id: &UserId,
-        status: PurchaseOrderStatus,
-    ) -> impl Future<Output = Result<Vec<PurchaseOrder>, RepositoryError>> + Send;
-
-    /// Find all incomplete orders for a user.
-    ///
-    /// This is a common query for showing users their pending orders.
-    fn find_incomplete_by_user(
-        &self,
-        user_id: &UserId,
+        status: Option<PurchaseOrderStatus>,
     ) -> impl Future<Output = Result<Vec<PurchaseOrder>, RepositoryError>> + Send;
 
     /// Save an order (create or update).

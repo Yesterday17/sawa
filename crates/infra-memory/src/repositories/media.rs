@@ -10,6 +10,7 @@ use sawa_core::{
 };
 
 /// In-memory implementation of MediaRepository.
+#[derive(Clone)]
 pub struct InMemoryMediaRepository {
     media: Arc<RwLock<HashMap<MediaId, Media>>>,
 }
@@ -51,4 +52,3 @@ impl MediaRepository for InMemoryMediaRepository {
         Ok(())
     }
 }
-

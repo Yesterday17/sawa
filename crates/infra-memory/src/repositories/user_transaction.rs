@@ -14,6 +14,7 @@ use sawa_core::{
 };
 
 /// In-memory implementation of UserTransactionRepository.
+#[derive(Clone)]
 pub struct InMemoryUserTransactionRepository {
     transactions: Arc<RwLock<HashMap<UserTransactionId, UserTransaction>>>,
 }

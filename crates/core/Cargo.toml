@@ -7,5 +7,5 @@ edition.workspace = true
 chrono = { version = "0.4", features = ["serde"] }
 iso_currency = "0.5.3"
 thiserror = "2.0.17"
-url = "2.5.7"
+url.workspace = true
 uuid = { version = "1", features = ["v7"] }

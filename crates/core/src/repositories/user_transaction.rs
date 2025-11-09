@@ -1,5 +1,5 @@
 use crate::{
-    error::RepositoryError,
+    errors::RepositoryError,
     models::{
         purchase::PurchaseOrderId,
         transfer::{TransactionStatus, UserTransaction, UserTransactionId},
@@ -18,36 +18,24 @@ pub trait UserTransactionRepository: Send + Sync + 'static {
         id: &UserTransactionId,
     ) -> impl Future<Output = Result<Option<UserTransaction>, RepositoryError>> + Send;
 
-    /// Find all transactions involving a specific user (as sender or receiver).
-    fn find_by_user(
-        &self,
-        user_id: &UserId,
-    ) -> impl Future<Output = Result<Vec<UserTransaction>, RepositoryError>> + Send;
-
     /// Find all transactions where a user is the sender (from_user).
+    ///
+    /// If status is Some, only returns transactions with that status.
+    /// If status is None, returns all transactions.
     fn find_by_from_user(
         &self,
         from_user_id: &UserId,
+        status: Option<TransactionStatus>,
     ) -> impl Future<Output = Result<Vec<UserTransaction>, RepositoryError>> + Send;
 
     /// Find all transactions where a user is the receiver (to_user).
+    ///
+    /// If status is Some, only returns transactions with that status.
+    /// If status is None, returns all transactions.
     fn find_by_to_user(
         &self,
         to_user_id: &UserId,
-    ) -> impl Future<Output = Result<Vec<UserTransaction>, RepositoryError>> + Send;
-
-    /// Find all transactions with a specific status.
-    fn find_by_status(
-        &self,
-        status: TransactionStatus,
-    ) -> impl Future<Output = Result<Vec<UserTransaction>, RepositoryError>> + Send;
-
-    /// Find all pending transactions for a user (either as sender or receiver).
-    ///
-    /// This is useful for showing users their active transfers/trades.
-    fn find_pending_by_user(
-        &self,
-        user_id: &UserId,
+        status: Option<TransactionStatus>,
     ) -> impl Future<Output = Result<Vec<UserTransaction>, RepositoryError>> + Send;
 
     /// Find all transactions created from a specific purchase order.

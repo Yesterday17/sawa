@@ -2,6 +2,7 @@ use chrono::{DateTime, Utc};
 
 use crate::models::user::UserId;
 
+#[derive(Debug, Clone)]
 pub struct OwnershipTransfer {
     /// From which user (None if from system/purchase)
     pub from_user_id: Option<UserId>,
@@ -16,6 +17,7 @@ pub struct OwnershipTransfer {
     pub transferred_at: DateTime<Utc>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TransferReason {
     /// Initial purchase from external supplier
     Purchase,

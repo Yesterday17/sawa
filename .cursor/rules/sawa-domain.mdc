@@ -126,16 +126,76 @@ Ownership transfers
 ## File Organization
 
 ```
-crates/core/src/
-  models/
-    product/       - Product aggregate
-    purchase/      - Purchase order aggregate
-    transfer/      - Transfer entities
-    user/          - User aggregate
-    misc/          - Shared value objects
-  repositories/    - Repository traits
-  error.rs         - Errors
+crates/
+  core/                      - Domain layer (PORTS)
+    models/                  - Domain models
+    repositories/            - Repository traits
+    services.rs              - Manages services/
+    services/
+      purchase_order.rs      - Manages purchase_order/
+      purchase_order/
+        trait_def.rs         - PurchaseOrderService trait
+        requests.rs          - Request types
+        errors.rs            - Error types
+      order_fulfillment.rs   - Manages order_fulfillment/
+      order_fulfillment/
+        trait_def.rs
+        requests.rs
+        errors.rs
+    errors.rs                - DomainError, RepositoryError
+
+  application/               - Application layer (ADAPTERS)
+    services.rs              - Unified Service struct
+    services/
+      purchase_order_impl.rs
+      order_fulfillment_impl.rs
+
+  infra-memory/              - Infrastructure (ADAPTERS)
+    repositories.rs          - In-memory implementations
 ```
+
+## File Naming Conventions
+
+### Service Organization
+
+Each service is organized in its own directory with separated concerns:
+
+```
+services/
+  purchase_order.rs          # Manages purchase_order/ directory
+  purchase_order/
+    trait_def.rs             # Service trait definition
+    requests.rs              # Request types
+    errors.rs                # Error types
+    responses.rs             # Response types (if needed)
+```
+
+**Naming rules:**
+
+- Service trait files: `trait_def.rs`
+- Service trait names: MUST end with `Service`
+
+  - Good: `PurchaseOrderService`, `OrderFulfillmentService`
+  - Bad: `OrderManagement`, `CollectionQuery`
+
+- Implementation files in application layer: use `_impl` suffix
+  - Good: `purchase_order_impl.rs`
+  - Bad: `purchase_order_service_impl.rs`
+
+**Benefits:**
+
+- Clear separation of concerns (trait, requests, errors)
+- All related code in one directory
+- Easy to navigate and maintain
+- Errors defined alongside their service (high cohesion)
+
+### Module Management
+
+- **Do NOT use `mod.rs`** for managing submodules
+- Use a file with the same name as the directory
+
+Good: `services.rs` manages `services/` directory
+Bad: `services/mod.rs`
 
 ## Project-Specific Rules
 
@@ -144,3 +204,16 @@ crates/core/src/
 - OrderedItem uses seq: u32 (not UUID)
 - Snapshot price and mystery_box config in orders
 - History arrays don't store from_status
+
+## Naming Consistency
+
+When naming fields in Request/Response types, use complete snake_case names
+that match the domain model:
+
+- Good: `order_item_id` for `PurchaseOrderItemId`
+- Bad: `item_id` (ambiguous - which kind of item?)
+
+- Good: `variant_id` for `ProductVariantId`
+- Good: `instance_id` for `ProductInstanceId`
+
+Only use shortened names if they are unambiguous in context.

@@ -68,43 +68,48 @@ impl SomeId {
 **Standard derives for types:**
 
 ```rust
-// Enums (NO PartialEq/Eq - use match or matches! macro)
-#[derive(Debug, Clone, Copy)]
+// Enums (include PartialEq/Eq for filtering and comparisons)
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Status { }
 
-// ID types (PartialEq/Eq/Hash for HashMap keys)
+// ID types (Copy + Hash + PartialEq/Eq for HashMap keys)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct SomeId(pub NonNilUuid);
 
-// Value objects (NO PartialEq/Eq)
-#[derive(Debug, Clone, Copy)]  // or just Clone for types with String
+// Value objects without String (Copy, usually no PartialEq/Eq)
+#[derive(Debug, Clone, Copy)]
 pub struct Price { }
 
-// Entities (NO PartialEq/Eq)
+// Value objects with String (Clone only)
+#[derive(Debug, Clone)]
+pub struct Address { }
+
+// Entities (Clone for repository operations)
 #[derive(Debug, Clone)]
 pub struct SomeEntity { }
 ```
 
-**Why no PartialEq/Eq:**
+**Derives rationale:**
 
-- For enums: Use `match` or `matches!` macro for comparison
-- For value objects: We never compare them
-- More explicit and maintainable
+- **Enums:** Include PartialEq/Eq for filtering (`filter(|x| x.status == Status::Active)`)
+- **Value objects:** Usually don't need PartialEq/Eq (not compared in business logic)
+- **Entities:** Need Clone for in-memory repositories, no PartialEq/Eq (entities compared by ID)
+- **IDs:** Need PartialEq/Eq/Hash for use in HashMap/HashSet
 
 **Enum comparison:**
 
 ```rust
-// ✅ Good
+// ✅ Good - direct comparison
+if item.status == Status::Pending { /* ... */ }
+
+// ✅ Also good - pattern matching
 match item.status {
     Status::Pending => { /* ... */ }
     _ => { /* ... */ }
 }
 
-// ✅ Good
-if matches!(item.status, Status::Pending) { /* ... */ }
-
-// ❌ Bad - don't derive PartialEq
-if item.status == Status::Pending { /* ... */ }
+// ✅ Also good - matches! macro for complex patterns
+if matches!(item.status, Status::Pending | Status::Processing) { /* ... */ }
 ```
 
 ## Documentation Guidelines
@@ -198,12 +203,40 @@ pub trait SomeRepository: Send + Sync + 'static {
 - No need to import `std::future::Future`
 - Cleaner, more ergonomic async trait definitions
 
+## File Organization
+
+### Module Management
+
+- **Do NOT use `mod.rs` for managing submodules**
+- Use a file with the same name as the directory instead
+
+**Good structure:**
+
+```
+src/
+  errors.rs           # Manages errors/ directory
+  errors/
+    services.rs       # Manages services/ subdirectory
+    services/
+      purchase_order.rs
+```
+
+**Bad structure:**
+
+```
+src/
+  errors/
+    mod.rs            # ❌ Don't use mod.rs
+    services/
+      mod.rs          # ❌ Don't use mod.rs
+```
+
 ## Common Anti-Patterns
 
 - ❌ Do NOT use raw u32 for quantities (use NonZeroU32)
 - ❌ Do NOT use String directly for IDs (use newtype)
 - ❌ Do NOT use parallel arrays (use cohesive structs)
-- ❌ Do NOT derive PartialEq/Eq for enums and value objects
 - ❌ Do NOT add error variants until actually needed
 - ❌ Do NOT use array indices for entity references (unstable)
 - ❌ Do NOT import `std::future::Future` in Rust 2024 (not needed)
+- ❌ Do NOT use `mod.rs` for submodule management

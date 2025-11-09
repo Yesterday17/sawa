@@ -4,3 +4,7 @@ members = ["bin/*", "crates/*"]
 
 [workspace.package]
 edition = "2024"
+
+[workspace.dependencies]
+sawa-core = { path = "crates/core" }
+sawa-infra-memory = { path = "crates/infra-memory" }

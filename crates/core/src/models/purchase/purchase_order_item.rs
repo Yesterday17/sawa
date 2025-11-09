@@ -11,6 +11,7 @@ use crate::models::{
 };
 
 /// A single item in a purchase order.
+#[derive(Debug, Clone)]
 pub struct PurchaseOrderItem {
     pub id: PurchaseOrderItemId,
 
@@ -54,24 +55,32 @@ impl PurchaseOrderItemId {
 }
 
 /// The status of a purchase order item.
-#[derive(Debug, Clone, Copy)]
+///
+/// State transitions:
+/// ```text
+/// AwaitingInput --user-fills--> Pending --fulfill--> Fulfilled
+///      ↓                          ↓
+///   Cancelled                  Cancelled
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PurchaseOrderItemStatus {
-    /// Waiting for user to fill in `ordered_items`
-    /// Regular items skip this status and go directly to `Pending`
+    /// Waiting for user to fill in `ordered_items`.
+    /// Regular items skip this status and go directly to `Pending`.
     AwaitingInput,
 
-    /// All information complete, ready to create instances
-    /// This is the "gate" status - order can only be fulfilled when ALL items are Pending
+    /// All information complete, ready to create instances.
+    /// This is the "gate" status - order can only be fulfilled when ALL items are Pending.
     Pending,
 
-    /// Instances created successfully
+    /// Instances created successfully (terminal state).
     Fulfilled,
 
-    /// Cancelled
+    /// Item cancelled before fulfillment (terminal state).
     Cancelled,
 }
 
 /// A variant pending instance creation, with ownership assignment
+#[derive(Debug, Clone)]
 pub struct OrderedItem {
     /// Sequence number within this order item
     /// This provides a stable reference that won't change even if items are removed

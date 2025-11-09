@@ -17,6 +17,7 @@ use crate::models::{
 ///
 /// Each variant can be modified independently without loading the entire Product,
 /// enabling efficient concurrent updates and better performance.
+#[derive(Debug, Clone)]
 pub struct ProductVariant {
     /// The unique identifier for the product variant.
     pub id: ProductVariantId,

@@ -3,6 +3,7 @@ use uuid::{NonNilUuid, Uuid};
 
 use crate::models::misc::{MediaId, NonEmptyString};
 
+#[derive(Debug, Clone)]
 pub struct User {
     pub id: UserId,
 

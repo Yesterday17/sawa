@@ -1,5 +1,5 @@
 use crate::{
-    error::RepositoryError,
+    errors::RepositoryError,
     models::{
         product::{ProductInstance, ProductInstanceId, ProductInstanceStatus, ProductVariantId},
         user::UserId,
@@ -29,9 +29,10 @@ pub trait ProductInstanceRepository: Send + Sync + 'static {
         variant_id: &ProductVariantId,
     ) -> impl Future<Output = Result<Vec<ProductInstance>, RepositoryError>> + Send;
 
-    /// Find all instances with a specific status.
-    fn find_by_status(
+    /// Find all instances owned by a user with a specific status.
+    fn find_by_owner_and_status(
         &self,
+        owner_id: &UserId,
         status: ProductInstanceStatus,
     ) -> impl Future<Output = Result<Vec<ProductInstance>, RepositoryError>> + Send;
 

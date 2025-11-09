@@ -9,6 +9,7 @@ use crate::models::misc::{MediaId, NonEmptyString};
 ///
 /// This design allows efficient independent modification of variants without
 /// loading the entire product hierarchy.
+#[derive(Debug, Clone)]
 pub struct Product {
     /// The unique identifier for the product.
     pub id: ProductId,

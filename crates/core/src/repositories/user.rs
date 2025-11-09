@@ -1,5 +1,5 @@
 use crate::{
-    error::RepositoryError,
+    errors::RepositoryError,
     models::user::{Email, User, UserId, Username},
 };
 

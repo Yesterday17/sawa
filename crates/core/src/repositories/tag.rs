@@ -1,5 +1,5 @@
 use crate::{
-    error::RepositoryError,
+    errors::RepositoryError,
     models::misc::{Tag, TagId},
 };
 

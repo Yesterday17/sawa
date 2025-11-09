@@ -1,5 +1,5 @@
 use crate::{
-    error::RepositoryError,
+    errors::RepositoryError,
     models::{
         purchase::{PurchaseOrder, PurchaseOrderId, PurchaseOrderStatus},
         user::UserId,
@@ -23,9 +23,10 @@ pub trait PurchaseOrderRepository: Send + Sync + 'static {
         user_id: &UserId,
     ) -> impl Future<Output = Result<Vec<PurchaseOrder>, RepositoryError>> + Send;
 
-    /// Find all orders with a specific status.
-    fn find_by_status(
+    /// Find all orders for a user with a specific status.
+    fn find_by_user_and_status(
         &self,
+        user_id: &UserId,
         status: PurchaseOrderStatus,
     ) -> impl Future<Output = Result<Vec<PurchaseOrder>, RepositoryError>> + Send;
 

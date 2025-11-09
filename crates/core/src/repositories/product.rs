@@ -1,5 +1,5 @@
 use crate::{
-    error::RepositoryError,
+    errors::RepositoryError,
     models::{
         misc::TagId,
         product::{Product, ProductId, ProductVariant, ProductVariantId},
@@ -47,14 +47,6 @@ pub trait ProductVariantRepository: Send + Sync + 'static {
     fn find_by_product_id(
         &self,
         product_id: &ProductId,
-    ) -> impl Future<Output = Result<Vec<ProductVariant>, RepositoryError>> + Send;
-
-    /// Find all variants with a specific tag.
-    ///
-    /// This is useful for queries like "all items tagged with 'Hatsune Miku'".
-    fn find_by_tag(
-        &self,
-        tag_id: &TagId,
     ) -> impl Future<Output = Result<Vec<ProductVariant>, RepositoryError>> + Send;
 
     /// Find all variants that have ALL of the specified tags.

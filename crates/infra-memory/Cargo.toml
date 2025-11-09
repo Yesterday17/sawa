@@ -1,0 +1,9 @@
+[package]
+name = "sawa-infra-memory"
+version = "0.1.0"
+edition.workspace = true
+
+[dependencies]
+sawa-core.workspace = true
+chrono = "0.4"
+uuid = "1"

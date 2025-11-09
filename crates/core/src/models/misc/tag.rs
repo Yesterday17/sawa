@@ -13,6 +13,7 @@ use super::NonEmptyString;
 ///
 /// Tags are independent aggregates that can be associated with ProductVariants
 /// via many-to-many relationships.
+#[derive(Debug, Clone)]
 pub struct Tag {
     /// The unique identifier for the tag.
     pub id: TagId,

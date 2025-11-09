@@ -7,6 +7,7 @@ use crate::models::{
     user::UserId,
 };
 
+#[derive(Debug, Clone)]
 pub struct PurchaseOrder {
     pub id: PurchaseOrderId,
 
@@ -45,16 +46,22 @@ impl PurchaseOrderId {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PurchaseOrderStatus {
     /// Order record created, waiting for user to complete details
     /// (e.g., filling in mystery box results)
     Incomplete,
 
     /// All details filled, instances created in user's inventory
-    Completed,
+    Fulfilled,
 
-    /// Order was cancelled/refunded externally, or user wants to remove this record
-    /// Instances (if created) should be marked as destroyed
+    /// Order was cancelled before fulfillment.
+    ///
+    /// This status can only be reached from Incomplete state.
+    /// Completed orders cannot be cancelled.
+    ///
+    /// Common reasons:
+    /// - User input error (wants to delete the record)
+    /// - External purchase cancelled before delivery
     Cancelled,
 }

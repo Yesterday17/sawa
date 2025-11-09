@@ -10,6 +10,7 @@ use crate::models::{
 /// For example, if "T-Shirt" is a `Product` and "Red, Size M" is a `ProductVariant`,
 /// then a `ProductInstance` would be one specific red, size M t-shirt with its own unique identifier.
 /// This allows tracking individual items, for example, for inventory or warranty purposes.
+#[derive(Debug, Clone)]
 pub struct ProductInstance {
     /// The unique identifier for this specific product instance.
     pub id: ProductInstanceId,
@@ -45,7 +46,7 @@ impl ProductInstanceId {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ProductInstanceStatus {
     /// Owned by user, in their inventory
     Active,
@@ -63,6 +64,7 @@ pub enum ProductInstanceStatus {
     Destroyed,
 }
 
+#[derive(Debug, Clone)]
 pub struct ProductInstanceStatusHistory {
     /// The new status after this change
     pub status: ProductInstanceStatus,

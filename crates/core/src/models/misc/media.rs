@@ -1,6 +1,7 @@
 use url::Url;
 use uuid::NonNilUuid;
 
+#[derive(Debug, Clone)]
 pub struct Media {
     /// The unique identifier for the media.
     pub id: MediaId,

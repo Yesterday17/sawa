@@ -5,6 +5,7 @@ use crate::models::{
     misc::Price, product::ProductInstanceId, purchase::PurchaseOrderId, user::UserId,
 };
 
+#[derive(Debug, Clone)]
 pub struct UserTransaction {
     pub id: UserTransactionId,
 
@@ -45,6 +46,7 @@ impl UserTransactionId {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TransactionStatus {
     /// The transaction is pending.
     Pending,

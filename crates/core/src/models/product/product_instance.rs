@@ -26,6 +26,8 @@ pub struct ProductInstance {
     pub status: ProductInstanceStatus,
 
     /// The line item that created this instance
+    ///
+    /// @unique constraint to prevent duplicate instances from the same order line item
     pub source_order_line_item_id: PurchaseOrderLineItemId,
 
     /// When this instance was created (when order was fulfilled)

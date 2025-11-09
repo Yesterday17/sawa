@@ -49,14 +49,10 @@ where
         match order.status {
             PurchaseOrderStatus::Incomplete => {}
             PurchaseOrderStatus::Fulfilled => {
-                return Err(FulfillOrderError::NotReady {
-                    reason: "Order already fulfilled".to_string(),
-                });
+                return Ok(order);
             }
             PurchaseOrderStatus::Cancelled => {
-                return Err(FulfillOrderError::NotReady {
-                    reason: "Order is cancelled".to_string(),
-                });
+                return Err(FulfillOrderError::OrderCancelled);
             }
         }
 

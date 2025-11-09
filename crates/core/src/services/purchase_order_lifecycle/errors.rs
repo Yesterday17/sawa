@@ -8,8 +8,8 @@ pub enum FulfillOrderError {
     #[error("Order not found")]
     OrderNotFound,
 
-    #[error("Order not ready for fulfillment: {reason}")]
-    NotReady { reason: String },
+    #[error("Order is cancelled and can not be fulfilled")]
+    OrderCancelled,
 
     #[error("Order item not in pending status")]
     ItemNotPending,

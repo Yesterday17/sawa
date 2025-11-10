@@ -1,5 +1,6 @@
 use std::num::NonZeroU32;
 
+use serde::{Deserialize, Serialize};
 use uuid::{NonNilUuid, Uuid};
 
 use crate::models::{
@@ -60,7 +61,7 @@ pub struct ProductVariant {
     pub sort_order: i32,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct ProductVariantId(pub NonNilUuid);
 
 impl ProductVariantId {
@@ -69,7 +70,7 @@ impl ProductVariantId {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct MysteryBoxConfig {
     /// Number of items to give per mystery box
     pub items_count: NonZeroU32,

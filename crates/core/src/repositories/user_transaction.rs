@@ -1,7 +1,7 @@
 use crate::{
     errors::RepositoryError,
     models::{
-        transfer::{TransactionStatus, UserTransaction, UserTransactionId},
+        transfer::{UserTransactionStatus, UserTransaction, UserTransactionId},
         user::UserId,
     },
 };
@@ -24,7 +24,7 @@ pub trait UserTransactionRepository: Send + Sync + 'static {
     fn find_by_from_user(
         &self,
         from_user_id: &UserId,
-        status: Option<TransactionStatus>,
+        status: Option<UserTransactionStatus>,
     ) -> impl Future<Output = Result<Vec<UserTransaction>, RepositoryError>> + Send;
 
     /// Find all transactions where a user is the receiver (to_user).
@@ -34,7 +34,7 @@ pub trait UserTransactionRepository: Send + Sync + 'static {
     fn find_by_to_user(
         &self,
         to_user_id: &UserId,
-        status: Option<TransactionStatus>,
+        status: Option<UserTransactionStatus>,
     ) -> impl Future<Output = Result<Vec<UserTransaction>, RepositoryError>> + Send;
 
     /// Save a transaction (create or update).

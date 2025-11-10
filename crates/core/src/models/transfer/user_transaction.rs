@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use uuid::{NonNilUuid, Uuid};
 
-use crate::models::{misc::Price, product::ProductInstanceId, user::UserId};
+use crate::models::{product::ProductInstanceId, user::UserId};
 
 #[derive(Debug, Clone)]
 pub struct UserTransaction {
@@ -16,11 +16,8 @@ pub struct UserTransaction {
     /// Items being transferred
     pub items: Vec<ProductInstanceId>,
 
-    /// Price (if applicable, for future use)
-    pub price: Option<Price>,
-
     /// Transaction status
-    pub status: TransactionStatus,
+    pub status: UserTransactionStatus,
 
     /// The timestamp when the transaction was created.
     pub created_at: DateTime<Utc>,
@@ -40,7 +37,7 @@ impl UserTransactionId {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum TransactionStatus {
+pub enum UserTransactionStatus {
     /// The transaction is pending.
     Pending,
 

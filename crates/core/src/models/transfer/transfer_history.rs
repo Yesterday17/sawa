@@ -3,12 +3,16 @@ use chrono::{DateTime, Utc};
 use crate::models::user::UserId;
 
 #[derive(Debug, Clone)]
-pub struct OwnershipTransfer {
-    /// From which user (None if from system/purchase)
-    pub from_user_id: Option<UserId>,
+pub struct ProductInstanceTransferHistory {
+    /// The original owner
+    pub from_owner_id: Option<UserId>,
+    /// The original holder
+    pub from_holder_id: Option<UserId>,
 
-    /// To which user
-    pub to_user_id: UserId,
+    /// The new owner
+    pub to_owner_id: UserId,
+    /// The new holder
+    pub to_holder_id: UserId,
 
     /// Transfer reason
     pub reason: TransferReason,
@@ -19,8 +23,11 @@ pub struct OwnershipTransfer {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TransferReason {
-    /// Initial purchase from external supplier
+    ///  Initial purchase from external supplier
     Purchase,
+
+    /// The holder is changing (e.g., item moved to a different inventory)
+    Delivery,
 
     /// User-to-user trade
     Trade,

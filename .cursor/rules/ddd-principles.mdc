@@ -65,16 +65,17 @@ Ask these questions:
 
 ### Sub-entity Identification
 
-For entities within an aggregate that don't need global reference:
+All entities (including child entities within aggregates) use UUID as primary key:
 
-- Use `seq: u32` instead of UUID
-- Provides stable reference within aggregate
-- Lighter weight than UUID
-- Sufficient for aggregate-internal needs
+- Child entities have their own UUID for external references
+- Enables flexible referencing from outside the aggregate
+- Simplifies database schema (no composite keys)
+- All entities follow the same identification pattern
 
 ```rust
 pub struct OrderItem {
-    pub seq: u32,  // Stable ID within order
+    pub id: OrderItemId,  // UUID for identification
+    pub parent_id: OrderId,  // Reference to parent
     // ...
 }
 ```

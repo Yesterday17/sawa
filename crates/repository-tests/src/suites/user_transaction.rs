@@ -1,7 +1,7 @@
 use sawa_core::{
     models::{
         product::ProductInstanceId,
-        transfer::{TransactionStatus, UserTransaction, UserTransactionId},
+        transfer::{UserTransaction, UserTransactionId, UserTransactionStatus},
         user::UserId,
     },
     repositories::UserTransactionRepository,
@@ -10,11 +10,11 @@ use sawa_core::{
 fn create_test_transaction(
     from_user_id: UserId,
     to_user_id: UserId,
-    status: TransactionStatus,
+    status: UserTransactionStatus,
 ) -> UserTransaction {
     let (completed_at, cancelled_at) = match status {
-        TransactionStatus::Completed => (Some(chrono::Utc::now()), None),
-        TransactionStatus::Cancelled => (None, Some(chrono::Utc::now())),
+        UserTransactionStatus::Completed => (Some(chrono::Utc::now()), None),
+        UserTransactionStatus::Cancelled => (None, Some(chrono::Utc::now())),
         _ => (None, None),
     };
 
@@ -23,7 +23,6 @@ fn create_test_transaction(
         from_user_id,
         to_user_id,
         items: vec![ProductInstanceId::new()],
-        price: None,
         status,
         created_at: chrono::Utc::now(),
         completed_at,
@@ -33,7 +32,7 @@ fn create_test_transaction(
 
 /// Test save and find_by_id.
 pub async fn test_save_and_find_by_id<R: UserTransactionRepository>(repo: R) {
-    let tx = create_test_transaction(UserId::new(), UserId::new(), TransactionStatus::Pending);
+    let tx = create_test_transaction(UserId::new(), UserId::new(), UserTransactionStatus::Pending);
     let tx_id = tx.id;
 
     repo.save(&tx).await.unwrap();
@@ -50,9 +49,9 @@ pub async fn test_find_by_from_user_permission<R: UserTransactionRepository>(rep
     let user_c = UserId::new();
 
     // User A sends to User C
-    let tx_a_to_c = create_test_transaction(user_a, user_c, TransactionStatus::Pending);
+    let tx_a_to_c = create_test_transaction(user_a, user_c, UserTransactionStatus::Pending);
     // User B sends to User C
-    let tx_b_to_c = create_test_transaction(user_b, user_c, TransactionStatus::Pending);
+    let tx_b_to_c = create_test_transaction(user_b, user_c, UserTransactionStatus::Pending);
 
     repo.save(&tx_a_to_c).await.unwrap();
     repo.save(&tx_b_to_c).await.unwrap();
@@ -76,9 +75,9 @@ pub async fn test_find_by_to_user_permission<R: UserTransactionRepository>(repo:
     let user_c = UserId::new();
 
     // User A receives from User C
-    let tx_c_to_a = create_test_transaction(user_c, user_a, TransactionStatus::Pending);
+    let tx_c_to_a = create_test_transaction(user_c, user_a, UserTransactionStatus::Pending);
     // User B receives from User C
-    let tx_c_to_b = create_test_transaction(user_c, user_b, TransactionStatus::Pending);
+    let tx_c_to_b = create_test_transaction(user_c, user_b, UserTransactionStatus::Pending);
 
     repo.save(&tx_c_to_a).await.unwrap();
     repo.save(&tx_c_to_b).await.unwrap();
@@ -100,8 +99,9 @@ pub async fn test_find_by_from_user_with_status<R: UserTransactionRepository>(re
     let user_id = UserId::new();
     let other_user = UserId::new();
 
-    let pending_tx = create_test_transaction(user_id, other_user, TransactionStatus::Pending);
-    let completed_tx = create_test_transaction(user_id, other_user, TransactionStatus::Completed);
+    let pending_tx = create_test_transaction(user_id, other_user, UserTransactionStatus::Pending);
+    let completed_tx =
+        create_test_transaction(user_id, other_user, UserTransactionStatus::Completed);
 
     repo.save(&pending_tx).await.unwrap();
     repo.save(&completed_tx).await.unwrap();
@@ -112,19 +112,19 @@ pub async fn test_find_by_from_user_with_status<R: UserTransactionRepository>(re
 
     // Query only pending
     let pending = repo
-        .find_by_from_user(&user_id, Some(TransactionStatus::Pending))
+        .find_by_from_user(&user_id, Some(UserTransactionStatus::Pending))
         .await
         .unwrap();
     assert_eq!(pending.len(), 1);
-    assert_eq!(pending[0].status, TransactionStatus::Pending);
+    assert_eq!(pending[0].status, UserTransactionStatus::Pending);
 
     // Query only completed
     let completed = repo
-        .find_by_from_user(&user_id, Some(TransactionStatus::Completed))
+        .find_by_from_user(&user_id, Some(UserTransactionStatus::Completed))
         .await
         .unwrap();
     assert_eq!(completed.len(), 1);
-    assert_eq!(completed[0].status, TransactionStatus::Completed);
+    assert_eq!(completed[0].status, UserTransactionStatus::Completed);
 }
 
 /// Test find_by_to_user with status filter.
@@ -132,8 +132,9 @@ pub async fn test_find_by_to_user_with_status<R: UserTransactionRepository>(repo
     let user_id = UserId::new();
     let other_user = UserId::new();
 
-    let pending_tx = create_test_transaction(other_user, user_id, TransactionStatus::Pending);
-    let completed_tx = create_test_transaction(other_user, user_id, TransactionStatus::Completed);
+    let pending_tx = create_test_transaction(other_user, user_id, UserTransactionStatus::Pending);
+    let completed_tx =
+        create_test_transaction(other_user, user_id, UserTransactionStatus::Completed);
 
     repo.save(&pending_tx).await.unwrap();
     repo.save(&completed_tx).await.unwrap();
@@ -144,16 +145,16 @@ pub async fn test_find_by_to_user_with_status<R: UserTransactionRepository>(repo
 
     // Query only pending
     let pending = repo
-        .find_by_to_user(&user_id, Some(TransactionStatus::Pending))
+        .find_by_to_user(&user_id, Some(UserTransactionStatus::Pending))
         .await
         .unwrap();
     assert_eq!(pending.len(), 1);
-    assert_eq!(pending[0].status, TransactionStatus::Pending);
+    assert_eq!(pending[0].status, UserTransactionStatus::Pending);
 }
 
 /// Test delete removes transaction.
 pub async fn test_delete<R: UserTransactionRepository>(repo: R) {
-    let tx = create_test_transaction(UserId::new(), UserId::new(), TransactionStatus::Pending);
+    let tx = create_test_transaction(UserId::new(), UserId::new(), UserTransactionStatus::Pending);
     let tx_id = tx.id;
 
     repo.save(&tx).await.unwrap();

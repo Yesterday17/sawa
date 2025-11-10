@@ -19,6 +19,8 @@ pub struct Tag {
     pub id: TagId,
 
     /// The name of the tag.
+    ///
+    /// @unique
     pub name: NonEmptyString,
 
     /// Optional description of the tag.
@@ -33,9 +35,6 @@ pub struct Tag {
     /// Note: This creates a simple tree structure. Cycles should be prevented
     /// at the application layer.
     pub parent_tag_id: Option<TagId>,
-
-    /// Display order for sorting tags.
-    pub sort_order: i32,
 }
 
 impl Tag {
@@ -46,7 +45,6 @@ impl Tag {
             name,
             description: String::new(),
             parent_tag_id: None,
-            sort_order: 0,
         }
     }
 
@@ -57,7 +55,6 @@ impl Tag {
             name,
             description: String::new(),
             parent_tag_id: Some(parent_id),
-            sort_order: 0,
         }
     }
 
@@ -69,11 +66,6 @@ impl Tag {
     /// Set the parent tag.
     pub fn set_parent(&mut self, parent_id: Option<TagId>) {
         self.parent_tag_id = parent_id;
-    }
-
-    /// Set the sort order.
-    pub fn set_sort_order(&mut self, sort_order: i32) {
-        self.sort_order = sort_order;
     }
 }
 

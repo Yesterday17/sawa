@@ -1,4 +1,4 @@
-use iso_currency::Currency;
+pub use iso_currency::Currency;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Price {

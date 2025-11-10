@@ -7,11 +7,13 @@ use sawa_core::{
     repositories::ProductInstanceRepository,
 };
 
+// TODO: Owner and holder should be different
 fn create_test_instance(owner_id: UserId, variant_id: ProductVariantId) -> ProductInstance {
     ProductInstance {
         id: ProductInstanceId::new(),
         variant_id,
         owner_id,
+        holder_id: owner_id,
         status: ProductInstanceStatus::Active,
         source_order_line_item_id: PurchaseOrderLineItemId::new(),
         created_at: chrono::Utc::now(),

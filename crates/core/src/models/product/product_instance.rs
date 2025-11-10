@@ -2,8 +2,8 @@ use chrono::{DateTime, Utc};
 use uuid::{NonNilUuid, Uuid};
 
 use crate::models::{
-    product::ProductVariantId, purchase::PurchaseOrderLineItemId, transfer::OwnershipTransfer,
-    user::UserId,
+    product::ProductVariantId, purchase::PurchaseOrderLineItemId,
+    transfer::ProductInstanceTransferHistory, user::UserId,
 };
 
 /// Represents a specific, individual item of a product variant.
@@ -22,6 +22,9 @@ pub struct ProductInstance {
     /// The owner of this product instance.
     pub owner_id: UserId,
 
+    /// The holder of this product instance.
+    pub holder_id: UserId,
+
     /// Status of this instance
     pub status: ProductInstanceStatus,
 
@@ -34,7 +37,7 @@ pub struct ProductInstance {
     pub created_at: DateTime<Utc>,
 
     /// Transfer history (optional, for auditing)
-    pub transfer_history: Vec<OwnershipTransfer>,
+    pub transfer_history: Vec<ProductInstanceTransferHistory>,
 
     /// Status history
     pub status_history: Vec<ProductInstanceStatusHistory>,

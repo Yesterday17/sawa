@@ -5,5 +5,5 @@ edition.workspace = true
 
 [dependencies]
 sawa-core.workspace = true
-chrono = "0.4"
-uuid = "1"
+chrono.workspace = true
+uuid.workspace = true

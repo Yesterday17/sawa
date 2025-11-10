@@ -1,6 +1,6 @@
 use sawa_core::{
     models::{
-        misc::Price,
+        misc::{Currency, Price},
         purchase::{PurchaseOrder, PurchaseOrderId, PurchaseOrderStatus},
         user::UserId,
     },
@@ -25,7 +25,7 @@ fn create_test_order(
         items: vec![],
         shipping_address: None,
         total_price: Price {
-            currency: iso_currency::Currency::USD,
+            currency: Currency::USD,
             amount: 1000,
         },
         status,
@@ -119,7 +119,7 @@ pub async fn test_find_by_user_permission_isolation<R: PurchaseOrderRepository>(
         items: vec![],
         shipping_address: None,
         total_price: Price {
-            currency: iso_currency::Currency::USD,
+            currency: Currency::USD,
             amount: 1000,
         },
         status: PurchaseOrderStatus::Incomplete,
@@ -135,7 +135,7 @@ pub async fn test_find_by_user_permission_isolation<R: PurchaseOrderRepository>(
         items: vec![],
         shipping_address: None,
         total_price: Price {
-            currency: iso_currency::Currency::USD,
+            currency: Currency::USD,
             amount: 2000,
         },
         status: PurchaseOrderStatus::Fulfilled,
@@ -151,7 +151,7 @@ pub async fn test_find_by_user_permission_isolation<R: PurchaseOrderRepository>(
         items: vec![],
         shipping_address: None,
         total_price: Price {
-            currency: iso_currency::Currency::USD,
+            currency: Currency::USD,
             amount: 500,
         },
         status: PurchaseOrderStatus::Incomplete,
@@ -196,7 +196,7 @@ pub async fn test_find_by_user_and_status_permission<R: PurchaseOrderRepository>
         items: vec![],
         shipping_address: None,
         total_price: Price {
-            currency: iso_currency::Currency::USD,
+            currency: Currency::USD,
             amount: 1000,
         },
         status: PurchaseOrderStatus::Incomplete,
@@ -212,7 +212,7 @@ pub async fn test_find_by_user_and_status_permission<R: PurchaseOrderRepository>
         items: vec![],
         shipping_address: None,
         total_price: Price {
-            currency: iso_currency::Currency::USD,
+            currency: Currency::USD,
             amount: 1000,
         },
         status: PurchaseOrderStatus::Incomplete,

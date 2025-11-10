@@ -6,7 +6,7 @@ use std::{
 use sawa_core::{
     errors::RepositoryError,
     models::{
-        transfer::{TransactionStatus, UserTransaction, UserTransactionId},
+        transfer::{UserTransaction, UserTransactionId, UserTransactionStatus},
         user::UserId,
     },
     repositories::UserTransactionRepository,
@@ -44,7 +44,7 @@ impl UserTransactionRepository for InMemoryUserTransactionRepository {
     async fn find_by_from_user(
         &self,
         from_user_id: &UserId,
-        status: Option<TransactionStatus>,
+        status: Option<UserTransactionStatus>,
     ) -> Result<Vec<UserTransaction>, RepositoryError> {
         let transactions = self.transactions.read().unwrap();
         Ok(transactions
@@ -57,7 +57,7 @@ impl UserTransactionRepository for InMemoryUserTransactionRepository {
     async fn find_by_to_user(
         &self,
         to_user_id: &UserId,
-        status: Option<TransactionStatus>,
+        status: Option<UserTransactionStatus>,
     ) -> Result<Vec<UserTransaction>, RepositoryError> {
         let transactions = self.transactions.read().unwrap();
         Ok(transactions

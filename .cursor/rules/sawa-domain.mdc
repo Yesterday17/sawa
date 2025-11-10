@@ -58,12 +58,12 @@ Sawa is a collectible/merchandise inventory management system.
 - Has creator and receiver (may differ for group buys)
 - Embeds OrderedItems
 
-**OrderedItem:**
+**PurchaseOrderLineItem:**
 
 - Sub-entity within PurchaseOrderItem
-- Uses `seq: u32` for identification (not UUID)
+- Has its own UUID for identification and external references
 - Tracks variant → instance creation
-- Has transfer_transaction_id for auto-created transfers
+- Each line item creates one ProductInstance when fulfilled
 
 ## Status Enums in This Project
 
@@ -243,10 +243,11 @@ match user_repo.save(&user).await {
 ## Project-Specific Rules
 
 - Product and ProductVariant are separate aggregates
-- PurchaseOrder embeds PurchaseOrderItem (not IDs)
-- OrderedItem uses seq: u32 (not UUID)
+- PurchaseOrder embeds PurchaseOrderItem and PurchaseOrderLineItem (not IDs)
+- All entities use UUID as primary key (including child entities)
 - Snapshot price and mystery_box config in orders
 - History arrays don't store from_status
+- History records stored in separate tables with sequence number for ordering
 
 ## Naming Consistency
 

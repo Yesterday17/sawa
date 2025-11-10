@@ -1,14 +1,7 @@
-use std::collections::HashMap;
-
 use chrono::Utc;
 use sawa_core::{
     errors::RepositoryError,
-    models::{
-        product::ProductInstanceId,
-        purchase::{PurchaseOrder, PurchaseOrderItemStatus, PurchaseOrderStatus},
-        transfer::{TransactionStatus, UserTransaction, UserTransactionId},
-        user::UserId,
-    },
+    models::purchase::{PurchaseOrder, PurchaseOrderItemStatus, PurchaseOrderStatus},
     repositories::*,
     services::{CancelOrderError, FulfillOrderError, PurchaseOrderLifecycleService},
 };
@@ -64,7 +57,6 @@ where
         }
 
         // 5. Create ProductInstances for all line items
-        let order_owner_id = order.creator_id;
         let receiver_id = order.receiver_id;
 
         for item in &mut order.items {
@@ -106,28 +98,6 @@ where
 
             // Update item status
             item.status = PurchaseOrderItemStatus::Fulfilled;
-        }
-        // 5.1 Save order after item updates
-        self.order.save(&order).await?;
-
-        // 6. Create UserTransactions for items designated for other users
-        // 6.1 Store created transactions
-        let transactions = self
-            .create_transfer_transactions(order_owner_id, receiver_id, order.items.as_slice())
-            .await?;
-
-        // 6.2 Update transaction IDs in line items
-        for item in &mut order.items {
-            for line_item in &mut item.line_items {
-                if let Some(transaction_id) = line_item.instance_id().and_then(|instance_id| {
-                    transactions
-                        .iter()
-                        .find(|tx| tx.items.contains(&instance_id))
-                        .map(|tx| tx.id)
-                }) {
-                    line_item.set_transfer_transaction_id(transaction_id);
-                }
-            }
         }
 
         // 7. Update order status
@@ -192,62 +162,5 @@ where
         self.order.save(&order).await?;
 
         Ok(order)
-    }
-}
-
-impl<P, PV, PI, PO, UT, U, T, M> Service<P, PV, PI, PO, UT, U, T, M>
-where
-    P: ProductRepository,
-    PV: ProductVariantRepository,
-    PI: ProductInstanceRepository,
-    PO: PurchaseOrderRepository,
-    UT: UserTransactionRepository,
-    U: UserRepository,
-    T: TagRepository,
-    M: MediaRepository,
-{
-    /// Create UserTransactions for items designated for other users.
-    ///
-    /// Groups instances by target owner and creates one transaction per owner.
-    async fn create_transfer_transactions(
-        &self,
-        order_owner_id: UserId,
-        receiver_id: UserId,
-        items: &[sawa_core::models::purchase::PurchaseOrderItem],
-    ) -> Result<Vec<UserTransaction>, FulfillOrderError> {
-        let mut owner_groups: HashMap<UserId, Vec<ProductInstanceId>> = HashMap::new();
-
-        // Group instances by target owner
-        for item in items {
-            for line_item in &item.line_items {
-                let target_owner = line_item.target_owner_id(order_owner_id);
-                if let Some(instance_id) =
-                    line_item.transaction_product_instance_id(receiver_id, order_owner_id)
-                {
-                    owner_groups
-                        .entry(target_owner)
-                        .or_insert_with(Vec::new)
-                        .push(instance_id);
-                }
-            }
-        }
-
-        let transactions = owner_groups
-            .iter()
-            .map(|(target_owner, instance_ids)| UserTransaction {
-                id: UserTransactionId::new(),
-                from_user_id: receiver_id,
-                to_user_id: *target_owner,
-                items: instance_ids.clone(),
-                price: None,
-                status: TransactionStatus::Pending,
-                created_at: Utc::now(),
-                completed_at: None,
-                cancelled_at: None,
-            })
-            .collect::<Vec<_>>();
-        self.transaction.save_batch(&transactions).await?;
-
-        Ok(transactions)
     }
 }

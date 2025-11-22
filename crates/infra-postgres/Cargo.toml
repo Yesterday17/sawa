@@ -16,7 +16,10 @@ sea-orm = { version = "=2.0.0-rc.18", features = [
     "sqlx-postgres",
     "runtime-tokio-rustls",
     "macros",
+    "schema-sync",
+    "entity-registry",
 ] }
 
 [dev-dependencies]
 sawa-repository-tests.workspace = true
+tokio.workspace = true

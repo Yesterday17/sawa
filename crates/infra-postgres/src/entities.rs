@@ -29,3 +29,23 @@ pub mod prelude {
     pub use super::user_transaction::Entity as UserTransaction;
     pub use super::user_transaction_item::Entity as UserTransactionItem;
 }
+
+pub async fn sync_schema(db: &sea_orm::DatabaseConnection) -> Result<(), sea_orm::DbErr> {
+    db.get_schema_builder()
+        .register(prelude::Media)
+        .register(prelude::Product)
+        .register(prelude::ProductInstance)
+        .register(prelude::ProductInstanceStatusHistory)
+        .register(prelude::ProductInstanceTransferHistory)
+        .register(prelude::ProductVariant)
+        .register(prelude::ProductVariantTag)
+        .register(prelude::PurchaseOrder)
+        .register(prelude::PurchaseOrderItem)
+        .register(prelude::PurchaseOrderLineItem)
+        .register(prelude::Tag)
+        .register(prelude::User)
+        .register(prelude::UserTransaction)
+        .register(prelude::UserTransactionItem)
+        .sync(db)
+        .await
+}

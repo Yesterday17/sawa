@@ -22,7 +22,7 @@ pub struct Model {
 
     /// The avatar media id of the user.
     pub avatar_id: Option<Uuid>,
-    #[sea_orm(belongs_to, from = "avatar_id", to = "id")]
+    #[sea_orm(belongs_to, from = "avatar_id", to = "id", skip_fk)]
     pub avatar: HasOne<super::media::Entity>,
 
     /// The timestamp when the user was created.

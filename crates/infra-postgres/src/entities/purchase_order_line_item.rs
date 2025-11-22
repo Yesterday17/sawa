@@ -14,22 +14,22 @@ pub struct Model {
 
     /// The purchase order item this order item belongs to
     pub purchase_order_item_id: Uuid,
-    #[sea_orm(belongs_to, from = "purchase_order_item_id", to = "id")]
+    #[sea_orm(belongs_to, from = "purchase_order_item_id", to = "id", skip_fk)]
     pub purchase_order_item: HasOne<super::purchase_order_item::Entity>,
 
     /// The variant to create instance for
     pub variant_id: Uuid,
-    #[sea_orm(belongs_to, from = "variant_id", to = "id")]
+    #[sea_orm(belongs_to, from = "variant_id", to = "id", skip_fk)]
     pub variant: HasOne<super::product_variant::Entity>,
 
     /// The ultimate owner of instance created for this line item
     pub owner_id: Uuid,
-    #[sea_orm(belongs_to, from = "owner_id", to = "id")]
+    #[sea_orm(belongs_to, from = "owner_id", to = "id", skip_fk)]
     pub owner: HasOne<super::user::Entity>,
 
     /// The created instance (None until fulfilled)
     pub instance_id: Option<Uuid>,
-    #[sea_orm(belongs_to, from = "instance_id", to = "id")]
+    #[sea_orm(belongs_to, from = "instance_id", to = "id", skip_fk)]
     pub instance: HasOne<super::product_instance::Entity>,
 
     /// The timestamp when the instance was created

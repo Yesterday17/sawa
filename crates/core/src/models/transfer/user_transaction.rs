@@ -1,7 +1,7 @@
-use chrono::{DateTime, Utc};
-use uuid::{NonNilUuid, Uuid};
-
 use crate::models::{product::ProductInstanceId, user::UserId};
+use chrono::{DateTime, Utc};
+
+crate::create_entity_id!(UserTransactionId);
 
 #[derive(Debug, Clone)]
 pub struct UserTransaction {
@@ -25,15 +25,6 @@ pub struct UserTransaction {
     pub completed_at: Option<DateTime<Utc>>,
     /// The timestamp when the transaction was cancelled.
     pub cancelled_at: Option<DateTime<Utc>>,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct UserTransactionId(pub NonNilUuid);
-
-impl UserTransactionId {
-    pub fn new() -> Self {
-        Self(NonNilUuid::new(Uuid::now_v7()).expect("UUID v7 should never be nil"))
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

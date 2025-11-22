@@ -21,7 +21,7 @@ pub struct Model {
 
     /// The product instance this transfer belongs to
     pub product_instance_id: Uuid,
-    #[sea_orm(belongs_to, from = "product_instance_id", to = "id")]
+    #[sea_orm(belongs_to, from = "product_instance_id", to = "id", skip_fk)]
     pub product_instance: HasOne<super::product_instance::Entity>,
 
     /// The original owner
@@ -30,13 +30,20 @@ pub struct Model {
         belongs_to,
         from = "from_owner_id",
         to = "id",
-        relation_enum = "FromOwner"
+        relation_enum = "FromOwner",
+        skip_fk
     )]
     pub from_owner: HasOne<super::user::Entity>,
 
     /// The original holder
     pub to_owner_id: Uuid,
-    #[sea_orm(belongs_to, from = "to_owner_id", to = "id", relation_enum = "ToOwner")]
+    #[sea_orm(
+        belongs_to,
+        from = "to_owner_id",
+        to = "id",
+        relation_enum = "ToOwner",
+        skip_fk
+    )]
     pub to_owner: HasOne<super::user::Entity>,
 
     /// The new owner
@@ -45,7 +52,8 @@ pub struct Model {
         belongs_to,
         from = "from_holder_id",
         to = "id",
-        relation_enum = "FromHolder"
+        relation_enum = "FromHolder",
+        skip_fk
     )]
     pub from_holder: HasOne<super::user::Entity>,
     /// The new holder
@@ -54,7 +62,8 @@ pub struct Model {
         belongs_to,
         from = "to_holder_id",
         to = "id",
-        relation_enum = "ToHolder"
+        relation_enum = "ToHolder",
+        skip_fk
     )]
     pub to_holder: HasOne<super::user::Entity>,
 

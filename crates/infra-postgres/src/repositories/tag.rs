@@ -43,7 +43,7 @@ impl TagRepository for PostgresTagRepository {
 
     async fn find_by_name_prefix(&self, prefix: &str) -> Result<Vec<Tag>, RepositoryError> {
         let entities = Entity::find()
-            .filter(Column::Name.like(&format!("{}%", prefix)))
+            .filter(Column::Name.ilike(&format!("{}%", prefix)))
             .all(&self.db)
             .await
             .map_err(DatabaseError)?;

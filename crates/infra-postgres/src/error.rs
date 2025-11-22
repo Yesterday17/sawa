@@ -8,7 +8,7 @@ impl From<DatabaseError> for RepositoryError {
         if let Some(err) = wrapped.0.sql_err() {
             match err {
                 SqlErr::UniqueConstraintViolation(e) => Self::Duplicated(e),
-                SqlErr::ForeignKeyConstraintViolation(_) => todo!(),
+                SqlErr::ForeignKeyConstraintViolation(e) => Self::Duplicated(e),
                 err => RepositoryError::Internal(err.to_string()),
             }
         } else {

@@ -8,4 +8,4 @@ sawa-core.workspace = true
 chrono.workspace = true
 uuid.workspace = true
 url.workspace = true
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tokio.workspace = true

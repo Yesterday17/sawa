@@ -21,16 +21,16 @@ pub struct Model {
 
     /// The order this item belongs to
     pub purchase_order_id: Uuid,
-    #[sea_orm(belongs_to, from = "purchase_order_id", to = "id")]
+    #[sea_orm(belongs_to, from = "purchase_order_id", to = "id", skip_fk)]
     pub purchase_order: HasOne<super::purchase_order::Entity>,
 
     /// The variant of the product to purchase
     pub purchased_variant_id: Uuid,
-    #[sea_orm(belongs_to, from = "purchased_variant_id", to = "id")]
+    #[sea_orm(belongs_to, from = "purchased_variant_id", to = "id", skip_fk)]
     pub purchased_variant: HasOne<super::product_variant::Entity>,
 
     /// All items in this order item
-    #[sea_orm(has_many)]
+    #[sea_orm(has_many, skip_fk)]
     pub line_items: HasMany<super::purchase_order_line_item::Entity>,
 
     /// Item status

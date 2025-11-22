@@ -22,7 +22,7 @@ pub struct Model {
 
     /// The ID of the product to which this variant belongs.
     pub product_id: Uuid,
-    #[sea_orm(belongs_to, from = "product_id", to = "id")]
+    #[sea_orm(belongs_to, from = "product_id", to = "id", skip_fk)]
     pub product: HasOne<super::product::Entity>,
 
     /// The name of the product variant.
@@ -35,7 +35,7 @@ pub struct Model {
     pub medias: Vec<Uuid>,
 
     /// Tags associated with this variant (characters, series, themes, etc.).
-    #[sea_orm(has_many, via = "product_variant_tag")]
+    #[sea_orm(has_many, via = "product_variant_tag", skip_fk)]
     pub tags: HasMany<super::tag::Entity>,
 
     /// The price of the product variant.
@@ -53,7 +53,7 @@ pub struct Model {
     pub sort_order: i32,
 
     /// A product variant can have many instances.
-    #[sea_orm(has_many)]
+    #[sea_orm(has_many, skip_fk)]
     pub instances: HasMany<super::product_instance::Entity>,
 }
 

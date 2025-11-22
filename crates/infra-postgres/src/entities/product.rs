@@ -22,7 +22,7 @@ pub struct Model {
     pub medias: Vec<Uuid>,
 
     /// A product can have many variants.
-    #[sea_orm(has_many)]
+    #[sea_orm(has_many, skip_fk)]
     pub variants: HasMany<super::product_variant::Entity>,
 }
 

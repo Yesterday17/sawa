@@ -20,11 +20,11 @@ pub struct Model {
 
     /// Parent tag for hierarchical organization (optional).
     pub parent_tag_id: Option<Uuid>,
-    #[sea_orm(belongs_to, from = "parent_tag_id", to = "id")]
+    #[sea_orm(belongs_to, from = "parent_tag_id", to = "id", skip_fk)]
     pub parent_tag: HasOne<super::tag::Entity>,
 
     /// Product variants associated with this tag.
-    #[sea_orm(has_many, via = "product_variant_tag")]
+    #[sea_orm(has_many, via = "product_variant_tag", skip_fk)]
     pub product_variants: HasMany<super::product_variant::Entity>,
 }
 

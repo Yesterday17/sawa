@@ -16,7 +16,7 @@ pub struct Model {
     pub id: Uuid,
 
     pub product_instance_id: Uuid,
-    #[sea_orm(belongs_to, from = "product_instance_id", to = "id")]
+    #[sea_orm(belongs_to, from = "product_instance_id", to = "id", skip_fk)]
     pub product_instance: HasOne<super::product_instance::Entity>,
 
     /// The new status after this change

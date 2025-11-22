@@ -22,7 +22,13 @@ pub struct Model {
 
     /// The user who created the order.
     pub creator_id: Uuid,
-    #[sea_orm(belongs_to, relation_enum = "Creator", from = "creator_id", to = "id")]
+    #[sea_orm(
+        belongs_to,
+        relation_enum = "Creator",
+        from = "creator_id",
+        to = "id",
+        skip_fk
+    )]
     pub creator: HasOne<super::user::Entity>,
 
     /// The user who will receive the items.
@@ -31,12 +37,13 @@ pub struct Model {
         belongs_to,
         relation_enum = "Receiver",
         from = "receiver_id",
-        to = "id"
+        to = "id",
+        skip_fk
     )]
     pub receiver: HasOne<super::user::Entity>,
 
     /// The items being purchased
-    #[sea_orm(has_many)]
+    #[sea_orm(has_many, skip_fk)]
     pub items: HasMany<super::purchase_order_item::Entity>,
 
     /// Shipping/delivery address (if physical goods)

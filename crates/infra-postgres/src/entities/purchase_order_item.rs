@@ -1,4 +1,4 @@
-use crate::traits::{TryIntoDomainModel, TryIntoDomainModelSimple};
+use crate::traits::TryIntoDomainModelSimple;
 use sawa_core::{
     errors::RepositoryError,
     models::{
@@ -6,7 +6,7 @@ use sawa_core::{
         purchase::{PurchaseOrderItem, PurchaseOrderItemStatus},
     },
 };
-use sea_orm::entity::prelude::*;
+use sea_orm::{ActiveValue::Set, entity::prelude::*};
 use std::str::FromStr;
 
 ///
@@ -41,7 +41,7 @@ pub struct Model {
 
     /// Price at time of order (snapshot, immutable)
     pub unit_price_currency: Option<String>,
-    pub unit_price_amount: Option<u64>,
+    pub unit_price_amount: Option<u32>,
 }
 
 impl ActiveModelBehavior for ActiveModel {}
@@ -81,20 +81,17 @@ impl From<DBPurchaseOrderItemStatus> for PurchaseOrderItemStatus {
     }
 }
 
-impl TryIntoDomainModel<PurchaseOrderItem> for Model {
-    type Relation = Vec<super::purchase_order_line_item::Model>;
-
-    fn try_into_domain_model(
-        self,
-        line_items: Self::Relation,
-    ) -> Result<PurchaseOrderItem, RepositoryError> {
+impl TryIntoDomainModelSimple<PurchaseOrderItem> for ModelEx {
+    fn try_into_domain_model_simple(self) -> Result<PurchaseOrderItem, RepositoryError> {
+        let line_items = self
+            .line_items
+            .into_iter()
+            .map(TryIntoDomainModelSimple::try_into_domain_model_simple)
+            .collect::<Result<Vec<_>, _>>()?;
         Ok(PurchaseOrderItem {
             id: self.id.try_into()?,
             purchased_variant_id: self.purchased_variant_id.try_into()?,
-            line_items: line_items
-                .into_iter()
-                .map(TryIntoDomainModelSimple::try_into_domain_model_simple)
-                .collect::<Result<_, _>>()?,
+            line_items,
             status: self.status.into(),
             quantity: self.quantity.try_into()?,
             unit_price: match (self.unit_price_currency, self.unit_price_amount) {
@@ -105,5 +102,22 @@ impl TryIntoDomainModel<PurchaseOrderItem> for Model {
                 _ => None,
             },
         })
+    }
+}
+
+impl From<(&PurchaseOrderItem, Uuid)> for ActiveModel {
+    fn from((item, purchase_order_id): (&PurchaseOrderItem, Uuid)) -> Self {
+        Self {
+            id: Set(Uuid::from(item.id.0)),
+            purchase_order_id: Set(purchase_order_id),
+            purchased_variant_id: Set(Uuid::from(item.purchased_variant_id.0)),
+            status: Set(item.status.into()),
+            quantity: Set(item.quantity.get()),
+            unit_price_currency: Set(item
+                .unit_price
+                .as_ref()
+                .map(|p| p.currency.code().to_string())),
+            unit_price_amount: Set(item.unit_price.as_ref().map(|p| p.amount)),
+        }
     }
 }

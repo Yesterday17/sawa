@@ -40,7 +40,7 @@ pub struct Model {
 
     /// The price of the product variant.
     pub price_currency: Option<String>,
-    pub price_amount: Option<u64>,
+    pub price_amount: Option<u32>,
 
     /// The mystery box configuration of the product variant.
     #[sea_orm(column_type = "JsonBinary")]
@@ -113,7 +113,7 @@ impl TryFrom<&ProductVariant> for crate::entities::product_variant::ActiveModel 
             .map(|config| DBMysteryBoxConfig(config.clone()));
 
         let (price_currency, price_amount) = match &variant.price {
-            Some(price) => (Some(price.currency.to_string()), Some(price.amount)),
+            Some(price) => (Some(price.currency.code().to_string()), Some(price.amount)),
             None => (None, None),
         };
 

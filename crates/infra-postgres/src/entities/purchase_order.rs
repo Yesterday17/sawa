@@ -1,4 +1,4 @@
-use crate::traits::TryIntoDomainModel;
+use crate::traits::TryIntoDomainModelSimple;
 use sawa_core::{
     errors::RepositoryError,
     models::{
@@ -6,7 +6,7 @@ use sawa_core::{
         purchase::{PurchaseOrder, PurchaseOrderStatus},
     },
 };
-use sea_orm::entity::prelude::*;
+use sea_orm::{ActiveValue::Set, entity::prelude::*};
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
@@ -52,7 +52,7 @@ pub struct Model {
 
     /// Total amount paid
     pub total_price_currency: String,
-    pub total_price_amount: u64,
+    pub total_price_amount: i64,
 
     /// Current status of the order
     pub status: DBPurchaseOrderStatus,
@@ -118,33 +118,47 @@ impl DBAddress {
     }
 }
 
-impl TryIntoDomainModel<PurchaseOrder> for Model {
-    type Relation = Vec<(
-        super::purchase_order_item::Model,
-        Vec<super::purchase_order_line_item::Model>,
-    )>;
-
-    fn try_into_domain_model(
-        self,
-        items: Self::Relation,
-    ) -> Result<PurchaseOrder, RepositoryError> {
+impl TryIntoDomainModelSimple<PurchaseOrder> for ModelEx {
+    fn try_into_domain_model_simple(self) -> Result<PurchaseOrder, RepositoryError> {
+        let items = self
+            .items
+            .into_iter()
+            .map(TryIntoDomainModelSimple::try_into_domain_model_simple)
+            .collect::<Result<Vec<_>, _>>()?;
         Ok(PurchaseOrder {
             id: self.id.try_into()?,
             creator_id: self.creator_id.try_into()?,
             receiver_id: self.receiver_id.try_into()?,
-            items: items
-                .into_iter()
-                .map(|(item, children)| item.try_into_domain_model(children))
-                .collect::<Result<Vec<_>, _>>()?,
+            items,
             shipping_address: self.shipping_address.map(|addr| addr.into_inner()),
             total_price: Price {
                 currency: Currency::from_str(&self.total_price_currency)?,
-                amount: self.total_price_amount,
+                amount: self.total_price_amount as u32,
             },
             status: self.status.into(),
             created_at: self.created_at,
             completed_at: self.completed_at,
             cancelled_at: self.cancelled_at,
         })
+    }
+}
+
+impl From<&PurchaseOrder> for ActiveModel {
+    fn from(order: &PurchaseOrder) -> Self {
+        Self {
+            id: Set(Uuid::from(order.id.0)),
+            creator_id: Set(Uuid::from(order.creator_id.0)),
+            receiver_id: Set(Uuid::from(order.receiver_id.0)),
+            shipping_address: Set(order
+                .shipping_address
+                .as_ref()
+                .map(|addr| DBAddress::new(addr.clone()))),
+            total_price_currency: Set(order.total_price.currency.code().to_string()),
+            total_price_amount: Set(order.total_price.amount as i64),
+            status: Set(order.status.into()),
+            created_at: Set(order.created_at),
+            completed_at: Set(order.completed_at),
+            cancelled_at: Set(order.cancelled_at),
+        }
     }
 }

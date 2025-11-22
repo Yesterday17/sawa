@@ -1,5 +1,5 @@
 use sawa_core::errors::RepositoryError;
-use sea_orm::SqlErr;
+use sea_orm::{DbErr, SqlErr, TransactionError};
 
 pub struct DatabaseError(pub sea_orm::DbErr);
 
@@ -13,6 +13,15 @@ impl From<DatabaseError> for RepositoryError {
             }
         } else {
             RepositoryError::Internal(wrapped.0.to_string())
+        }
+    }
+}
+
+impl From<TransactionError<DbErr>> for DatabaseError {
+    fn from(wrapped: TransactionError<DbErr>) -> Self {
+        match wrapped {
+            TransactionError::Connection(e) => DatabaseError(e),
+            TransactionError::Transaction(e) => DatabaseError(e),
         }
     }
 }

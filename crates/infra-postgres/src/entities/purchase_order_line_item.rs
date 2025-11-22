@@ -1,6 +1,6 @@
-use crate::traits::TryIntoDomainModelSimple;
+use crate::{error::DatabaseError, traits::TryIntoDomainModelSimple};
 use sawa_core::{errors::RepositoryError, models::purchase::PurchaseOrderLineItem};
-use sea_orm::entity::prelude::*;
+use sea_orm::{ActiveValue::Set, TryIntoModel, entity::prelude::*};
 
 ///
 /// PurchaseOrderLineItem entity
@@ -48,5 +48,26 @@ impl TryIntoDomainModelSimple<PurchaseOrderLineItem> for Model {
             instance_id: self.instance_id.map(TryInto::try_into).transpose()?,
             fulfilled_at: self.fulfilled_at,
         })
+    }
+}
+
+impl TryIntoDomainModelSimple<PurchaseOrderLineItem> for ModelEx {
+    fn try_into_domain_model_simple(self) -> Result<PurchaseOrderLineItem, RepositoryError> {
+        self.try_into_model()
+            .map_err(DatabaseError)?
+            .try_into_domain_model_simple()
+    }
+}
+
+impl From<&PurchaseOrderLineItem> for ActiveModel {
+    fn from(line_item: &PurchaseOrderLineItem) -> Self {
+        Self {
+            id: Set(Uuid::from(line_item.id.0)),
+            purchase_order_item_id: Set(Uuid::from(line_item.purchase_order_item_id.0)),
+            variant_id: Set(Uuid::from(line_item.variant_id.0)),
+            owner_id: Set(Uuid::from(line_item.owner_id.0)),
+            instance_id: Set(line_item.instance_id.map(|id| Uuid::from(id.0))),
+            fulfilled_at: Set(line_item.fulfilled_at),
+        }
     }
 }

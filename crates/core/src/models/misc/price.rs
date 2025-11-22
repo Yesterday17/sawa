@@ -6,5 +6,5 @@ pub struct Price {
     pub currency: Currency,
 
     /// The amount of the price in the smallest currency unit (e.g., cents for USD).
-    pub amount: u64,
+    pub amount: u32,
 }

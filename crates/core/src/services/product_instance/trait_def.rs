@@ -14,7 +14,9 @@ pub trait ProductInstanceService: Send + Sync + 'static {
         req: GetProductInstanceRequest,
     ) -> impl Future<Output = Result<ProductInstance, GetProductInstanceError>> + Send;
 
-    /// List product instances owned by a user.
+    /// List product instances owned or held by a user.
+    ///
+    /// Can query by owner_id or holder_id depending on the request.
     fn list_product_instances(
         &self,
         req: ListProductInstancesRequest,

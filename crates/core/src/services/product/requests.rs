@@ -29,7 +29,7 @@ pub struct CreateProductVariantRequest {
     pub name: NonEmptyString,
     pub description: String,
     pub medias: Vec<MediaId>,
-    pub tags: Vec<TagId>,
+    pub tags: Vec<NonEmptyString>,
     pub price: Option<Price>,
     pub mystery_box: Option<MysteryBoxConfig>,
     pub sort_order: i32,

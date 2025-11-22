@@ -94,7 +94,8 @@ where
         }
 
         for tag in req.tags {
-            variant.add_tag(tag);
+            let tag = self.get_or_create_tag_by_name(tag, None, None).await?;
+            variant.add_tag(tag.id);
         }
 
         // 3. Save

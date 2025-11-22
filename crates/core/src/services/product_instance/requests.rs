@@ -8,9 +8,17 @@ pub struct GetProductInstanceRequest {
     pub id: ProductInstanceId,
 }
 
+pub enum ListProductInstancesQueryBy {
+    Owner,
+    Holder,
+}
+
 /// Request to list product instances.
 pub struct ListProductInstancesRequest {
-    pub owner_id: UserId,
+    /// The user ID to query by (either owner or holder depending on `query_by`).
+    pub user_id: UserId,
+    /// Whether to query by owner_id or holder_id.
+    pub query_by: ListProductInstancesQueryBy,
     pub variant_id: Option<ProductVariantId>,
     pub status: Option<ProductInstanceStatus>,
 }

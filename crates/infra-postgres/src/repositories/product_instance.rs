@@ -119,6 +119,66 @@ impl ProductInstanceRepository for PostgresProductInstanceRepository {
             .collect()
     }
 
+    async fn find_by_holder(
+        &self,
+        holder_id: &UserId,
+    ) -> Result<Vec<ProductInstance>, RepositoryError> {
+        let entities = product_instance::Entity::load()
+            .filter(product_instance::Column::HolderId.eq(Uuid::from(holder_id.0)))
+            .with(product_instance_transfer_history::Entity)
+            .with(product_instance_status_history::Entity)
+            .all(&self.db)
+            .await
+            .map_err(DatabaseError)?;
+
+        entities
+            .into_iter()
+            .map(TryIntoDomainModelSimple::try_into_domain_model_simple)
+            .collect()
+    }
+
+    async fn find_by_holder_and_variant(
+        &self,
+        holder_id: &UserId,
+        variant_id: &ProductVariantId,
+    ) -> Result<Vec<ProductInstance>, RepositoryError> {
+        let entities = product_instance::Entity::load()
+            .filter(product_instance::Column::HolderId.eq(Uuid::from(holder_id.0)))
+            .filter(product_instance::Column::VariantId.eq(Uuid::from(variant_id.0)))
+            .with(product_instance_transfer_history::Entity)
+            .with(product_instance_status_history::Entity)
+            .all(&self.db)
+            .await
+            .map_err(DatabaseError)?;
+
+        entities
+            .into_iter()
+            .map(TryIntoDomainModelSimple::try_into_domain_model_simple)
+            .collect()
+    }
+
+    async fn find_by_holder_and_status(
+        &self,
+        holder_id: &UserId,
+        status: ProductInstanceStatus,
+    ) -> Result<Vec<ProductInstance>, RepositoryError> {
+        let db_status: crate::entities::product_instance::DBProductInstanceStatus = status.into();
+
+        let entities = product_instance::Entity::load()
+            .filter(product_instance::Column::HolderId.eq(Uuid::from(holder_id.0)))
+            .filter(product_instance::Column::Status.eq(db_status))
+            .with(product_instance_transfer_history::Entity)
+            .with(product_instance_status_history::Entity)
+            .all(&self.db)
+            .await
+            .map_err(DatabaseError)?;
+
+        entities
+            .into_iter()
+            .map(TryIntoDomainModelSimple::try_into_domain_model_simple)
+            .collect()
+    }
+
     async fn save(&self, instance: &ProductInstance) -> Result<(), RepositoryError> {
         let instance_id = Uuid::from(instance.id.0);
         let instance_active_model: product_instance::ActiveModel = instance.into();

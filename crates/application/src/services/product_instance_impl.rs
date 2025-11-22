@@ -7,7 +7,8 @@ use sawa_core::{
     repositories::*,
     services::{
         ConsumeProductInstanceError, GetProductInstanceError, ListProductInstancesError,
-        MarkProductInstanceDestroyedError, MarkProductInstanceLostError, ProductInstanceService,
+        ListProductInstancesQueryBy, MarkProductInstanceDestroyedError,
+        MarkProductInstanceLostError, ProductInstanceService,
     },
 };
 
@@ -38,24 +39,46 @@ where
         &self,
         req: sawa_core::services::ListProductInstancesRequest,
     ) -> Result<Vec<ProductInstance>, ListProductInstancesError> {
-        let instances = if let Some(variant_id) = req.variant_id {
-            let mut instances = self
-                .product_instance
-                .find_by_owner_and_variant(&req.owner_id, &variant_id)
-                .await?;
+        let instances = match req.query_by {
+            ListProductInstancesQueryBy::Owner => {
+                if let Some(variant_id) = req.variant_id {
+                    let mut instances = self
+                        .product_instance
+                        .find_by_owner_and_variant(&req.user_id, &variant_id)
+                        .await?;
 
-            if let Some(status) = req.status {
-                instances.retain(|i| i.status == status);
+                    if let Some(status) = req.status {
+                        instances.retain(|i| i.status == status);
+                    }
+                    instances
+                } else if let Some(status) = req.status {
+                    self.product_instance
+                        .find_by_owner_and_status(&req.user_id, status)
+                        .await?
+                } else {
+                    self.product_instance.find_by_owner(&req.user_id).await?
+                }
             }
-            instances
-        } else if let Some(status) = req.status {
-            self.product_instance
-                .find_by_owner_and_status(&req.owner_id, status)
-                .await?
-        } else {
-            self.product_instance.find_by_owner(&req.owner_id).await?
-        };
+            ListProductInstancesQueryBy::Holder => {
+                if let Some(variant_id) = req.variant_id {
+                    let mut instances = self
+                        .product_instance
+                        .find_by_holder_and_variant(&req.user_id, &variant_id)
+                        .await?;
 
+                    if let Some(status) = req.status {
+                        instances.retain(|i| i.status == status);
+                    }
+                    instances
+                } else if let Some(status) = req.status {
+                    self.product_instance
+                        .find_by_holder_and_status(&req.user_id, status)
+                        .await?
+                } else {
+                    self.product_instance.find_by_holder(&req.user_id).await?
+                }
+            }
+        };
         Ok(instances)
     }
 

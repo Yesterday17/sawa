@@ -1,4 +1,5 @@
 use sawa_core::{
+    errors::RepositoryError,
     models::misc::{NonEmptyString, Tag, TagId},
     repositories::*,
     services::{CreateTagError, CreateTagRequest, GetTagError, GetTagRequest, TagService},
@@ -25,8 +26,9 @@ where
     }
 
     async fn create_tag(&self, req: CreateTagRequest) -> Result<Tag, CreateTagError> {
-        self.get_or_create_tag_by_name(req.name, Some(req.description), req.parent_id)
-            .await
+        Ok(self
+            .get_or_create_tag_by_name(req.name, Some(req.description), req.parent_id)
+            .await?)
     }
 }
 
@@ -47,7 +49,7 @@ where
     /// Get or create a tag by name (lazy creation).
     ///
     /// This method:
-    /// 1. Searches for an existing tag with the given name (case-insensitive)
+    /// 1. Searches for an existing tag with the given name (case-sensitive)
     /// 2. Returns the existing tag if found
     /// 3. Creates a new tag if not found
     ///
@@ -70,7 +72,7 @@ where
         name: NonEmptyString,
         description: Option<String>,
         parent_id: Option<TagId>,
-    ) -> Result<Tag, CreateTagError> {
+    ) -> Result<Tag, RepositoryError> {
         // Search for existing tag by name (case-insensitive)
         let existing_tags = self.tag.find_by_name(name.as_str()).await?;
         if let Some(existing) = existing_tags {

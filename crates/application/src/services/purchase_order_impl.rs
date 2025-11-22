@@ -119,7 +119,7 @@ where
         } else {
             // Regular item: create line items for each quantity
             (0..req.quantity.get())
-                .map(|_| PurchaseOrderLineItem::new(req.variant_id, item_id, order.receiver_id))
+                .map(|_| PurchaseOrderLineItem::new(req.variant_id, item_id, req.owner_id))
                 .collect()
         };
 
@@ -215,7 +215,7 @@ where
         item.line_items = req
             .received_variants
             .into_iter()
-            .map(|variant_id| PurchaseOrderLineItem::new(variant_id, item.id, order.receiver_id))
+            .map(|variant_id| PurchaseOrderLineItem::new(variant_id, item.id, req.owner_id))
             .collect();
 
         // Update item status to Pending

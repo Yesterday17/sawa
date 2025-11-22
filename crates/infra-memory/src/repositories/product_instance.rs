@@ -93,6 +93,44 @@ impl ProductInstanceRepository for InMemoryProductInstanceRepository {
             .collect())
     }
 
+    async fn find_by_holder(
+        &self,
+        holder_id: &UserId,
+    ) -> Result<Vec<ProductInstance>, RepositoryError> {
+        let instances = self.instances.read().unwrap();
+        Ok(instances
+            .values()
+            .filter(|i| i.holder_id == *holder_id)
+            .cloned()
+            .collect())
+    }
+
+    async fn find_by_holder_and_variant(
+        &self,
+        holder_id: &UserId,
+        variant_id: &ProductVariantId,
+    ) -> Result<Vec<ProductInstance>, RepositoryError> {
+        let instances = self.instances.read().unwrap();
+        Ok(instances
+            .values()
+            .filter(|i| i.holder_id == *holder_id && i.variant_id == *variant_id)
+            .cloned()
+            .collect())
+    }
+
+    async fn find_by_holder_and_status(
+        &self,
+        holder_id: &UserId,
+        status: ProductInstanceStatus,
+    ) -> Result<Vec<ProductInstance>, RepositoryError> {
+        let instances = self.instances.read().unwrap();
+        Ok(instances
+            .values()
+            .filter(|i| i.holder_id == *holder_id && i.status == status)
+            .cloned()
+            .collect())
+    }
+
     async fn save(&self, instance: &ProductInstance) -> Result<(), RepositoryError> {
         let mut instances = self.instances.write().unwrap();
         instances.insert(instance.id, instance.clone());

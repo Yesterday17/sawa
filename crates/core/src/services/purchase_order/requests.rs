@@ -35,6 +35,9 @@ pub struct AddOrderItemRequest {
     /// The variant to purchase.
     pub variant_id: ProductVariantId,
 
+    /// The user who will own the instance created for this line item.
+    pub owner_id: UserId,
+
     /// Quantity to purchase.
     pub quantity: NonZeroU32,
 
@@ -52,6 +55,9 @@ pub struct SubmitMysteryBoxResultsRequest {
 
     /// The specific order item (mystery box).
     pub order_item_id: PurchaseOrderItemId,
+
+    /// The user who will own the instance created for this line item.
+    pub owner_id: UserId,
 
     /// What the user received from opening the box.
     pub received_variants: Vec<ProductVariantId>,

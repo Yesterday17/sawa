@@ -42,6 +42,26 @@ pub trait ProductInstanceRepository: Send + Sync + 'static {
         status: ProductInstanceStatus,
     ) -> impl Future<Output = Result<Vec<ProductInstance>, RepositoryError>> + Send;
 
+    /// Find all instances held by a user.
+    fn find_by_holder(
+        &self,
+        holder_id: &UserId,
+    ) -> impl Future<Output = Result<Vec<ProductInstance>, RepositoryError>> + Send;
+
+    /// Find all instances of a specific variant held by a user.
+    fn find_by_holder_and_variant(
+        &self,
+        holder_id: &UserId,
+        variant_id: &ProductVariantId,
+    ) -> impl Future<Output = Result<Vec<ProductInstance>, RepositoryError>> + Send;
+
+    /// Find all instances held by a user with a specific status.
+    fn find_by_holder_and_status(
+        &self,
+        holder_id: &UserId,
+        status: ProductInstanceStatus,
+    ) -> impl Future<Output = Result<Vec<ProductInstance>, RepositoryError>> + Send;
+
     /// Save an instance (create or update).
     fn save(
         &self,

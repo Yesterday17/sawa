@@ -4,7 +4,7 @@ use crate::{
 };
 use sawa_core::{
     errors::RepositoryError,
-    models::user::{Email, User, UserId, Username},
+    models::user::{Email, User, UserId, UserUpdate, Username},
     repositories::UserRepository,
 };
 use sea_orm::{QueryFilter, prelude::*};
@@ -49,24 +49,24 @@ impl UserRepository for PostgresUserRepository {
         entity.map(|e| e.try_into()).transpose()
     }
 
-    async fn save(&self, user: User) -> Result<User, RepositoryError> {
+    async fn create(&self, user: User) -> Result<User, RepositoryError> {
         let active_model: crate::entities::user::ActiveModel = user.into();
 
         let user = Entity::insert(active_model)
-            .on_conflict(
-                sea_orm::sea_query::OnConflict::column(Column::Id)
-                    .update_columns([
-                        Column::Username,
-                        Column::Email,
-                        Column::PasswordHash,
-                        Column::AvatarId,
-                    ])
-                    .to_owned(),
-            )
             .exec_with_returning(&self.db)
             .await
             .map_err(DatabaseError)?;
 
+        Ok(user.try_into()?)
+    }
+
+    async fn update(&self, user: UserUpdate) -> Result<User, RepositoryError> {
+        let active_model: crate::entities::user::ActiveModel = user.into();
+
+        let user = Entity::update(active_model)
+            .exec(&self.db)
+            .await
+            .map_err(DatabaseError)?;
         Ok(user.try_into()?)
     }
 

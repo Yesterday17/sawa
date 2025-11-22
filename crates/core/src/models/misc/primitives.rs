@@ -48,6 +48,18 @@ impl TryFrom<String> for NonEmptyString {
     }
 }
 
+impl TryFrom<&str> for NonEmptyString {
+    type Error = EmptyStringError;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        if value.is_empty() {
+            Err(EmptyStringError::InvalidDbString)
+        } else {
+            Ok(NonEmptyString(value.to_string()))
+        }
+    }
+}
+
 impl From<NonEmptyString> for String {
     fn from(value: NonEmptyString) -> Self {
         value.0

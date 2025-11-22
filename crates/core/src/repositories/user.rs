@@ -1,6 +1,6 @@
 use crate::{
     errors::RepositoryError,
-    models::user::{Email, User, UserId, Username},
+    models::user::{Email, User, UserId, UserUpdate, Username},
 };
 
 /// Repository for the User aggregate.
@@ -26,8 +26,14 @@ pub trait UserRepository: Send + Sync + 'static {
         username: &Username,
     ) -> impl Future<Output = Result<Option<User>, RepositoryError>> + Send;
 
-    /// Create or update a user.
-    fn save(&self, user: User) -> impl Future<Output = Result<User, RepositoryError>> + Send;
+    /// Create a new user.
+    fn create(&self, user: User) -> impl Future<Output = Result<User, RepositoryError>> + Send;
+
+    /// Update an existing user.
+    fn update(
+        &self,
+        user: UserUpdate,
+    ) -> impl Future<Output = Result<User, RepositoryError>> + Send;
 
     /// Delete a user by their ID.
     ///

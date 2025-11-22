@@ -300,6 +300,11 @@ impl ProductVariantRepository for PostgresProductVariantRepository {
             .exec(&self.db)
             .await
             .map_err(DatabaseError)?;
+        product_variant_tag::Entity::delete_many()
+            .filter(product_variant_tag::Column::ProductVariantId.eq(Uuid::from(id.0)))
+            .exec(&self.db)
+            .await
+            .map_err(DatabaseError)?;
 
         Ok(())
     }

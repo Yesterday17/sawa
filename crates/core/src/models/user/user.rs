@@ -31,3 +31,11 @@ pub struct Username(pub String);
 
 #[derive(Debug, Clone)]
 pub struct Email(pub String);
+
+pub struct UserUpdate {
+    pub id: UserId,
+    pub username: Option<Username>,
+    pub email: Option<Email>,
+    pub password_hash: Option<NonEmptyString>,
+    pub avatar: Option<MediaId>,
+}

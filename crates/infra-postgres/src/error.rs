@@ -12,7 +12,14 @@ impl From<DatabaseError> for RepositoryError {
                 err => RepositoryError::Internal(err.to_string()),
             }
         } else {
-            RepositoryError::Internal(wrapped.0.to_string())
+            match wrapped.0 {
+                DbErr::RecordNotInserted => {
+                    RepositoryError::Duplicated("Record not inserted".to_string())
+                }
+                DbErr::RecordNotUpdated => RepositoryError::NotFound,
+                DbErr::RecordNotFound(_) => RepositoryError::NotFound,
+                _ => RepositoryError::Internal(wrapped.0.to_string()),
+            }
         }
     }
 }

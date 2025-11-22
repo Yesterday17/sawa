@@ -2,6 +2,7 @@
 macro_rules! create_entity_id {
     ($name: ident) => {
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+        #[serde(transparent)]
         pub struct $name(pub uuid::NonNilUuid);
 
         impl $name {

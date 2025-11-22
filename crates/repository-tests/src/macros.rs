@@ -225,6 +225,12 @@ macro_rules! test_all_repositories {
             }
 
             #[$crate::tokio::test]
+            async fn duplicate_and_not_found() {
+                let repo = $user_repo;
+                $crate::suites::user::test_duplicate_and_not_found(repo).await;
+            }
+
+            #[$crate::tokio::test]
             async fn delete() {
                 let repo = $user_repo;
                 $crate::suites::user::test_delete(repo).await;

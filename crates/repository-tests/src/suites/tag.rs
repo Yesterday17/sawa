@@ -1,19 +1,29 @@
-use sawa_core::{
-    models::misc::{NonEmptyString, Tag},
-    repositories::TagRepository,
-};
-
-fn make_string(s: &str) -> NonEmptyString {
-    unsafe { NonEmptyString::new_unchecked(s.to_string()) }
-}
+use sawa_core::{models::misc::Tag, repositories::TagRepository};
 
 fn create_test_tag(name: &str) -> Tag {
-    Tag::new(make_string(name))
+    Tag::new(name.try_into().unwrap())
+}
+
+fn create_random_test_tag() -> Tag {
+    let unique = uuid::Uuid::new_v4().to_string();
+    create_test_tag(&format!("tag_{}", &unique[..8]))
+}
+
+fn create_random_parent_tag() -> Tag {
+    let unique = uuid::Uuid::new_v4().to_string();
+    create_test_tag(&format!("parent_{}", &unique[..8]))
+}
+
+fn create_random_child_tag(parent_id: sawa_core::models::misc::TagId) -> Tag {
+    let unique = uuid::Uuid::new_v4().to_string();
+    let mut tag = create_test_tag(&format!("child_{}", &unique[..8]));
+    tag.parent_tag_id = Some(parent_id);
+    tag
 }
 
 /// Test save and find_by_id.
 pub async fn test_save_and_find_by_id<R: TagRepository>(repo: R) {
-    let tag = create_test_tag("Test Tag");
+    let tag = create_random_test_tag();
     let tag_id = tag.id;
 
     repo.save(&tag).await.unwrap();
@@ -28,8 +38,8 @@ pub async fn test_save_and_find_by_id<R: TagRepository>(repo: R) {
 
 /// Test find_all returns all tags.
 pub async fn test_find_all<R: TagRepository>(repo: R) {
-    let tag1 = create_test_tag("Tag 1");
-    let tag2 = create_test_tag("Tag 2");
+    let tag1 = create_random_test_tag();
+    let tag2 = create_random_test_tag();
 
     repo.save(&tag1).await.unwrap();
     repo.save(&tag2).await.unwrap();
@@ -68,12 +78,12 @@ pub async fn test_find_by_name_prefix<R: TagRepository>(repo: R) {
 
 /// Test find_by_parent returns child tags.
 pub async fn test_find_by_parent<R: TagRepository>(repo: R) {
-    let parent = create_test_tag("VOCALOID");
+    let parent = create_random_parent_tag();
     let parent_id = parent.id;
 
-    let child1 = Tag::with_parent(make_string("Hatsune Miku"), parent_id);
-    let child2 = Tag::with_parent(make_string("Kagamine Rin"), parent_id);
-    let orphan = create_test_tag("Orphan Tag");
+    let child1 = create_random_child_tag(parent_id);
+    let child2 = create_random_child_tag(parent_id);
+    let orphan = create_random_test_tag();
 
     repo.save(&parent).await.unwrap();
     repo.save(&child1).await.unwrap();
@@ -94,11 +104,11 @@ pub async fn test_find_by_parent<R: TagRepository>(repo: R) {
 
 /// Test find_roots returns tags without parent.
 pub async fn test_find_roots<R: TagRepository>(repo: R) {
-    let root1 = create_test_tag("Root 1");
-    let root2 = create_test_tag("Root 2");
+    let root1 = create_random_parent_tag();
+    let root2 = create_random_parent_tag();
 
     let parent_id = root1.id;
-    let child = Tag::with_parent(make_string("Child"), parent_id);
+    let child = create_random_child_tag(parent_id);
 
     repo.save(&root1).await.unwrap();
     repo.save(&root2).await.unwrap();
@@ -118,7 +128,7 @@ pub async fn test_find_roots<R: TagRepository>(repo: R) {
 
 /// Test delete removes tag.
 pub async fn test_delete<R: TagRepository>(repo: R) {
-    let tag = create_test_tag("To Delete");
+    let tag = create_random_test_tag();
     let tag_id = tag.id;
 
     repo.save(&tag).await.unwrap();

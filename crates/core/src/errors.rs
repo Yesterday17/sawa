@@ -27,6 +27,9 @@ use std::num::TryFromIntError;
 /// While generic, it includes variants with business value.
 #[derive(Debug, thiserror::Error)]
 pub enum RepositoryError {
+    #[error("Not found")]
+    NotFound,
+
     /// Unique constraint violation (e.g., email already exists)
     ///
     /// Service layer can check the field name to provide specific errors.

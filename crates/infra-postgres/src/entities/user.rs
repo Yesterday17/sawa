@@ -1,5 +1,5 @@
 use sawa_core::{errors::RepositoryError, models::user::*};
-use sea_orm::{ActiveValue::Set, entity::prelude::*};
+use sea_orm::{ActiveValue, entity::prelude::*};
 
 /// User entity
 #[sea_orm::model]
@@ -49,12 +49,34 @@ impl TryFrom<Model> for User {
 impl From<User> for crate::entities::user::ActiveModel {
     fn from(user: User) -> Self {
         Self {
-            id: Set(user.id.into()),
-            username: Set(user.username.0),
-            email: Set(user.email.0),
-            password_hash: Set(user.password_hash.into_string()),
-            avatar_id: Set(user.avatar.map(Into::into)),
-            created_at: Set(user.created_at),
+            id: ActiveValue::Set(user.id.into()),
+            username: ActiveValue::Set(user.username.0),
+            email: ActiveValue::Set(user.email.0),
+            password_hash: ActiveValue::Set(user.password_hash.into_string()),
+            avatar_id: ActiveValue::Set(user.avatar.map(Into::into)),
+            created_at: ActiveValue::Set(user.created_at),
+        }
+    }
+}
+
+impl From<UserUpdate> for crate::entities::user::ActiveModel {
+    fn from(user: UserUpdate) -> Self {
+        Self {
+            id: ActiveValue::unchanged(user.id.into()),
+            username: user
+                .username
+                .map(|username| ActiveValue::Set(username.0))
+                .unwrap_or(ActiveValue::NotSet),
+            email: user
+                .email
+                .map(|email| ActiveValue::Set(email.0))
+                .unwrap_or(ActiveValue::NotSet),
+            password_hash: user
+                .password_hash
+                .map(|password_hash| ActiveValue::Set(password_hash.into_string()))
+                .unwrap_or(ActiveValue::NotSet),
+            avatar_id: ActiveValue::Set(user.avatar.map(Into::into)),
+            created_at: ActiveValue::NotSet,
         }
     }
 }

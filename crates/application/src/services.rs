@@ -34,5 +34,10 @@ where
 }
 
 // Service trait implementations (core flow only)
+mod product_impl;
+mod product_instance_impl;
 mod purchase_order_impl;
 mod purchase_order_lifecycle_impl;
+mod transaction_impl;
+mod transaction_lifecycle_impl;
+mod user_impl;

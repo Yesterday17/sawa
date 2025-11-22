@@ -40,6 +40,9 @@ pub async fn test_save_and_find_by_id<R: UserTransactionRepository>(repo: R) {
     let found = repo.find_by_id(&tx_id).await.unwrap();
     assert!(found.is_some());
     assert_eq!(found.unwrap().id, tx_id);
+
+    // Clean up
+    repo.delete(&tx_id).await.unwrap();
 }
 
 /// Test find_by_from_user returns sender's transactions (permission check).
@@ -66,6 +69,10 @@ pub async fn test_find_by_from_user_permission<R: UserTransactionRepository>(rep
     let user_b_sent = repo.find_by_from_user(&user_b, None).await.unwrap();
     assert_eq!(user_b_sent.len(), 1);
     assert_eq!(user_b_sent[0].from_user_id, user_b);
+
+    // Clean up
+    repo.delete(&tx_a_to_c.id).await.unwrap();
+    repo.delete(&tx_b_to_c.id).await.unwrap();
 }
 
 /// Test find_by_to_user returns receiver's transactions (permission check).
@@ -92,6 +99,10 @@ pub async fn test_find_by_to_user_permission<R: UserTransactionRepository>(repo:
     let user_b_received = repo.find_by_to_user(&user_b, None).await.unwrap();
     assert_eq!(user_b_received.len(), 1);
     assert_eq!(user_b_received[0].to_user_id, user_b);
+
+    // Clean up
+    repo.delete(&tx_c_to_a.id).await.unwrap();
+    repo.delete(&tx_c_to_b.id).await.unwrap();
 }
 
 /// Test find_by_from_user with status filter.
@@ -125,6 +136,10 @@ pub async fn test_find_by_from_user_with_status<R: UserTransactionRepository>(re
         .unwrap();
     assert_eq!(completed.len(), 1);
     assert_eq!(completed[0].status, UserTransactionStatus::Completed);
+
+    // Clean up
+    repo.delete(&pending_tx.id).await.unwrap();
+    repo.delete(&completed_tx.id).await.unwrap();
 }
 
 /// Test find_by_to_user with status filter.
@@ -150,6 +165,10 @@ pub async fn test_find_by_to_user_with_status<R: UserTransactionRepository>(repo
         .unwrap();
     assert_eq!(pending.len(), 1);
     assert_eq!(pending[0].status, UserTransactionStatus::Pending);
+
+    // Clean up
+    repo.delete(&pending_tx.id).await.unwrap();
+    repo.delete(&completed_tx.id).await.unwrap();
 }
 
 /// Test delete removes transaction.

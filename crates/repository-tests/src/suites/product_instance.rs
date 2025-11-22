@@ -32,6 +32,9 @@ pub async fn test_save_and_find_by_id<R: ProductInstanceRepository>(repo: R) {
     let found = repo.find_by_id(&instance_id).await.unwrap();
     assert!(found.is_some());
     assert_eq!(found.unwrap().id, instance_id);
+
+    // Clean up
+    repo.delete(&instance_id).await.unwrap();
 }
 
 /// Test find_by_owner returns user's instances.
@@ -45,6 +48,10 @@ pub async fn test_find_by_owner<R: ProductInstanceRepository>(repo: R) {
 
     let owned = repo.find_by_owner(&owner_id).await.unwrap();
     assert_eq!(owned.len(), 2);
+
+    // Clean up
+    repo.delete(&instance1.id).await.unwrap();
+    repo.delete(&instance2.id).await.unwrap();
 }
 
 /// Test find_by_owner_and_variant filters correctly.
@@ -65,6 +72,10 @@ pub async fn test_find_by_owner_and_variant<R: ProductInstanceRepository>(repo: 
         .unwrap();
     assert_eq!(by_variant.len(), 1);
     assert_eq!(by_variant[0].variant_id, variant1);
+
+    // Clean up
+    repo.delete(&instance1.id).await.unwrap();
+    repo.delete(&instance2.id).await.unwrap();
 }
 
 /// Test find_by_owner_and_status filters by status.
@@ -90,6 +101,10 @@ pub async fn test_find_by_owner_and_status<R: ProductInstanceRepository>(repo: R
         .unwrap();
     assert_eq!(consumed.len(), 1);
     assert_eq!(consumed[0].id, consumed_instance.id);
+
+    // Clean up
+    repo.delete(&active_instance.id).await.unwrap();
+    repo.delete(&consumed_instance.id).await.unwrap();
 }
 
 /// Test delete removes instance.
@@ -127,6 +142,11 @@ pub async fn test_find_by_owner_permission_isolation<R: ProductInstanceRepositor
     let user_b_instances = repo.find_by_owner(&user_b).await.unwrap();
     assert_eq!(user_b_instances.len(), 1);
     assert_eq!(user_b_instances[0].owner_id, user_b);
+
+    // Clean up
+    repo.delete(&instance_a1.id).await.unwrap();
+    repo.delete(&instance_a2.id).await.unwrap();
+    repo.delete(&instance_b.id).await.unwrap();
 }
 
 /// Test find_by_owner_and_variant respects owner permission.
@@ -156,6 +176,10 @@ pub async fn test_find_by_owner_and_variant_permission<R: ProductInstanceReposit
         .unwrap();
     assert_eq!(results.len(), 1);
     assert_eq!(results[0].owner_id, user_b);
+
+    // Clean up
+    repo.delete(&instance_a.id).await.unwrap();
+    repo.delete(&instance_b.id).await.unwrap();
 }
 
 /// Test find_by_owner_and_status respects owner permission.
@@ -177,4 +201,8 @@ pub async fn test_find_by_owner_and_status_permission<R: ProductInstanceReposito
     assert_eq!(results.len(), 1);
     assert_eq!(results[0].owner_id, user_a);
     assert!(results.iter().all(|i| i.owner_id != user_b));
+
+    // Clean up
+    repo.delete(&instance_a.id).await.unwrap();
+    repo.delete(&instance_b.id).await.unwrap();
 }

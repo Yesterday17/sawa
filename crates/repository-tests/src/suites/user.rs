@@ -31,6 +31,9 @@ pub async fn test_save_and_find_by_id<R: UserRepository>(repo: R) {
     let found = repo.find_by_id(&user_id).await.unwrap();
     assert!(found.is_some());
     assert_eq!(found.unwrap().id, user_id);
+
+    // Clean up
+    repo.delete(&user_id).await.unwrap();
 }
 
 /// Test find_by_email finds user by email.
@@ -43,6 +46,9 @@ pub async fn test_find_by_email<R: UserRepository>(repo: R) {
     let by_email = repo.find_by_email(&user.email).await.unwrap();
     assert!(by_email.is_some());
     assert_eq!(by_email.unwrap().id, user_id);
+
+    // Clean up
+    repo.delete(&user_id).await.unwrap();
 }
 
 /// Test find_by_username finds user by username.
@@ -55,6 +61,9 @@ pub async fn test_find_by_username<R: UserRepository>(repo: R) {
     let by_username = repo.find_by_username(&user.username).await.unwrap();
     assert!(by_username.is_some());
     assert_eq!(by_username.unwrap().id, user_id);
+
+    // Clean up
+    repo.delete(&user_id).await.unwrap();
 }
 
 /// Test find_by_email returns None for different user's email.
@@ -74,6 +83,10 @@ pub async fn test_find_by_email_returns_correct_user<R: UserRepository>(repo: R)
     let found = repo.find_by_email(&user_b.email).await.unwrap();
     assert!(found.is_some());
     assert_eq!(found.unwrap().id, user_b.id);
+
+    // Clean up
+    repo.delete(&user_a.id).await.unwrap();
+    repo.delete(&user_b.id).await.unwrap();
 }
 
 /// Test find_by_username returns correct user.
@@ -93,6 +106,10 @@ pub async fn test_find_by_username_returns_correct_user<R: UserRepository>(repo:
     let found = repo.find_by_username(&user_b.username).await.unwrap();
     assert!(found.is_some());
     assert_eq!(found.unwrap().id, user_b.id);
+
+    // Clean up
+    repo.delete(&user_a.id).await.unwrap();
+    repo.delete(&user_b.id).await.unwrap();
 }
 
 /// Test delete removes user.

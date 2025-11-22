@@ -24,6 +24,9 @@ pub async fn test_save_and_find_by_id<R: ProductVariantRepository>(repo: R) {
     let found = repo.find_by_id(&variant_id).await.unwrap();
     assert!(found.is_some());
     assert_eq!(found.unwrap().id, variant_id);
+
+    // Clean up
+    repo.delete(&variant_id).await.unwrap();
 }
 
 /// Test find_by_product_id returns variants for that product.
@@ -41,6 +44,11 @@ pub async fn test_find_by_product_id<R: ProductVariantRepository>(repo: R) {
     assert_eq!(variants.len(), 2);
     assert!(variants.iter().any(|v| v.id == variant1.id));
     assert!(variants.iter().any(|v| v.id == variant2.id));
+
+    // Clean up
+    repo.delete(&variant1.id).await.unwrap();
+    repo.delete(&variant2.id).await.unwrap();
+    repo.delete(&other_variant.id).await.unwrap();
 }
 
 /// Test find_by_tags_all returns variants with all tags.
@@ -62,6 +70,10 @@ pub async fn test_find_by_tags_all<R: ProductVariantRepository>(repo: R) {
     let results = repo.find_by_tags_all(&[tag1, tag2]).await.unwrap();
     assert_eq!(results.len(), 1);
     assert_eq!(results[0].id, variant_both.id);
+
+    // Clean up
+    repo.delete(&variant_both.id).await.unwrap();
+    repo.delete(&variant_one.id).await.unwrap();
 }
 
 /// Test find_by_tags_any returns variants with any of the tags.
@@ -88,6 +100,11 @@ pub async fn test_find_by_tags_any<R: ProductVariantRepository>(repo: R) {
     assert_eq!(results.len(), 2);
     assert!(results.iter().any(|v| v.id == variant1.id));
     assert!(results.iter().any(|v| v.id == variant2.id));
+
+    // Clean up
+    repo.delete(&variant1.id).await.unwrap();
+    repo.delete(&variant2.id).await.unwrap();
+    repo.delete(&variant3.id).await.unwrap();
 }
 
 /// Test delete removes variant.

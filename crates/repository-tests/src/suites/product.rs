@@ -28,6 +28,9 @@ pub async fn test_save_and_find_by_id<R: ProductRepository>(repo: R) {
     let found = repo.find_by_id(&product_id).await.unwrap();
     assert!(found.is_some());
     assert_eq!(found.unwrap().id, product_id);
+
+    // Clean up
+    repo.delete(&product_id).await.unwrap();
 }
 
 /// Test find_all includes saved products.
@@ -42,6 +45,10 @@ pub async fn test_find_all<R: ProductRepository>(repo: R) {
     assert!(all.len() >= 2);
     assert!(all.iter().any(|p| p.id == product1.id));
     assert!(all.iter().any(|p| p.id == product2.id));
+
+    // Clean up
+    repo.delete(&product1.id).await.unwrap();
+    repo.delete(&product2.id).await.unwrap();
 }
 
 /// Test delete removes product.

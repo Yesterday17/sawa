@@ -21,6 +21,9 @@ pub async fn test_save_and_find_by_id<R: TagRepository>(repo: R) {
     let found = repo.find_by_id(&tag_id).await.unwrap();
     assert!(found.is_some());
     assert_eq!(found.unwrap().id, tag_id);
+
+    // Clean up
+    repo.delete(&tag_id).await.unwrap();
 }
 
 /// Test find_all returns all tags.
@@ -35,6 +38,10 @@ pub async fn test_find_all<R: TagRepository>(repo: R) {
     assert!(all.len() >= 2);
     assert!(all.iter().any(|t| t.id == tag1.id));
     assert!(all.iter().any(|t| t.id == tag2.id));
+
+    // Clean up
+    repo.delete(&tag1.id).await.unwrap();
+    repo.delete(&tag2.id).await.unwrap();
 }
 
 /// Test find_by_name_prefix searches by prefix.
@@ -52,6 +59,11 @@ pub async fn test_find_by_name_prefix<R: TagRepository>(repo: R) {
     assert_eq!(results.len(), 2);
     assert!(results.iter().any(|t| t.id == tag2.id));
     assert!(results.iter().any(|t| t.id == tag3.id));
+
+    // Clean up
+    repo.delete(&tag1.id).await.unwrap();
+    repo.delete(&tag2.id).await.unwrap();
+    repo.delete(&tag3.id).await.unwrap();
 }
 
 /// Test find_by_parent returns child tags.
@@ -72,6 +84,12 @@ pub async fn test_find_by_parent<R: TagRepository>(repo: R) {
     assert_eq!(children.len(), 2);
     assert!(children.iter().any(|t| t.id == child1.id));
     assert!(children.iter().any(|t| t.id == child2.id));
+
+    // Clean up (delete children first, then parent)
+    repo.delete(&child1.id).await.unwrap();
+    repo.delete(&child2.id).await.unwrap();
+    repo.delete(&orphan.id).await.unwrap();
+    repo.delete(&parent_id).await.unwrap();
 }
 
 /// Test find_roots returns tags without parent.
@@ -91,6 +109,11 @@ pub async fn test_find_roots<R: TagRepository>(repo: R) {
     assert!(roots.iter().any(|t| t.id == root1.id));
     assert!(roots.iter().any(|t| t.id == root2.id));
     assert!(!roots.iter().any(|t| t.id == child.id));
+
+    // Clean up (delete child first, then roots)
+    repo.delete(&child.id).await.unwrap();
+    repo.delete(&root1.id).await.unwrap();
+    repo.delete(&root2.id).await.unwrap();
 }
 
 /// Test delete removes tag.

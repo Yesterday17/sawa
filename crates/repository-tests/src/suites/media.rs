@@ -20,6 +20,9 @@ pub async fn test_save_and_find_by_id<R: MediaRepository>(repo: R) {
     let found = repo.find_by_id(&media_id).await.unwrap();
     assert!(found.is_some());
     assert_eq!(found.unwrap().id, media_id);
+
+    // Clean up
+    repo.delete(&media_id).await.unwrap();
 }
 
 /// Test find_by_ids batch query.
@@ -37,6 +40,11 @@ pub async fn test_find_by_ids<R: MediaRepository>(repo: R) {
     assert_eq!(results.len(), 2);
     assert!(results.iter().any(|m| m.id == media1.id));
     assert!(results.iter().any(|m| m.id == media2.id));
+
+    // Clean up
+    repo.delete(&media1.id).await.unwrap();
+    repo.delete(&media2.id).await.unwrap();
+    repo.delete(&media3.id).await.unwrap();
 }
 
 /// Test delete removes media.

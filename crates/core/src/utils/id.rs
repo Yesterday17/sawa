@@ -7,13 +7,13 @@ macro_rules! create_entity_id {
 
         #[cfg(feature = "schemars")]
         impl schemars::JsonSchema for $name {
-            fn schema_name() -> String {
-                stringify!($name).to_string()
+            fn schema_name() -> std::borrow::Cow<'static, str> {
+                stringify!($name).into()
             }
 
             fn json_schema(
-                generator: &mut schemars::r#gen::SchemaGenerator,
-            ) -> schemars::schema::Schema {
+                generator: &mut schemars::generate::SchemaGenerator,
+            ) -> schemars::Schema {
                 <uuid::Uuid>::json_schema(generator)
             }
         }

@@ -22,7 +22,11 @@ serde_json = "1"
 
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 bcrypt = "0.15"
-tower-http = { version = "0.5", features = ["cors", "trace"] }
-axum = { version = "0.7", features = ["macros"] }
-aide = { version = "0.13", features = ["axum", "macros"] }
-schemars = { version = "0.8", features = ["uuid1", "chrono"] }
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+axum = { version = "0.8", features = ["macros"] }
+aide = { version = "0.16.0-alpha.1", features = [
+    "axum",
+    "axum-json",
+    "macros",
+] }
+schemars = { version = "1.0.4", features = ["uuid1", "chrono04", "url2"] }

@@ -51,7 +51,7 @@ async fn main() {
     let listener = TcpListener::bind(addr).await.unwrap();
 
     println!("Server listening on http://{}", addr);
-    println!("Docs available at http://{}/redoc", addr);
+    println!("Docs available at http://{}/scalar", addr);
 
     // Start the server
     axum::serve(listener, app).await.unwrap();

@@ -65,7 +65,7 @@ where
     Ok((StatusCode::CREATED, Json(product)))
 }
 
-/// GET /products/:product_id
+/// GET /products/{product_id}
 pub async fn get_product<S>(
     State(state): State<AppState<S>>,
     Path(product_id): Path<ProductId>,
@@ -95,7 +95,7 @@ pub struct CreateProductVariantBody {
     pub sort_order: i32,
 }
 
-/// GET /products/:product_id/variants
+/// GET /products/{product_id}/variants
 /// GET /products/variants
 pub async fn list_product_variants<S>(
     Path(product_id): Path<Option<ProductId>>,
@@ -118,7 +118,7 @@ where
     Ok((StatusCode::OK, Json(variants)))
 }
 
-/// POST /products/:product_id/variants
+/// POST /products/{product_id}/variants
 pub async fn create_product_variant<S>(
     State(state): State<AppState<S>>,
     Path(product_id): Path<ProductId>,
@@ -157,7 +157,7 @@ pub struct GetProductVariantPath {
     pub variant_id: ProductVariantId,
 }
 
-/// GET /products/:product_id/variants/:variant_id
+/// GET /products/{product_id}/variants/{variant_id}
 pub async fn get_product_variant<S>(
     State(state): State<AppState<S>>,
     Path(GetProductVariantPath {

@@ -8,7 +8,7 @@ sawa-core.workspace = true
 sawa-application.workspace = true
 
 axum.workspace = true
-aide = { workspace = true, features = ["redoc", "scalar"] }
+aide = { workspace = true, features = ["scalar"] }
 schemars.workspace = true
 serde = { workspace = true, features = ["rc"] }
 serde_json.workspace = true

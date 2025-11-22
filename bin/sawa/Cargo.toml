@@ -10,5 +10,5 @@ axum.workspace = true
 sawa-api.workspace = true
 sawa-application.workspace = true
 sawa-infra-memory.workspace = true
-tower = "0.4"
+tower = "0.5"
 tracing-subscriber = "0.3"

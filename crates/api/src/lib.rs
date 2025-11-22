@@ -1,8 +1,5 @@
 use aide::{
-    axum::{
-        ApiRouter,
-        routing::{get, post},
-    },
+    axum::{ApiRouter, routing::get},
     openapi::OpenApi,
 };
 use axum::Router;
@@ -25,10 +22,10 @@ where
         .api_route("/health", get(handlers::health::health_check))
         .api_route(
             "/products",
-            post(handlers::product::create_product::<S>).get(handlers::product::list_products::<S>),
+            get(handlers::product::list_products::<S>).post(handlers::product::create_product::<S>),
         )
         .api_route(
-            "/products/:product_id",
+            "/products/{product_id}",
             get(handlers::product::get_product::<S>),
         )
         .api_route(
@@ -36,12 +33,12 @@ where
             get(handlers::product::list_product_variants::<S>),
         )
         .api_route(
-            "/products/:product_id/variants",
-            post(handlers::product::create_product_variant::<S>)
-                .get(handlers::product::list_product_variants::<S>),
+            "/products/{product_id}/variants",
+            get(handlers::product::list_product_variants::<S>)
+                .post(handlers::product::create_product_variant::<S>),
         )
         .api_route(
-            "/products/:product_id/variants/:variant_id",
+            "/products/{product_id}/variants/{variant_id}",
             get(handlers::product::get_product_variant::<S>),
         )
         .with_state(AppState::new(state));

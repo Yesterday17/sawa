@@ -1,4 +1,10 @@
-use crate::models::{product::ProductVariantId, purchase::PurchaseOrderId, user::UserId};
+use iso_currency::Currency;
+
+use crate::models::{
+    product::ProductVariantId,
+    purchase::{PurchaseOrderId, PurchaseOrderItemId},
+    user::UserId,
+};
 
 #[derive(Debug, thiserror::Error)]
 pub enum CreateOrderError {
@@ -20,8 +26,14 @@ pub enum AddOrderItemError {
     #[error("Variant not found: {variant_id:?}")]
     VariantNotFound { variant_id: ProductVariantId },
 
-    #[error("Order already completed")]
-    OrderAlreadyCompleted,
+    #[error("Order is not editable")]
+    OrderNotEditable,
+
+    #[error("Currency mismatch: expected {expected:?}, got {actual:?}")]
+    CurrencyMismatch {
+        expected: Currency,
+        actual: Currency,
+    },
 
     #[error("Repository error: {0}")]
     Repository(#[from] crate::errors::RepositoryError),
@@ -35,8 +47,11 @@ pub enum SubmitMysteryBoxResultsError {
     #[error("Permission denied: user {user_id:?} cannot modify this order")]
     PermissionDenied { user_id: UserId },
 
-    #[error("Order item not found")]
-    OrderItemNotFound,
+    #[error("Order item not found: {order_item_id:?}")]
+    OrderItemNotFound { order_item_id: PurchaseOrderItemId },
+
+    #[error("Variant not found: {variant_id:?}")]
+    VariantNotFound { variant_id: ProductVariantId },
 
     #[error("Not a mystery box item")]
     NotMysteryBox,

@@ -1,7 +1,7 @@
 use std::num::NonZeroU32;
 
 use crate::models::{
-    misc::Price,
+    misc::{Address, Price},
     product::ProductVariantId,
     purchase::{PurchaseOrderId, PurchaseOrderItemId},
     user::UserId,
@@ -15,6 +15,13 @@ pub struct CreateOrderRequest {
     /// The user who will receive the shipment (default to creator).
     /// Can be different for group buy scenarios.
     pub receiver_id: Option<UserId>,
+
+    /// Shipping/delivery address (optional, for physical goods).
+    /// If None, the order is assumed to be for digital goods.
+    pub shipping_address: Option<Address>,
+
+    /// The currency of the order.
+    pub total_price: Option<Price>,
 }
 
 /// Request to add an item to an order.

@@ -6,7 +6,7 @@ use sawa_core::{
     },
     repositories::UserTransactionRepository,
 };
-use sea_orm::{QueryFilter, prelude::*, sea_query::OnConflict};
+use sea_orm::{QueryFilter, TransactionTrait, prelude::*, sea_query::OnConflict};
 
 use crate::{
     entities::user_transaction, error::DatabaseError, traits::TryIntoDomainModelSimple,
@@ -85,41 +85,56 @@ impl UserTransactionRepository for PostgresUserTransactionRepository {
     }
 
     async fn save(&self, transaction: &UserTransaction) -> Result<(), RepositoryError> {
-        // TODO: Save transaction with items
+        let transaction_id = Uuid::from(transaction.id.0);
+        let transaction_active_model: user_transaction::ActiveModel = transaction.into();
 
-        let active_model: crate::entities::user_transaction::ActiveModel = transaction.into();
-        user_transaction::Entity::insert(active_model)
-            .on_conflict(
-                OnConflict::column(user_transaction::Column::Id)
-                    .update_columns([
-                        user_transaction::Column::Status,
-                        user_transaction::Column::CompletedAt,
-                        user_transaction::Column::CancelledAt,
-                    ])
-                    .to_owned(),
-            )
-            .exec(&self.db)
-            .await
-            .map_err(DatabaseError)?;
+        // Prepare item data outside the closure
+        let item_models: Vec<user_transaction_item::ActiveModel> = transaction
+            .items
+            .iter()
+            .map(|item| (&transaction.id, item).into())
+            .collect();
 
-        user_transaction_item::Entity::delete_many()
-            .filter(user_transaction_item::Column::TransactionId.eq(Uuid::from(transaction.id.0)))
-            .exec(&self.db)
+        self.db
+            .transaction(|db| {
+                Box::pin(async move {
+                    // Save or update the transaction
+                    user_transaction::Entity::insert(transaction_active_model)
+                        .on_conflict(
+                            OnConflict::column(user_transaction::Column::Id)
+                                .update_columns([
+                                    user_transaction::Column::Status,
+                                    user_transaction::Column::CompletedAt,
+                                    user_transaction::Column::CancelledAt,
+                                ])
+                                .to_owned(),
+                        )
+                        .exec(db)
+                        .await?;
+
+                    // Delete existing items
+                    user_transaction_item::Entity::delete_many()
+                        .filter(user_transaction_item::Column::TransactionId.eq(transaction_id))
+                        .exec(db)
+                        .await?;
+
+                    // Insert new items
+                    if !item_models.is_empty() {
+                        user_transaction_item::Entity::insert_many(item_models)
+                            .exec(db)
+                            .await?;
+                    }
+
+                    Ok(())
+                })
+            })
             .await
-            .map_err(DatabaseError)?;
-        for item in transaction.items.iter() {
-            let active_model: crate::entities::user_transaction_item::ActiveModel =
-                (&transaction.id, item).into();
-            user_transaction_item::Entity::insert(active_model)
-                .exec(&self.db)
-                .await
-                .map_err(DatabaseError)?;
-        }
+            .map_err(DatabaseError::from)?;
+
         Ok(())
     }
 
     async fn save_batch(&self, transactions: &[UserTransaction]) -> Result<(), RepositoryError> {
-        // TODO: Save batch of transactions with items
         for transaction in transactions {
             self.save(transaction).await?;
         }

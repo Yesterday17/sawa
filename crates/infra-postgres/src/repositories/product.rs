@@ -13,7 +13,8 @@ use sawa_core::{
     repositories::{ProductRepository, ProductVariantRepository},
 };
 use sea_orm::{
-    FromQueryResult, QueryFilter, QueryOrder, prelude::*, raw_sql, sea_query::OnConflict,
+    FromQueryResult, QueryFilter, QueryOrder, TransactionTrait, prelude::*, raw_sql,
+    sea_query::OnConflict,
 };
 
 pub struct PostgresProductRepository {
@@ -235,8 +236,63 @@ impl ProductVariantRepository for PostgresProductVariantRepository {
     }
 
     async fn save(&self, variant: &ProductVariant) -> Result<(), RepositoryError> {
-        // TODO: Implement converter and save (including tags)
-        todo!("Implement variant save with tags")
+        let variant_id = Uuid::from(variant.id.0);
+        let variant_active_model: product_variant::ActiveModel = variant
+            .try_into()
+            .map_err(|e| RepositoryError::Internal(format!("Failed to convert variant: {}", e)))?;
+
+        // Prepare tag associations
+        let tag_models: Vec<_> = variant
+            .tags
+            .iter()
+            .map(|tag_id| product_variant_tag::ActiveModel {
+                product_variant_id: sea_orm::ActiveValue::Set(variant_id),
+                tag_id: sea_orm::ActiveValue::Set(Uuid::from(tag_id.0)),
+            })
+            .collect();
+
+        self.db
+            .transaction(|db| {
+                Box::pin(async move {
+                    // Save or update the variant
+                    product_variant::Entity::insert(variant_active_model)
+                        .on_conflict(
+                            OnConflict::column(product_variant::Column::Id)
+                                .update_columns([
+                                    product_variant::Column::ProductId,
+                                    product_variant::Column::Name,
+                                    product_variant::Column::Description,
+                                    product_variant::Column::Medias,
+                                    product_variant::Column::PriceCurrency,
+                                    product_variant::Column::PriceAmount,
+                                    product_variant::Column::MysteryBox,
+                                    product_variant::Column::SortOrder,
+                                ])
+                                .to_owned(),
+                        )
+                        .exec(db)
+                        .await?;
+
+                    // Delete existing tag associations
+                    product_variant_tag::Entity::delete_many()
+                        .filter(product_variant_tag::Column::ProductVariantId.eq(variant_id))
+                        .exec(db)
+                        .await?;
+
+                    // Insert new tag associations
+                    if !tag_models.is_empty() {
+                        product_variant_tag::Entity::insert_many(tag_models)
+                            .exec(db)
+                            .await?;
+                    }
+
+                    Ok(())
+                })
+            })
+            .await
+            .map_err(DatabaseError::from)?;
+
+        Ok(())
     }
 
     async fn delete(&self, id: &ProductVariantId) -> Result<(), RepositoryError> {

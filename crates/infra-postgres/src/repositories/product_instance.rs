@@ -7,7 +7,7 @@ use sawa_core::{
     },
     repositories::ProductInstanceRepository,
 };
-use sea_orm::{QueryFilter, prelude::*, sea_query::OnConflict};
+use sea_orm::{QueryFilter, TransactionTrait, prelude::*, sea_query::OnConflict};
 
 use crate::{
     error::DatabaseError, product_instance, product_instance_status_history,
@@ -120,63 +120,87 @@ impl ProductInstanceRepository for PostgresProductInstanceRepository {
     }
 
     async fn save(&self, instance: &ProductInstance) -> Result<(), RepositoryError> {
-        // TODO: Save with transaction
-        let active_model: crate::entities::product_instance::ActiveModel = instance.into();
-        product_instance::Entity::insert(active_model)
-            .on_conflict(
-                OnConflict::column(product_instance::Column::Id)
-                    .update_columns([
-                        product_instance::Column::OwnerId,
-                        product_instance::Column::VariantId,
-                        product_instance::Column::Status,
-                    ])
-                    .to_owned(),
-            )
-            .exec(&self.db)
-            .await
-            .map_err(DatabaseError)?;
+        let instance_id = Uuid::from(instance.id.0);
+        let instance_active_model: product_instance::ActiveModel = instance.into();
 
-        // Remove existing transfer history and insert new ones
-        product_instance_transfer_history::Entity::delete_many()
-            .filter(
-                product_instance_transfer_history::Column::ProductInstanceId
-                    .eq(Uuid::from(instance.id.0)),
-            )
-            .exec(&self.db)
-            .await
-            .map_err(DatabaseError)?;
-        for transfer in instance.transfer_history.iter() {
-            let active_model: crate::entities::product_instance_transfer_history::ActiveModel =
-                (transfer, instance.id).into();
-            product_instance_transfer_history::Entity::insert(active_model)
-                .exec(&self.db)
-                .await
-                .map_err(DatabaseError)?;
-        }
+        // Prepare history data outside the closure
+        let transfer_history_models: Vec<product_instance_transfer_history::ActiveModel> = instance
+            .transfer_history
+            .iter()
+            .map(|transfer| (transfer, instance.id).into())
+            .collect();
 
-        // Remove existing status history and insert new ones
-        product_instance_status_history::Entity::delete_many()
-            .filter(
-                product_instance_status_history::Column::ProductInstanceId
-                    .eq(Uuid::from(instance.id.0)),
-            )
-            .exec(&self.db)
+        let status_history_models: Vec<product_instance_status_history::ActiveModel> = instance
+            .status_history
+            .iter()
+            .map(|status| (status, instance.id).into())
+            .collect();
+
+        self.db
+            .transaction(|db| {
+                Box::pin(async move {
+                    // Save or update the instance
+                    product_instance::Entity::insert(instance_active_model)
+                        .on_conflict(
+                            OnConflict::column(product_instance::Column::Id)
+                                .update_columns([
+                                    product_instance::Column::OwnerId,
+                                    product_instance::Column::HolderId,
+                                    product_instance::Column::Status,
+                                ])
+                                .to_owned(),
+                        )
+                        .exec(db)
+                        .await?;
+
+                    // Delete existing transfer history
+                    product_instance_transfer_history::Entity::delete_many()
+                        .filter(
+                            product_instance_transfer_history::Column::ProductInstanceId
+                                .eq(instance_id),
+                        )
+                        .exec(db)
+                        .await?;
+
+                    // Insert new transfer history
+                    if !transfer_history_models.is_empty() {
+                        product_instance_transfer_history::Entity::insert_many(
+                            transfer_history_models,
+                        )
+                        .exec(db)
+                        .await?;
+                    }
+
+                    // Delete existing status history
+                    product_instance_status_history::Entity::delete_many()
+                        .filter(
+                            product_instance_status_history::Column::ProductInstanceId
+                                .eq(instance_id),
+                        )
+                        .exec(db)
+                        .await?;
+
+                    // Insert new status history
+                    if !status_history_models.is_empty() {
+                        product_instance_status_history::Entity::insert_many(status_history_models)
+                            .exec(db)
+                            .await?;
+                    }
+
+                    Ok(())
+                })
+            })
             .await
-            .map_err(DatabaseError)?;
-        for status in instance.status_history.iter() {
-            let active_model: crate::entities::product_instance_status_history::ActiveModel =
-                (status, instance.id).into();
-            product_instance_status_history::Entity::insert(active_model)
-                .exec(&self.db)
-                .await
-                .map_err(DatabaseError)?;
-        }
+            .map_err(DatabaseError::from)?;
 
         Ok(())
     }
 
     async fn save_batch(&self, instances: &[ProductInstance]) -> Result<(), RepositoryError> {
-        todo!("Implement save_batch")
+        for instance in instances {
+            self.save(instance).await?;
+        }
+        Ok(())
     }
 
     async fn delete(&self, id: &ProductInstanceId) -> Result<(), RepositoryError> {

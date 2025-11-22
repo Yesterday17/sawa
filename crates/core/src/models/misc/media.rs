@@ -2,7 +2,8 @@ use url::Url;
 
 crate::create_entity_id!(MediaId);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct Media {
     /// The unique identifier for the media.
     pub id: MediaId,

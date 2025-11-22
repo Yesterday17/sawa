@@ -5,6 +5,19 @@ macro_rules! create_entity_id {
         #[serde(transparent)]
         pub struct $name(pub uuid::NonNilUuid);
 
+        #[cfg(feature = "schemars")]
+        impl schemars::JsonSchema for $name {
+            fn schema_name() -> String {
+                stringify!($name).to_string()
+            }
+
+            fn json_schema(
+                generator: &mut schemars::r#gen::SchemaGenerator,
+            ) -> schemars::schema::Schema {
+                <uuid::Uuid>::json_schema(generator)
+            }
+        }
+
         impl $name {
             pub fn new() -> Self {
                 Self(

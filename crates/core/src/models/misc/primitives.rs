@@ -2,7 +2,9 @@ use std::ops::Deref;
 
 use thiserror::Error;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
+#[serde(transparent)]
 pub struct NonEmptyString(String);
 
 impl NonEmptyString {

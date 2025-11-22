@@ -13,7 +13,8 @@ crate::create_entity_id!(TagId);
 ///
 /// Tags are independent aggregates that can be associated with ProductVariants
 /// via many-to-many relationships.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct Tag {
     /// The unique identifier for the tag.
     pub id: TagId,

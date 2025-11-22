@@ -19,7 +19,8 @@ crate::create_entity_id!(ProductVariantId);
 ///
 /// Each variant can be modified independently without loading the entire Product,
 /// enabling efficient concurrent updates and better performance.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct ProductVariant {
     /// The unique identifier for the product variant.
     pub id: ProductVariantId,
@@ -63,6 +64,7 @@ pub struct ProductVariant {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct MysteryBoxConfig {
     /// Number of items to give per mystery box
     pub items_count: NonZeroU32,

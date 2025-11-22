@@ -9,5 +9,9 @@ chrono.workspace = true
 uuid.workspace = true
 thiserror.workspace = true
 serde.workspace = true
+schemars = { workspace = true, optional = true, features = ["uuid1", "url"] }
 
-iso_currency = "0.5.3"
+iso_currency = { version = "0.5.3", features = ["with-serde", "with-schemars"] }
+
+[features]
+default = ["schemars"]

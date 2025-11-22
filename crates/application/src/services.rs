@@ -12,6 +12,7 @@ use sawa_core::repositories::{
 /// - Service traits in core are PORTS
 /// - This struct is the ADAPTER that implements all ports
 /// - Repositories are injected dependencies (also ports)
+#[derive(Clone)]
 pub struct Service<P, PV, PI, PO, UT, U, T, M>
 where
     P: ProductRepository,

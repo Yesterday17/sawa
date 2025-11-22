@@ -35,6 +35,11 @@ impl TagRepository for InMemoryTagRepository {
         Ok(tags.get(id).cloned())
     }
 
+    async fn find_by_name(&self, name: &str) -> Result<Option<Tag>, RepositoryError> {
+        let tags = self.tags.read().unwrap();
+        Ok(tags.values().find(|t| t.name.as_str() == name).cloned())
+    }
+
     async fn find_all(&self) -> Result<Vec<Tag>, RepositoryError> {
         let tags = self.tags.read().unwrap();
         Ok(tags.values().cloned().collect())

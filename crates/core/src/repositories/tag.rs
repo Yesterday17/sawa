@@ -19,6 +19,12 @@ pub trait TagRepository: Send + Sync + 'static {
     /// Note: In production, consider adding pagination or filtering.
     fn find_all(&self) -> impl Future<Output = Result<Vec<Tag>, RepositoryError>> + Send;
 
+    /// Find a tag by its name.
+    fn find_by_name(
+        &self,
+        name: &str,
+    ) -> impl Future<Output = Result<Option<Tag>, RepositoryError>> + Send;
+
     /// Find tags by name (case-insensitive search).
     ///
     /// This is useful for tag autocomplete or search functionality.

@@ -32,6 +32,18 @@ impl TagRepository for PostgresTagRepository {
             .transpose()
     }
 
+    async fn find_by_name(&self, name: &str) -> Result<Option<Tag>, RepositoryError> {
+        let entity = Entity::find()
+            .filter(Column::Name.eq(name))
+            .one(&self.db)
+            .await
+            .map_err(DatabaseError)?;
+
+        entity
+            .map(TryIntoDomainModelSimple::try_into_domain_model_simple)
+            .transpose()
+    }
+
     async fn find_all(&self) -> Result<Vec<Tag>, RepositoryError> {
         let entities = Entity::find().all(&self.db).await.map_err(DatabaseError)?;
 

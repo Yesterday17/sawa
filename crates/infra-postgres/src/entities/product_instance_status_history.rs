@@ -1,4 +1,9 @@
-use sea_orm::entity::prelude::*;
+use crate::traits::TryIntoDomainModelSimple;
+use sawa_core::{
+    errors::RepositoryResult,
+    models::product::{ProductInstanceId, ProductInstanceStatusHistory},
+};
+use sea_orm::{ActiveValue, entity::prelude::*};
 
 ///
 /// ProductInstanceStatusHistory entity
@@ -25,3 +30,28 @@ pub struct Model {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+impl TryIntoDomainModelSimple<ProductInstanceStatusHistory> for ModelEx {
+    fn try_into_domain_model_simple(self) -> RepositoryResult<ProductInstanceStatusHistory> {
+        Ok(ProductInstanceStatusHistory {
+            id: self.id.try_into()?,
+            status: self.status.into(),
+            changed_at: self.changed_at,
+            reason: self.reason,
+        })
+    }
+}
+
+impl From<(&ProductInstanceStatusHistory, ProductInstanceId)> for ActiveModel {
+    fn from(
+        (status, product_instance_id): (&ProductInstanceStatusHistory, ProductInstanceId),
+    ) -> Self {
+        Self {
+            id: ActiveValue::Set(Uuid::from(status.id.0)),
+            product_instance_id: ActiveValue::Set(Uuid::from(product_instance_id)),
+            status: ActiveValue::Set(status.status.into()),
+            changed_at: ActiveValue::Set(status.changed_at),
+            reason: ActiveValue::Set(status.reason.clone()),
+        }
+    }
+}

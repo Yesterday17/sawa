@@ -1,10 +1,10 @@
-use chrono::{DateTime, Utc};
-use uuid::{NonNilUuid, Uuid};
-
 use crate::models::{
     product::ProductVariantId, purchase::PurchaseOrderLineItemId,
     transfer::ProductInstanceTransferHistory, user::UserId,
 };
+use chrono::{DateTime, Utc};
+
+crate::create_entity_id!(ProductInstanceId);
 
 /// Represents a specific, individual item of a product variant.
 ///
@@ -43,15 +43,6 @@ pub struct ProductInstance {
     pub status_history: Vec<ProductInstanceStatusHistory>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ProductInstanceId(pub NonNilUuid);
-
-impl ProductInstanceId {
-    pub fn new() -> Self {
-        Self(NonNilUuid::new(Uuid::now_v7()).expect("UUID v7 should never be nil"))
-    }
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ProductInstanceStatus {
     /// Owned by user, in their inventory
@@ -70,8 +61,13 @@ pub enum ProductInstanceStatus {
     Destroyed,
 }
 
+crate::create_entity_id!(ProductInstanceStatusHistoryId);
+
 #[derive(Debug, Clone)]
 pub struct ProductInstanceStatusHistory {
+    /// The unique identifier for this status change.
+    pub id: ProductInstanceStatusHistoryId,
+
     /// The new status after this change
     pub status: ProductInstanceStatus,
 

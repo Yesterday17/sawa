@@ -2,8 +2,13 @@ use chrono::{DateTime, Utc};
 
 use crate::models::user::UserId;
 
+crate::create_entity_id!(ProductInstanceTransferHistoryId);
+
 #[derive(Debug, Clone)]
 pub struct ProductInstanceTransferHistory {
+    /// The unique identifier for this transfer history.
+    pub id: ProductInstanceTransferHistoryId,
+
     /// The original owner
     pub from_owner_id: Option<UserId>,
     /// The original holder

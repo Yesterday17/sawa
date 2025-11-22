@@ -1,7 +1,7 @@
-use chrono::{DateTime, Utc};
-use uuid::{NonNilUuid, Uuid};
-
 use crate::models::misc::{MediaId, NonEmptyString};
+use chrono::{DateTime, Utc};
+
+crate::create_entity_id!(UserId);
 
 #[derive(Debug, Clone)]
 pub struct User {
@@ -24,15 +24,6 @@ pub struct User {
 
     /// The timestamp when the user was created.
     pub created_at: DateTime<Utc>,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct UserId(pub NonNilUuid);
-
-impl UserId {
-    pub fn new() -> Self {
-        Self(NonNilUuid::new(Uuid::now_v7()).expect("UUID v7 should never be nil"))
-    }
 }
 
 #[derive(Debug, Clone)]

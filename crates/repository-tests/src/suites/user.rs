@@ -26,7 +26,7 @@ pub async fn test_save_and_find_by_id<R: UserRepository>(repo: R) {
     let user = create_test_user("testuser", "test@example.com");
     let user_id = user.id;
 
-    repo.save(&user).await.unwrap();
+    repo.save(user).await.unwrap();
 
     let found = repo.find_by_id(&user_id).await.unwrap();
     assert!(found.is_some());
@@ -38,7 +38,7 @@ pub async fn test_find_by_email<R: UserRepository>(repo: R) {
     let user = create_test_user("testuser", "test@example.com");
     let user_id = user.id;
 
-    repo.save(&user).await.unwrap();
+    let user = repo.save(user).await.unwrap();
 
     let by_email = repo.find_by_email(&user.email).await.unwrap();
     assert!(by_email.is_some());
@@ -50,7 +50,7 @@ pub async fn test_find_by_username<R: UserRepository>(repo: R) {
     let user = create_test_user("testuser", "test@example.com");
     let user_id = user.id;
 
-    repo.save(&user).await.unwrap();
+    let user = repo.save(user).await.unwrap();
 
     let by_username = repo.find_by_username(&user.username).await.unwrap();
     assert!(by_username.is_some());
@@ -62,8 +62,8 @@ pub async fn test_find_by_email_returns_correct_user<R: UserRepository>(repo: R)
     let user_a = create_test_user("user_a", "a@example.com");
     let user_b = create_test_user("user_b", "b@example.com");
 
-    repo.save(&user_a).await.unwrap();
-    repo.save(&user_b).await.unwrap();
+    let user_a = repo.save(user_a).await.unwrap();
+    let user_b = repo.save(user_b).await.unwrap();
 
     // Find by user A's email should return user A
     let found = repo.find_by_email(&user_a.email).await.unwrap();
@@ -81,8 +81,8 @@ pub async fn test_find_by_username_returns_correct_user<R: UserRepository>(repo:
     let user_a = create_test_user("user_a", "a@example.com");
     let user_b = create_test_user("user_b", "b@example.com");
 
-    repo.save(&user_a).await.unwrap();
-    repo.save(&user_b).await.unwrap();
+    let user_a = repo.save(user_a).await.unwrap();
+    let user_b = repo.save(user_b).await.unwrap();
 
     // Find by user A's username should return user A
     let found = repo.find_by_username(&user_a.username).await.unwrap();
@@ -100,7 +100,7 @@ pub async fn test_delete<R: UserRepository>(repo: R) {
     let user = create_test_user("testuser", "test@example.com");
     let user_id = user.id;
 
-    repo.save(&user).await.unwrap();
+    repo.save(user).await.unwrap();
     repo.delete(&user_id).await.unwrap();
 
     let after_delete = repo.find_by_id(&user_id).await.unwrap();

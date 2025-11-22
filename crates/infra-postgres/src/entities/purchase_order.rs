@@ -1,6 +1,14 @@
-use sawa_core::models::purchase::PurchaseOrderStatus;
+use crate::traits::TryIntoDomainModel;
+use sawa_core::{
+    errors::RepositoryError,
+    models::{
+        misc::{Currency, Price},
+        purchase::{PurchaseOrder, PurchaseOrderStatus},
+    },
+};
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 
 ///
 /// PurchaseOrder entity
@@ -87,4 +95,49 @@ impl From<DBPurchaseOrderStatus> for PurchaseOrderStatus {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
-pub struct DBAddress(sawa_core::models::misc::Address);
+pub struct DBAddress(pub sawa_core::models::misc::Address);
+
+impl DBAddress {
+    pub fn new(address: sawa_core::models::misc::Address) -> Self {
+        Self(address)
+    }
+
+    pub fn into_inner(self) -> sawa_core::models::misc::Address {
+        self.0
+    }
+
+    pub fn as_ref(&self) -> &sawa_core::models::misc::Address {
+        &self.0
+    }
+}
+
+impl TryIntoDomainModel<PurchaseOrder> for Model {
+    type Relation = Vec<(
+        super::purchase_order_item::Model,
+        Vec<super::purchase_order_line_item::Model>,
+    )>;
+
+    fn try_into_domain_model(
+        self,
+        items: Self::Relation,
+    ) -> Result<PurchaseOrder, RepositoryError> {
+        Ok(PurchaseOrder {
+            id: self.id.try_into()?,
+            creator_id: self.creator_id.try_into()?,
+            receiver_id: self.receiver_id.try_into()?,
+            items: items
+                .into_iter()
+                .map(|(item, children)| item.try_into_domain_model(children))
+                .collect::<Result<Vec<_>, _>>()?,
+            shipping_address: self.shipping_address.map(|addr| addr.into_inner()),
+            total_price: Price {
+                currency: Currency::from_str(&self.total_price_currency)?,
+                amount: self.total_price_amount,
+            },
+            status: self.status.into(),
+            created_at: self.created_at,
+            completed_at: self.completed_at,
+            cancelled_at: self.cancelled_at,
+        })
+    }
+}

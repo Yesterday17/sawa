@@ -1,5 +1,9 @@
-use sawa_core::models::product::ProductInstanceStatus;
-use sea_orm::entity::prelude::*;
+use crate::traits::TryIntoDomainModelSimple;
+use sawa_core::{
+    errors::RepositoryResult,
+    models::product::{ProductInstance, ProductInstanceStatus},
+};
+use sea_orm::{ActiveValue, entity::prelude::*};
 
 ///
 /// ProductInstance entity
@@ -86,3 +90,45 @@ impl From<ProductInstanceStatus> for DBProductInstanceStatus {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+impl TryIntoDomainModelSimple<ProductInstance> for ModelEx {
+    fn try_into_domain_model_simple(self) -> RepositoryResult<ProductInstance> {
+        let transfer_history = self
+            .transfer_history
+            .into_iter()
+            .map(TryIntoDomainModelSimple::try_into_domain_model_simple)
+            .collect::<Result<Vec<_>, _>>()?;
+        let status_history = self
+            .status_history
+            .into_iter()
+            .map(TryIntoDomainModelSimple::try_into_domain_model_simple)
+            .collect::<Result<Vec<_>, _>>()?;
+        Ok(ProductInstance {
+            id: self.id.try_into()?,
+            variant_id: self.variant_id.try_into()?,
+            owner_id: self.owner_id.try_into()?,
+            holder_id: self.holder_id.try_into()?,
+            status: self.status.into(),
+            source_order_line_item_id: self.source_order_line_item_id.try_into()?,
+            created_at: self.created_at,
+            transfer_history,
+            status_history,
+        })
+    }
+}
+
+impl From<&ProductInstance> for crate::entities::product_instance::ActiveModel {
+    fn from(instance: &ProductInstance) -> Self {
+        Self {
+            id: ActiveValue::Set(Uuid::from(instance.id.0)),
+            variant_id: ActiveValue::Set(Uuid::from(instance.variant_id.0)),
+            owner_id: ActiveValue::Set(Uuid::from(instance.owner_id.0)),
+            holder_id: ActiveValue::Set(Uuid::from(instance.holder_id.0)),
+            status: ActiveValue::Set(instance.status.into()),
+            source_order_line_item_id: ActiveValue::Set(Uuid::from(
+                instance.source_order_line_item_id.0,
+            )),
+            created_at: ActiveValue::Set(instance.created_at),
+        }
+    }
+}

@@ -1,12 +1,13 @@
 use std::num::NonZeroU32;
 
 use serde::{Deserialize, Serialize};
-use uuid::{NonNilUuid, Uuid};
 
 use crate::models::{
     misc::{MediaId, NonEmptyString, Price, TagId},
     product::ProductId,
 };
+
+crate::create_entity_id!(ProductVariantId);
 
 /// Represents a specific variant of a product.
 ///
@@ -59,15 +60,6 @@ pub struct ProductVariant {
     ///
     /// Variants with the same order value would be displayed in the order of variant_id.
     pub sort_order: i32,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub struct ProductVariantId(pub NonNilUuid);
-
-impl ProductVariantId {
-    pub fn new() -> Self {
-        Self(NonNilUuid::new(Uuid::now_v7()).expect("UUID v7 should never be nil"))
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

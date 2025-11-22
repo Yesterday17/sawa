@@ -1,3 +1,7 @@
+use crate::models::misc::EmptyStringError;
+use iso_currency::ParseCurrencyError;
+use std::num::TryFromIntError;
+
 /// Error types for the domain layer.
 ///
 /// # Error Organization
@@ -26,8 +30,14 @@ pub enum RepositoryError {
     /// Unique constraint violation (e.g., email already exists)
     ///
     /// Service layer can check the field name to provide specific errors.
-    #[error("Duplicate entry for field '{field}': {value}")]
-    Duplicated { field: String, value: String },
+    #[error("Duplicate entry found: {0}")]
+    Duplicated(String),
+
+    #[error("Failed to convert integer: {0}")]
+    InvalidInt(#[from] TryFromIntError),
+
+    #[error("Invalid currency: {0}")]
+    InvalidCurrency(#[from] ParseCurrencyError),
 
     /// Cannot delete due to foreign key or dependency constraints
     ///
@@ -35,9 +45,20 @@ pub enum RepositoryError {
     #[error("Cannot delete: has dependencies ({details})")]
     HasDependencies { details: String },
 
+    #[error("Invalid UUID: {0}")]
+    InvalidUuid(#[from] uuid::Error),
+
+    #[error(transparent)]
+    InvalidStringValue(#[from] EmptyStringError),
+
+    #[error("Invalid URL: {0}")]
+    InvalidUrl(#[from] url::ParseError),
+
     /// Generic infrastructure failure (database connection, query error, etc.)
     ///
     /// Service layer typically just wraps this in its own error.
     #[error("Internal error: {0}")]
     Internal(String),
 }
+
+pub type RepositoryResult<T> = Result<T, RepositoryError>;

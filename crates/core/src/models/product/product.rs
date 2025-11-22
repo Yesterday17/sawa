@@ -1,6 +1,6 @@
-use uuid::{NonNilUuid, Uuid};
-
 use crate::models::misc::{MediaId, NonEmptyString};
+
+crate::create_entity_id!(ProductId);
 
 /// Product represents a product in the catalog.
 ///
@@ -43,14 +43,5 @@ impl Product {
     /// Add a media to this product.
     pub fn add_media(&mut self, media: MediaId) {
         self.medias.push(media);
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ProductId(pub NonNilUuid);
-
-impl ProductId {
-    pub fn new() -> Self {
-        Self(NonNilUuid::new(Uuid::now_v7()).expect("UUID v7 should never be nil"))
     }
 }

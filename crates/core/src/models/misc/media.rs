@@ -1,5 +1,6 @@
 use url::Url;
-use uuid::NonNilUuid;
+
+crate::create_entity_id!(MediaId);
 
 #[derive(Debug, Clone)]
 pub struct Media {
@@ -10,13 +11,4 @@ pub struct Media {
     ///
     /// TODO: This may be changed to a more complex structure in the future to support better authentication and access control.
     pub url: Url,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct MediaId(pub NonNilUuid);
-
-impl MediaId {
-    pub fn new() -> Self {
-        Self(uuid::NonNilUuid::new(uuid::Uuid::now_v7()).expect("UUID v7 should never be nil"))
-    }
 }

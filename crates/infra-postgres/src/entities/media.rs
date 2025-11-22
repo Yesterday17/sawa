@@ -1,4 +1,9 @@
-use sea_orm::entity::prelude::*;
+use std::str::FromStr;
+
+use crate::traits::TryIntoDomainModelSimple;
+use sawa_core::{errors::RepositoryResult, models::misc::Media};
+use sea_orm::{ActiveValue, entity::prelude::*};
+use url::Url;
 
 ///
 /// Media entity
@@ -15,3 +20,21 @@ pub struct Model {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+impl From<&Media> for crate::entities::media::ActiveModel {
+    fn from(media: &Media) -> Self {
+        Self {
+            id: ActiveValue::Set(Uuid::from(media.id.0)),
+            url: ActiveValue::Set(media.url.to_string()),
+        }
+    }
+}
+
+impl TryIntoDomainModelSimple<Media> for Model {
+    fn try_into_domain_model_simple(self) -> RepositoryResult<Media> {
+        Ok(Media {
+            id: self.id.try_into()?,
+            url: Url::from_str(&self.url)?,
+        })
+    }
+}

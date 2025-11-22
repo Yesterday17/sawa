@@ -45,10 +45,10 @@ impl UserRepository for InMemoryUserRepository {
         Ok(users.values().find(|u| u.username.0 == username.0).cloned())
     }
 
-    async fn save(&self, user: &User) -> Result<(), RepositoryError> {
+    async fn save(&self, user: User) -> Result<User, RepositoryError> {
         let mut users = self.users.write().unwrap();
         users.insert(user.id, user.clone());
-        Ok(())
+        Ok(user)
     }
 
     async fn delete(&self, id: &UserId) -> Result<(), RepositoryError> {

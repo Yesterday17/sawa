@@ -1,43 +1,34 @@
-use chrono::{DateTime, Utc};
-use uuid::{NonNilUuid, Uuid};
-
 use crate::models::{
     product::{
         ProductInstance, ProductInstanceId, ProductInstanceStatus, ProductInstanceStatusHistory,
-        ProductVariantId,
+        ProductInstanceStatusHistoryId, ProductVariantId,
     },
     purchase::PurchaseOrderItemId,
-    transfer::{ProductInstanceTransferHistory, TransferReason},
+    transfer::{ProductInstanceTransferHistory, ProductInstanceTransferHistoryId, TransferReason},
     user::UserId,
 };
+use chrono::{DateTime, Utc};
+
+crate::create_entity_id!(PurchaseOrderLineItemId);
 
 /// A variant pending instance creation, with ownership assignment
 #[derive(Debug, Clone)]
 pub struct PurchaseOrderLineItem {
-    id: PurchaseOrderLineItemId,
+    pub id: PurchaseOrderLineItemId,
 
     /// The purchase order item this order item belongs to
-    purchase_order_item_id: PurchaseOrderItemId,
+    pub purchase_order_item_id: PurchaseOrderItemId,
 
     /// The variant to create instance for
-    variant_id: ProductVariantId,
+    pub variant_id: ProductVariantId,
 
     /// The ultimate owner of instance created for this line item
-    owner_id: UserId,
+    pub owner_id: UserId,
 
     /// The created instance (None until fulfilled)
-    instance_id: Option<ProductInstanceId>,
+    pub instance_id: Option<ProductInstanceId>,
     /// The timestamp when the instance was created
-    fulfilled_at: Option<DateTime<Utc>>,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct PurchaseOrderLineItemId(pub NonNilUuid);
-
-impl PurchaseOrderLineItemId {
-    pub fn new() -> Self {
-        Self(NonNilUuid::new(Uuid::now_v7()).expect("UUID v7 should never be nil"))
-    }
+    pub fulfilled_at: Option<DateTime<Utc>>,
 }
 
 impl PurchaseOrderLineItem {
@@ -71,6 +62,7 @@ impl PurchaseOrderLineItem {
             source_order_line_item_id: self.id,
             created_at: now,
             transfer_history: vec![ProductInstanceTransferHistory {
+                id: ProductInstanceTransferHistoryId::new(),
                 from_owner_id: None,
                 from_holder_id: None,
                 to_owner_id: self.owner_id,
@@ -79,6 +71,7 @@ impl PurchaseOrderLineItem {
                 transferred_at: now,
             }],
             status_history: vec![ProductInstanceStatusHistory {
+                id: ProductInstanceStatusHistoryId::new(),
                 status: ProductInstanceStatus::Active,
                 changed_at: now,
                 reason: None,

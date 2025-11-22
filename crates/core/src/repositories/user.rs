@@ -26,11 +26,8 @@ pub trait UserRepository: Send + Sync + 'static {
         username: &Username,
     ) -> impl Future<Output = Result<Option<User>, RepositoryError>> + Send;
 
-    /// Save a user (create or update).
-    ///
-    /// In DDD, we don't distinguish between create and update at the repository level.
-    /// The repository should handle this internally (e.g., using UPSERT).
-    fn save(&self, user: &User) -> impl Future<Output = Result<(), RepositoryError>> + Send;
+    /// Create or update a user.
+    fn save(&self, user: User) -> impl Future<Output = Result<User, RepositoryError>> + Send;
 
     /// Delete a user by their ID.
     ///

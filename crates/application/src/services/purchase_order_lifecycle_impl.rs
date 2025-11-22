@@ -74,7 +74,7 @@ where
                         // Update line item on success
                         line_item.fulfill(&instance);
                     }
-                    Err(RepositoryError::Duplicated { field, value }) => {
+                    Err(RepositoryError::Duplicated(e)) => {
                         let instance = self
                             .product_instance
                             .find_by_line_item_id(line_item.id())
@@ -86,7 +86,7 @@ where
                             // Unique constraint violated but instance not found.
                             // Populate error
                             return Err(FulfillOrderError::Repository(
-                                RepositoryError::Duplicated { field, value },
+                                RepositoryError::Duplicated(e),
                             ));
                         }
                     }

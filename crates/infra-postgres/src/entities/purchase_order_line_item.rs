@@ -1,3 +1,5 @@
+use crate::traits::TryIntoDomainModelSimple;
+use sawa_core::{errors::RepositoryError, models::purchase::PurchaseOrderLineItem};
 use sea_orm::entity::prelude::*;
 
 ///
@@ -35,3 +37,16 @@ pub struct Model {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+impl TryIntoDomainModelSimple<PurchaseOrderLineItem> for Model {
+    fn try_into_domain_model_simple(self) -> Result<PurchaseOrderLineItem, RepositoryError> {
+        Ok(PurchaseOrderLineItem {
+            id: self.id.try_into()?,
+            purchase_order_item_id: self.purchase_order_item_id.try_into()?,
+            variant_id: self.variant_id.try_into()?,
+            owner_id: self.owner_id.try_into()?,
+            instance_id: self.instance_id.map(TryInto::try_into).transpose()?,
+            fulfilled_at: self.fulfilled_at,
+        })
+    }
+}

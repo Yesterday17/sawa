@@ -1,8 +1,7 @@
+use crate::models::{misc::Price, product::ProductVariantId, purchase::PurchaseOrderLineItem};
 use std::num::NonZeroU32;
 
-use uuid::{NonNilUuid, Uuid};
-
-use crate::models::{misc::Price, product::ProductVariantId, purchase::PurchaseOrderLineItem};
+crate::create_entity_id!(PurchaseOrderItemId);
 
 /// A single item in a purchase order.
 #[derive(Debug, Clone)]
@@ -32,15 +31,6 @@ pub struct PurchaseOrderItem {
 
     /// Price at time of order (snapshot, immutable)
     pub unit_price: Option<Price>,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct PurchaseOrderItemId(pub NonNilUuid);
-
-impl PurchaseOrderItemId {
-    pub fn new() -> Self {
-        Self(NonNilUuid::new(Uuid::now_v7()).expect("UUID v7 should never be nil"))
-    }
 }
 
 /// The status of a purchase order item.

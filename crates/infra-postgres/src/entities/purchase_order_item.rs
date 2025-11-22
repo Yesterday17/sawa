@@ -1,5 +1,13 @@
-use sawa_core::models::purchase::PurchaseOrderItemStatus;
+use crate::traits::{TryIntoDomainModel, TryIntoDomainModelSimple};
+use sawa_core::{
+    errors::RepositoryError,
+    models::{
+        misc::{Currency, Price},
+        purchase::{PurchaseOrderItem, PurchaseOrderItemStatus},
+    },
+};
 use sea_orm::entity::prelude::*;
+use std::str::FromStr;
 
 ///
 /// PurchaseOrderItem entity
@@ -70,5 +78,32 @@ impl From<DBPurchaseOrderItemStatus> for PurchaseOrderItemStatus {
             DBPurchaseOrderItemStatus::Fulfilled => PurchaseOrderItemStatus::Fulfilled,
             DBPurchaseOrderItemStatus::Cancelled => PurchaseOrderItemStatus::Cancelled,
         }
+    }
+}
+
+impl TryIntoDomainModel<PurchaseOrderItem> for Model {
+    type Relation = Vec<super::purchase_order_line_item::Model>;
+
+    fn try_into_domain_model(
+        self,
+        line_items: Self::Relation,
+    ) -> Result<PurchaseOrderItem, RepositoryError> {
+        Ok(PurchaseOrderItem {
+            id: self.id.try_into()?,
+            purchased_variant_id: self.purchased_variant_id.try_into()?,
+            line_items: line_items
+                .into_iter()
+                .map(TryIntoDomainModelSimple::try_into_domain_model_simple)
+                .collect::<Result<_, _>>()?,
+            status: self.status.into(),
+            quantity: self.quantity.try_into()?,
+            unit_price: match (self.unit_price_currency, self.unit_price_amount) {
+                (Some(currency), Some(amount)) => Some(Price {
+                    currency: Currency::from_str(&currency)?,
+                    amount,
+                }),
+                _ => None,
+            },
+        })
     }
 }

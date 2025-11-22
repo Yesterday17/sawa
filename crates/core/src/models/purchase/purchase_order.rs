@@ -1,11 +1,12 @@
 use chrono::{DateTime, Utc};
-use uuid::{NonNilUuid, Uuid};
 
 use crate::models::{
     misc::{Address, Price},
     purchase::PurchaseOrderItem,
     user::UserId,
 };
+
+crate::create_entity_id!(PurchaseOrderId);
 
 #[derive(Debug, Clone)]
 pub struct PurchaseOrder {
@@ -38,15 +39,6 @@ pub struct PurchaseOrder {
     pub completed_at: Option<DateTime<Utc>>,
     /// The timestamp when the order was cancelled.
     pub cancelled_at: Option<DateTime<Utc>>,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct PurchaseOrderId(pub NonNilUuid);
-
-impl PurchaseOrderId {
-    pub fn new() -> Self {
-        Self(NonNilUuid::new(Uuid::now_v7()).expect("UUID v7 should never be nil"))
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

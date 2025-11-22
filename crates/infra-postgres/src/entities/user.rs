@@ -1,4 +1,5 @@
-use sea_orm::entity::prelude::*;
+use sawa_core::{errors::RepositoryError, models::user::*};
+use sea_orm::{ActiveValue::Set, entity::prelude::*};
 
 /// User entity
 #[sea_orm::model]
@@ -29,3 +30,31 @@ pub struct Model {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+impl TryFrom<Model> for User {
+    type Error = RepositoryError;
+
+    fn try_from(model: Model) -> Result<Self, Self::Error> {
+        Ok(User {
+            id: model.id.try_into()?,
+            username: Username(model.username),
+            email: Email(model.email),
+            password_hash: model.password_hash.try_into()?,
+            avatar: model.avatar_id.map(|id| id.try_into()).transpose()?.into(),
+            created_at: model.created_at,
+        })
+    }
+}
+
+impl From<User> for crate::entities::user::ActiveModel {
+    fn from(user: User) -> Self {
+        Self {
+            id: Set(user.id.into()),
+            username: Set(user.username.0),
+            email: Set(user.email.0),
+            password_hash: Set(user.password_hash.into_string()),
+            avatar_id: Set(user.avatar.map(Into::into)),
+            created_at: Set(user.created_at),
+        }
+    }
+}

@@ -1,6 +1,6 @@
-use uuid::{NonNilUuid, Uuid};
-
 use super::NonEmptyString;
+
+crate::create_entity_id!(TagId);
 
 /// Tag represents a classification or categorization label.
 ///
@@ -66,14 +66,5 @@ impl Tag {
     /// Set the parent tag.
     pub fn set_parent(&mut self, parent_id: Option<TagId>) {
         self.parent_tag_id = parent_id;
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct TagId(pub NonNilUuid);
-
-impl TagId {
-    pub fn new() -> Self {
-        Self(NonNilUuid::new(Uuid::now_v7()).expect("UUID v7 should never be nil"))
     }
 }

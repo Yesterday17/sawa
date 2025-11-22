@@ -1,4 +1,6 @@
-use sea_orm::entity::prelude::*;
+use crate::traits::TryIntoDomainModelSimple;
+use sawa_core::{errors::RepositoryError, models::product::Product};
+use sea_orm::{ActiveValue::Set, entity::prelude::*};
 
 ///
 /// Product entity
@@ -25,3 +27,29 @@ pub struct Model {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+impl TryIntoDomainModelSimple<Product> for Model {
+    fn try_into_domain_model_simple(self) -> Result<Product, RepositoryError> {
+        Ok(Product {
+            id: self.id.try_into()?,
+            name: self.name.try_into()?,
+            description: self.description.clone(),
+            medias: self
+                .medias
+                .into_iter()
+                .map(|id| id.try_into())
+                .collect::<Result<Vec<_>, _>>()?,
+        })
+    }
+}
+
+impl From<&Product> for crate::entities::product::ActiveModel {
+    fn from(product: &Product) -> Self {
+        Self {
+            id: Set(product.id.into()),
+            name: Set(product.name.clone().into()),
+            description: Set(product.description.clone()),
+            medias: Set(product.medias.iter().map(|id| Uuid::from(id.0)).collect()),
+        }
+    }
+}

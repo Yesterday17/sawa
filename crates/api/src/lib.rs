@@ -6,6 +6,7 @@ use axum::Router;
 use sawa_core::services::ProductService;
 use state::AppState;
 
+pub mod auth;
 pub mod docs;
 pub mod error;
 pub mod handlers;

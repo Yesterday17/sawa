@@ -1,5 +1,5 @@
 use aide::axum::IntoApiResponse;
-use axum::{http::StatusCode, Json};
+use axum::{Json, http::StatusCode};
 use schemars::JsonSchema;
 use serde::Serialize;
 

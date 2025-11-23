@@ -1,6 +1,6 @@
-use crate::{error::DatabaseError, traits::TryIntoDomainModelSimple};
+use crate::traits::TryIntoDomainModelSimple;
 use sawa_core::{errors::RepositoryError, models::purchase::PurchaseOrderLineItem};
-use sea_orm::{ActiveValue::Set, TryIntoModel, entity::prelude::*};
+use sea_orm::{ActiveValue::Set, entity::prelude::*};
 
 ///
 /// PurchaseOrderLineItem entity
@@ -38,7 +38,7 @@ pub struct Model {
 
 impl ActiveModelBehavior for ActiveModel {}
 
-impl TryIntoDomainModelSimple<PurchaseOrderLineItem> for Model {
+impl TryIntoDomainModelSimple<PurchaseOrderLineItem> for ModelEx {
     fn try_into_domain_model_simple(self) -> Result<PurchaseOrderLineItem, RepositoryError> {
         Ok(PurchaseOrderLineItem {
             id: self.id.try_into()?,
@@ -48,14 +48,6 @@ impl TryIntoDomainModelSimple<PurchaseOrderLineItem> for Model {
             instance_id: self.instance_id.map(TryInto::try_into).transpose()?,
             fulfilled_at: self.fulfilled_at,
         })
-    }
-}
-
-impl TryIntoDomainModelSimple<PurchaseOrderLineItem> for ModelEx {
-    fn try_into_domain_model_simple(self) -> Result<PurchaseOrderLineItem, RepositoryError> {
-        self.try_into_model()
-            .map_err(DatabaseError)?
-            .try_into_domain_model_simple()
     }
 }
 

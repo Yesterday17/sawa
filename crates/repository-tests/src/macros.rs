@@ -189,6 +189,12 @@ macro_rules! test_all_repositories {
                 let repo = $order_repo;
                 $crate::suites::purchase_order::test_find_by_user_and_status_permission(repo).await;
             }
+
+            #[$crate::tokio::test]
+            async fn find_by_id_access_control() {
+                let repo = $order_repo;
+                $crate::suites::purchase_order::test_find_by_id_access_control(repo).await;
+            }
         }
 
         mod user_repository_tests {

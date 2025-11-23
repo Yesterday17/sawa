@@ -1,6 +1,6 @@
-use crate::{error::DatabaseError, traits::TryIntoDomainModelSimple};
+use crate::traits::TryIntoDomainModelSimple;
 use sawa_core::{errors::RepositoryError, models::misc::Tag};
-use sea_orm::{ActiveValue, TryIntoModel, entity::prelude::*};
+use sea_orm::{ActiveValue, entity::prelude::*};
 
 /// Tag entity
 #[sea_orm::model]
@@ -46,9 +46,15 @@ impl TryIntoDomainModelSimple<Tag> for Model {
 
 impl TryIntoDomainModelSimple<Tag> for ModelEx {
     fn try_into_domain_model_simple(self) -> Result<Tag, RepositoryError> {
-        self.try_into_model()
-            .map_err(DatabaseError)?
-            .try_into_domain_model_simple()
+        Ok(Tag {
+            id: self.id.try_into()?,
+            name: self.name.try_into()?,
+            description: self.description.clone(),
+            parent_tag_id: match self.parent_tag_id {
+                Some(id) => Some(id.try_into()?),
+                None => None,
+            },
+        })
     }
 }
 

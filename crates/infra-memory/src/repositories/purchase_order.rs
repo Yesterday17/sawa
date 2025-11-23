@@ -44,6 +44,15 @@ impl PurchaseOrderRepository for InMemoryPurchaseOrderRepository {
             if &o.creator_id == user_id || &o.receiver_id == user_id {
                 return Ok(Some(o.clone()));
             }
+
+            // Check if user owns any line item
+            for item in &o.items {
+                for line_item in &item.line_items {
+                    if &line_item.owner_id == user_id {
+                        return Ok(Some(o.clone()));
+                    }
+                }
+            }
         }
 
         Ok(None)

@@ -37,7 +37,7 @@ pub struct Model {
     pub status: DBPurchaseOrderItemStatus,
 
     /// How many units to purchase
-    pub quantity: u32,
+    pub quantity: i64,
 
     /// Price at time of order (snapshot, immutable)
     pub unit_price_currency: Option<String>,
@@ -93,7 +93,7 @@ impl TryIntoDomainModelSimple<PurchaseOrderItem> for ModelEx {
             purchased_variant_id: self.purchased_variant_id.try_into()?,
             line_items,
             status: self.status.into(),
-            quantity: self.quantity.try_into()?,
+            quantity: (self.quantity as u32).try_into()?,
             unit_price: match (self.unit_price_currency, self.unit_price_amount) {
                 (Some(currency), Some(amount)) => Some(Price {
                     currency: Currency::from_str(&currency)?,
@@ -112,7 +112,7 @@ impl From<(&PurchaseOrderItem, Uuid)> for ActiveModel {
             purchase_order_id: Set(purchase_order_id),
             purchased_variant_id: Set(Uuid::from(item.purchased_variant_id.0)),
             status: Set(item.status.into()),
-            quantity: Set(item.quantity.get()),
+            quantity: Set(item.quantity.get() as i64),
             unit_price_currency: Set(item
                 .unit_price
                 .as_ref()

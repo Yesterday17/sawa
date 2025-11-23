@@ -31,7 +31,6 @@ impl PurchaseOrderRepository for PostgresPurchaseOrderRepository {
         pub use purchase_order::Column;
 
         let entity = purchase_order::Entity::load()
-            .with(purchase_order_item::Entity)
             .with((
                 purchase_order_item::Entity,
                 purchase_order_line_item::Entity,

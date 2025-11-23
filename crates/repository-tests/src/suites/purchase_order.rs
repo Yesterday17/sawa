@@ -1,11 +1,16 @@
 use sawa_core::{
     models::{
         misc::{Currency, Price},
-        purchase::{PurchaseOrder, PurchaseOrderId, PurchaseOrderStatus},
+        product::ProductVariantId,
+        purchase::{
+            PurchaseOrder, PurchaseOrderId, PurchaseOrderItem, PurchaseOrderItemId,
+            PurchaseOrderItemStatus, PurchaseOrderLineItem, PurchaseOrderStatus,
+        },
         user::UserId,
     },
     repositories::PurchaseOrderRepository,
 };
+use std::num::NonZeroU32;
 
 fn create_test_order(
     creator_id: UserId,
@@ -252,4 +257,86 @@ pub async fn test_find_by_user_and_status_permission<R: PurchaseOrderRepository>
     // Clean up
     repo.delete(&order_a.id).await.unwrap();
     repo.delete(&order_b.id).await.unwrap();
+}
+
+/// Test find_by_id access control.
+///
+/// Ensures that:
+/// - Creator can access
+/// - Receiver can access
+/// - Owner of any line item can access
+/// - Random user cannot access
+pub async fn test_find_by_id_access_control<R: PurchaseOrderRepository>(repo: R) {
+    let creator = UserId::new();
+    let receiver = UserId::new();
+    let item_owner = UserId::new();
+    let random_user = UserId::new();
+
+    let order_id = PurchaseOrderId::new();
+    let item_id = PurchaseOrderItemId::new();
+    let variant_id = ProductVariantId::new();
+
+    let line_item = PurchaseOrderLineItem::new(variant_id, item_id, item_owner);
+
+    let item = PurchaseOrderItem {
+        id: item_id,
+        purchased_variant_id: variant_id,
+        line_items: vec![line_item],
+        status: PurchaseOrderItemStatus::Pending,
+        quantity: NonZeroU32::new(1).unwrap(),
+        unit_price: None,
+    };
+
+    let order = PurchaseOrder {
+        id: order_id,
+        creator_id: creator,
+        receiver_id: receiver,
+        items: vec![item],
+        shipping_address: None,
+        total_price: Price {
+            currency: Currency::USD,
+            amount: 1000,
+        },
+        status: PurchaseOrderStatus::Incomplete,
+        created_at: chrono::Utc::now(),
+        completed_at: None,
+        cancelled_at: None,
+    };
+
+    repo.save(&order).await.unwrap();
+
+    // Creator should find it
+    assert!(
+        repo.find_by_id(&order_id, &creator)
+            .await
+            .unwrap()
+            .is_some()
+    );
+
+    // Receiver should find it
+    assert!(
+        repo.find_by_id(&order_id, &receiver)
+            .await
+            .unwrap()
+            .is_some()
+    );
+
+    // Item owner should find it
+    assert!(
+        repo.find_by_id(&order_id, &item_owner)
+            .await
+            .unwrap()
+            .is_some()
+    );
+
+    // Random user should NOT find it
+    assert!(
+        repo.find_by_id(&order_id, &random_user)
+            .await
+            .unwrap()
+            .is_none()
+    );
+
+    // Clean up
+    repo.delete(&order_id).await.unwrap();
 }

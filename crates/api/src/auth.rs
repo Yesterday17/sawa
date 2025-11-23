@@ -1,3 +1,4 @@
+use aide::NoApi;
 use axum_login::{AuthUser, AuthnBackend};
 use sawa_core::{
     models::{
@@ -6,6 +7,7 @@ use sawa_core::{
     },
     services::{GetUserError, GetUserRequest, LoginError, LoginRequest, UserService},
 };
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -43,25 +45,28 @@ impl AuthUser for ApiUser {
     }
 
     fn session_auth_hash(&self) -> &[u8] {
-        self.password.as_bytes() // We use the password hash as the auth
-        // hash--what this means
-        // is when the user changes their password the
-        // auth session becomes invalid.
+        self.password.as_bytes()
     }
 }
 
-#[derive(Debug, Clone, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Deserialize, JsonSchema)]
 pub struct Credentials {
     pub username: Username,
     pub password: NonEmptyString,
 }
 
 #[derive(Debug, Clone)]
-pub struct Backend<S> {
+pub struct AuthBackend<S> {
     service: S,
 }
 
-impl<S> AuthnBackend for Backend<S>
+impl<S> AuthBackend<S> {
+    pub fn new(service: S) -> Self {
+        Self { service }
+    }
+}
+
+impl<S> AuthnBackend for AuthBackend<S>
 where
     S: UserService + Clone,
 {
@@ -101,4 +106,4 @@ where
     }
 }
 
-pub type AuthSession<S> = axum_login::AuthSession<Backend<S>>;
+pub type AuthSession<S> = NoApi<axum_login::AuthSession<AuthBackend<S>>>;

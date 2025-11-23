@@ -10,6 +10,7 @@ use tokio::net::TcpListener;
 use tower::ServiceBuilder;
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
+use tower_sessions_memory_store::MemoryStore;
 
 #[tokio::main]
 async fn main() {
@@ -39,7 +40,8 @@ async fn main() {
     };
 
     // Create the app
-    let app = create_app(service).layer(
+    let session_store = MemoryStore::default();
+    let app = create_app(service, session_store).layer(
         ServiceBuilder::new()
             .layer(TraceLayer::new_for_http())
             .layer(CorsLayer::permissive())

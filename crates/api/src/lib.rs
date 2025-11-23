@@ -1,9 +1,17 @@
+use crate::auth::AuthBackend;
 use aide::{
-    axum::{ApiRouter, routing::get},
+    axum::{
+        ApiRouter,
+        routing::{get, post},
+    },
     openapi::OpenApi,
 };
 use axum::Router;
-use sawa_core::services::ProductService;
+use axum_login::{
+    AuthManagerLayerBuilder,
+    tower_sessions::{Expiry, SessionManagerLayer, SessionStore},
+};
+use sawa_core::services::{ProductService, UserService};
 use state::AppState;
 
 pub mod auth;
@@ -12,15 +20,24 @@ pub mod error;
 pub mod handlers;
 pub mod state;
 
-pub fn create_app<S>(state: S) -> Router
+pub fn create_app<S, SS>(state: S, session_store: SS) -> Router
 where
-    S: Clone + Send + Sync + 'static + ProductService,
+    S: Clone + Send + Sync + 'static + ProductService + UserService,
+    SS: Clone + SessionStore,
 {
     let mut api = OpenApi::default();
+
+    let session_layer = SessionManagerLayer::new(session_store)
+        .with_secure(false)
+        .with_expiry(Expiry::OnInactivity(time::Duration::hours(24)));
+    let auth_backend = AuthBackend::new(state.clone());
+    let auth_layer = AuthManagerLayerBuilder::new(auth_backend, session_layer).build();
 
     // Define the API routes
     let api_router = ApiRouter::new()
         .api_route("/health", get(handlers::health::health_check))
+        .api_route("/user/login", post(handlers::auth::login::<S>))
+        .api_route("/user/logout", post(handlers::auth::logout::<S>))
         .api_route(
             "/products",
             get(handlers::product::list_products::<S>).post(handlers::product::create_product::<S>),
@@ -42,6 +59,7 @@ where
             "/products/{product_id}/variants/{variant_id}",
             get(handlers::product::get_product_variant::<S>),
         )
+        .layer(auth_layer)
         .with_state(AppState::new(state));
 
     // Finish the API to populate `api`

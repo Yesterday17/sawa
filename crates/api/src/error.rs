@@ -8,6 +8,8 @@ use axum::{
 use serde_json::json;
 
 pub enum AppError {
+    Unauthorized,
+
     InternalServerError,
     NotFound,
     BadRequest(String),
@@ -16,6 +18,10 @@ pub enum AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> AxumResponse {
         let (status, message) = match self {
+            AppError::Unauthorized => (
+                axum::http::StatusCode::UNAUTHORIZED,
+                "Unauthorized".to_string(),
+            ),
             AppError::InternalServerError => (
                 axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 "Internal Server Error".to_string(),

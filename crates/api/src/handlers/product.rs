@@ -36,7 +36,9 @@ where
 }
 
 pub fn create_list_products_docs(op: TransformOperation) -> TransformOperation {
-    op.description("List all products.")
+    op.summary("List products")
+        .description("List all products.")
+        .tag("Product")
         .response::<200, Json<Vec<Product>>>()
 }
 
@@ -71,7 +73,9 @@ where
 }
 
 pub fn create_create_product_docs(op: TransformOperation) -> TransformOperation {
-    op.description("Create a new product.")
+    op.summary("Create product")
+        .description("Create a new product.")
+        .tag("Product")
         .response::<201, Json<Product>>()
 }
 
@@ -95,7 +99,9 @@ where
 }
 
 pub fn create_get_product_docs(op: TransformOperation) -> TransformOperation {
-    op.description("Get a product by its ID.")
+    op.summary("Get product")
+        .description("Get a product by its ID.")
+        .tag("Product")
         .response::<200, Json<Product>>()
 }
 
@@ -134,7 +140,9 @@ where
 }
 
 pub fn create_list_product_variants_docs(op: TransformOperation) -> TransformOperation {
-    op.description("List product variants, optionally filtered by product ID.")
+    op.summary("List product variants")
+        .description("List product variants, optionally filtered by product ID.")
+        .tag("Product Variant")
         .response::<200, Json<Vec<ProductVariant>>>()
 }
 
@@ -172,7 +180,9 @@ where
 }
 
 pub fn create_create_product_variant_docs(op: TransformOperation) -> TransformOperation {
-    op.description("Create a new product variant for a specific product.")
+    op.summary("Create product variant")
+        .description("Create a new product variant for a specific product.")
+        .tag("Product Variant")
         .response::<201, Json<ProductVariant>>()
 }
 
@@ -205,6 +215,8 @@ where
 }
 
 pub fn create_get_product_variant_docs(op: TransformOperation) -> TransformOperation {
-    op.description("Get a product variant by its ID.")
+    op.summary("Get product variant")
+        .description("Get a product variant by its ID.")
+        .tag("Product Variant")
         .response::<200, Json<ProductVariant>>()
 }

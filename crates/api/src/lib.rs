@@ -50,7 +50,7 @@ where
 
     // Define the API routes
     let api_router = ApiRouter::new()
-        .api_route("/health", get(handlers::health::health_check))
+        .route("/health", get(handlers::health::health_check))
         .api_route(
             "/user/login",
             post_with(

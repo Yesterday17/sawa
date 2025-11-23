@@ -38,7 +38,9 @@ where
 }
 
 pub fn create_login_docs(op: TransformOperation) -> TransformOperation {
-    op.description("Login a user with username and password.")
+    op.summary("User login")
+        .description("Login a user with username and password.")
+        .tag("User")
         .response::<200, ()>()
 }
 
@@ -57,7 +59,9 @@ where
 }
 
 pub fn create_logout_docs(op: TransformOperation) -> TransformOperation {
-    op.description("Logout the current user.")
+    op.summary("User logout")
+        .description("Logout the current user.")
+        .tag("User")
         .response::<200, ()>()
 }
 
@@ -114,6 +118,8 @@ where
 }
 
 pub fn create_register_docs(op: TransformOperation) -> TransformOperation {
-    op.description("Register a new user.")
+    op.summary("User register")
+        .description("Register a new user.")
+        .tag("User")
         .response::<201, Json<PublicUser>>()
 }

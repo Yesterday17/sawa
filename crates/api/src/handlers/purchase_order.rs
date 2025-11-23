@@ -82,7 +82,9 @@ where
 }
 
 pub fn create_create_order_docs(op: TransformOperation) -> TransformOperation {
-    op.description("Create a new purchase order.")
+    op.summary("Create order")
+        .description("Create a new purchase order.")
+        .tag("Purchase Order")
         .response::<201, Json<PurchaseOrder>>()
 }
 
@@ -113,6 +115,8 @@ where
 }
 
 pub fn create_list_orders_docs(op: TransformOperation) -> TransformOperation {
-    op.description("List purchase orders for the authenticated user.")
+    op.summary("List orders")
+        .description("List purchase orders for the authenticated user.")
+        .tag("Purchase Order")
         .response::<200, Json<Vec<PurchaseOrder>>>()
 }

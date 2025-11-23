@@ -6,7 +6,7 @@ use aide::{
     },
     openapi::OpenApi,
 };
-use axum::Router;
+use axum::{Router, response::IntoResponse};
 use axum_login::{
     AuthManagerLayerBuilder,
     tower_sessions::{Expiry, SessionManagerLayer, SessionStore},
@@ -19,6 +19,20 @@ pub mod docs;
 pub mod error;
 pub mod handlers;
 pub mod state;
+
+macro_rules! ensure_login {
+    () => {{
+        axum::middleware::from_fn(
+            |auth_session: crate::auth::AuthSession<S>, req, next: axum::middleware::Next| async move {
+                if auth_session.user.is_some() {
+                    next.run(req).await
+                } else {
+                    axum::http::StatusCode::UNAUTHORIZED.into_response()
+                }
+            },
+        )
+    }};
+}
 
 pub fn create_app<S, SS>(state: S, session_store: SS) -> Router
 where
@@ -40,7 +54,9 @@ where
         .api_route("/user/logout", post(handlers::auth::logout::<S>))
         .api_route(
             "/products",
-            get(handlers::product::list_products::<S>).post(handlers::product::create_product::<S>),
+            post(handlers::product::create_product::<S>)
+                .route_layer(ensure_login!())
+                .get(handlers::product::list_products::<S>),
         )
         .api_route(
             "/products/{product_id}",
@@ -52,8 +68,9 @@ where
         )
         .api_route(
             "/products/{product_id}/variants",
-            get(handlers::product::list_product_variants::<S>)
-                .post(handlers::product::create_product_variant::<S>),
+            post(handlers::product::create_product_variant::<S>)
+                .route_layer(ensure_login!())
+                .get(handlers::product::list_product_variants::<S>),
         )
         .api_route(
             "/products/{product_id}/variants/{variant_id}",

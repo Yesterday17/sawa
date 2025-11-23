@@ -1,0 +1,6 @@
+{
+  "name": "sawa-monorepo",
+  "private": true,
+  "packageManager": "pnpm@10.5.2",
+  "scripts": {}
+}

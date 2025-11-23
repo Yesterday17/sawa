@@ -2,7 +2,7 @@ use crate::auth::AuthBackend;
 use aide::{
     axum::{
         ApiRouter,
-        routing::{get, post},
+        routing::{get, get_with, post_with},
     },
     openapi::OpenApi,
 };
@@ -51,38 +51,84 @@ where
     // Define the API routes
     let api_router = ApiRouter::new()
         .api_route("/health", get(handlers::health::health_check))
-        .api_route("/user/login", post(handlers::auth::login::<S>))
-        .api_route("/user/logout", post(handlers::auth::logout::<S>))
-        .api_route("/user/register", post(handlers::auth::register::<S>))
+        .api_route(
+            "/user/login",
+            post_with(
+                handlers::auth::login::<S>,
+                handlers::auth::create_login_docs,
+            ),
+        )
+        .api_route(
+            "/user/logout",
+            post_with(
+                handlers::auth::logout::<S>,
+                handlers::auth::create_logout_docs,
+            ),
+        )
+        .api_route(
+            "/user/register",
+            post_with(
+                handlers::auth::register::<S>,
+                handlers::auth::create_register_docs,
+            ),
+        )
         .api_route(
             "/products",
-            post(handlers::product::create_product::<S>)
-                .route_layer(ensure_login!())
-                .get(handlers::product::list_products::<S>),
+            post_with(
+                handlers::product::create_product::<S>,
+                handlers::product::create_create_product_docs,
+            )
+            .route_layer(ensure_login!())
+            .get_with(
+                handlers::product::list_products::<S>,
+                handlers::product::create_list_products_docs,
+            ),
         )
         .api_route(
             "/products/{product_id}",
-            get(handlers::product::get_product::<S>),
+            get_with(
+                handlers::product::get_product::<S>,
+                handlers::product::create_get_product_docs,
+            ),
         )
         .api_route(
             "/products/variants",
-            get(handlers::product::list_product_variants::<S>),
+            get_with(
+                handlers::product::list_product_variants::<S>,
+                handlers::product::create_list_product_variants_docs,
+            ),
         )
         .api_route(
             "/products/{product_id}/variants",
-            post(handlers::product::create_product_variant::<S>)
-                .route_layer(ensure_login!())
-                .get(handlers::product::list_product_variants::<S>),
+            post_with(
+                handlers::product::create_product_variant::<S>,
+                handlers::product::create_create_product_variant_docs,
+            )
+            .route_layer(ensure_login!())
+            .get_with(
+                handlers::product::list_product_variants::<S>,
+                handlers::product::create_list_product_variants_docs,
+            ),
         )
         .api_route(
             "/products/{product_id}/variants/{variant_id}",
-            get(handlers::product::get_product_variant::<S>),
+            get_with(
+                handlers::product::get_product_variant::<S>,
+                handlers::product::create_get_product_variant_docs,
+            ),
         )
         .api_route(
             "/orders",
-            post(handlers::purchase_order::create_order::<S>)
-                .get(handlers::purchase_order::list_orders::<S>)
-                .route_layer(ensure_login!()),
+            post_with(
+                handlers::purchase_order::create_order::<S>,
+                handlers::purchase_order::create_create_order_docs,
+            )
+            .route_layer(ensure_login!())
+            .get_with(
+                handlers::purchase_order::list_orders::<S>,
+                handlers::purchase_order::create_list_orders_docs,
+            )
+            .route_layer(ensure_login!()),
         )
         .layer(auth_layer)
         .with_state(AppState::new(state));

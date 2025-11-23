@@ -1,5 +1,5 @@
 use crate::{auth::AuthSession, error::AppError, state::AppState};
-use aide::axum::IntoApiResponse;
+use aide::{axum::IntoApiResponse, transform::TransformOperation};
 use axum::{
     Json,
     extract::{Query, State},
@@ -10,7 +10,7 @@ use sawa_core::{
     models::{
         misc::{Address, Price},
         product::ProductVariantId,
-        purchase::{OrderRoleFilter, PurchaseOrderStatus},
+        purchase::{OrderRoleFilter, PurchaseOrder, PurchaseOrderStatus},
         user::UserId,
     },
     services::{
@@ -81,6 +81,11 @@ where
     Ok((StatusCode::CREATED, Json(order)))
 }
 
+pub fn create_create_order_docs(op: TransformOperation) -> TransformOperation {
+    op.description("Create a new purchase order.")
+        .response::<201, Json<PurchaseOrder>>()
+}
+
 /// GET /orders
 pub async fn list_orders<S>(
     State(state): State<AppState<S>>,
@@ -105,4 +110,9 @@ where
         .map_err(|_| AppError::InternalServerError)?;
 
     Ok((StatusCode::OK, Json(orders)))
+}
+
+pub fn create_list_orders_docs(op: TransformOperation) -> TransformOperation {
+    op.description("List purchase orders for the authenticated user.")
+        .response::<200, Json<Vec<PurchaseOrder>>>()
 }

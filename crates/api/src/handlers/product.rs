@@ -1,5 +1,5 @@
 use crate::{error::AppError, state::AppState};
-use aide::axum::IntoApiResponse;
+use aide::{axum::IntoApiResponse, transform::TransformOperation};
 use axum::{
     Json,
     extract::{Path, State},
@@ -8,7 +8,7 @@ use axum::{
 use sawa_core::{
     models::{
         misc::{MediaId, NonEmptyString, Price},
-        product::{MysteryBoxConfig, ProductId, ProductVariantId},
+        product::{MysteryBoxConfig, Product, ProductId, ProductVariant, ProductVariantId},
     },
     services::{
         CreateProductRequest, CreateProductVariantRequest, GetProductRequest,
@@ -33,6 +33,11 @@ where
         .map_err(|_| AppError::InternalServerError)?;
 
     Ok((StatusCode::OK, Json(products)))
+}
+
+pub fn create_list_products_docs(op: TransformOperation) -> TransformOperation {
+    op.description("List all products.")
+        .response::<200, Json<Vec<Product>>>()
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -65,6 +70,11 @@ where
     Ok((StatusCode::CREATED, Json(product)))
 }
 
+pub fn create_create_product_docs(op: TransformOperation) -> TransformOperation {
+    op.description("Create a new product.")
+        .response::<201, Json<Product>>()
+}
+
 /// GET /products/{product_id}
 pub async fn get_product<S>(
     State(state): State<AppState<S>>,
@@ -82,6 +92,11 @@ where
         .map_err(|_| AppError::NotFound)?;
 
     Ok((StatusCode::OK, Json(product)))
+}
+
+pub fn create_get_product_docs(op: TransformOperation) -> TransformOperation {
+    op.description("Get a product by its ID.")
+        .response::<200, Json<Product>>()
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -118,6 +133,11 @@ where
     Ok((StatusCode::OK, Json(variants)))
 }
 
+pub fn create_list_product_variants_docs(op: TransformOperation) -> TransformOperation {
+    op.description("List product variants, optionally filtered by product ID.")
+        .response::<200, Json<Vec<ProductVariant>>>()
+}
+
 /// POST /products/{product_id}/variants
 pub async fn create_product_variant<S>(
     State(state): State<AppState<S>>,
@@ -151,6 +171,11 @@ where
     Ok((StatusCode::CREATED, Json(variant)))
 }
 
+pub fn create_create_product_variant_docs(op: TransformOperation) -> TransformOperation {
+    op.description("Create a new product variant for a specific product.")
+        .response::<201, Json<ProductVariant>>()
+}
+
 #[derive(Deserialize, JsonSchema)]
 pub struct GetProductVariantPath {
     pub product_id: ProductId,
@@ -177,4 +202,9 @@ where
         .map_err(|_| AppError::NotFound)?;
 
     Ok((StatusCode::OK, Json(variant)))
+}
+
+pub fn create_get_product_variant_docs(op: TransformOperation) -> TransformOperation {
+    op.description("Get a product variant by its ID.")
+        .response::<200, Json<ProductVariant>>()
 }

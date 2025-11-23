@@ -1,4 +1,4 @@
-use aide::axum::IntoApiResponse;
+use aide::{axum::IntoApiResponse, transform::TransformOperation};
 use axum::{Json, extract::State, http::StatusCode};
 use sawa_core::{
     models::{
@@ -37,6 +37,11 @@ where
     Ok(StatusCode::OK)
 }
 
+pub fn create_login_docs(op: TransformOperation) -> TransformOperation {
+    op.description("Login a user with username and password.")
+        .response::<200, ()>()
+}
+
 /// Logout a user.
 ///
 /// Destroys the current session.
@@ -49,6 +54,11 @@ where
     }
 
     Ok(StatusCode::OK)
+}
+
+pub fn create_logout_docs(op: TransformOperation) -> TransformOperation {
+    op.description("Logout the current user.")
+        .response::<200, ()>()
 }
 
 #[derive(serde::Deserialize, schemars::JsonSchema)]
@@ -101,4 +111,9 @@ where
             avatar: user.avatar,
         }),
     ))
+}
+
+pub fn create_register_docs(op: TransformOperation) -> TransformOperation {
+    op.description("Register a new user.")
+        .response::<201, Json<PublicUser>>()
 }

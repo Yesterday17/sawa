@@ -42,18 +42,49 @@ fn create_test_order(
 
 /// Test save and find_by_id.
 pub async fn test_save_and_find_by_id<R: PurchaseOrderRepository>(repo: R) {
-    let order = create_test_order(
+    let mut order = create_test_order(
         UserId::new(),
         UserId::new(),
         PurchaseOrderStatus::Incomplete,
     );
+
+    // Add items and line items
+    let variant_id = ProductVariantId::new();
+    let item_id = PurchaseOrderItemId::new();
+    let line_item_owner = UserId::new();
+
+    let line_item = PurchaseOrderLineItem::new(variant_id, item_id, line_item_owner);
+
+    let item = PurchaseOrderItem {
+        id: item_id,
+        purchased_variant_id: variant_id,
+        line_items: vec![line_item],
+        status: PurchaseOrderItemStatus::Pending,
+        quantity: NonZeroU32::new(1).unwrap(),
+        unit_price: None,
+    };
+
+    order.items.push(item);
     let order_id = order.id;
 
     repo.save(&order).await.unwrap();
 
     let found = repo.find_by_id(&order_id, &order.creator_id).await.unwrap();
     assert!(found.is_some());
-    assert_eq!(found.unwrap().id, order_id);
+    let found_order = found.unwrap();
+    assert_eq!(found_order.id, order_id);
+
+    // Verify items
+    assert_eq!(found_order.items.len(), 1);
+    let found_item = &found_order.items[0];
+    assert_eq!(found_item.id, item_id);
+    assert_eq!(found_item.purchased_variant_id, variant_id);
+
+    // Verify line items
+    assert_eq!(found_item.line_items.len(), 1);
+    let found_line_item = &found_item.line_items[0];
+    assert_eq!(found_line_item.variant_id, variant_id);
+    assert_eq!(found_line_item.owner_id, line_item_owner);
 
     // Clean up
     repo.delete(&order_id).await.unwrap();

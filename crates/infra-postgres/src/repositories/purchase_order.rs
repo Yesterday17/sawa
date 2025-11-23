@@ -194,15 +194,26 @@ impl PurchaseOrderRepository for PostgresPurchaseOrderRepository {
         self.db
             .transaction(|db| {
                 Box::pin(async move {
-                    purchase_order::Entity::delete_by_id(id).exec(db).await?;
+                    // Delete line items based on items.order_id = id
+                    purchase_order_line_item::Entity::delete_many()
+                        .filter(
+                            purchase_order_line_item::Column::PurchaseOrderItemId.in_subquery(
+                                Query::select()
+                                    .column(purchase_order_item::Column::Id)
+                                    .from(purchase_order_item::Entity)
+                                    .and_where(purchase_order_item::Column::PurchaseOrderId.eq(id))
+                                    .to_owned(),
+                            ),
+                        )
+                        .exec(db)
+                        .await?;
+                    // Delete items based on order_id = id
                     purchase_order_item::Entity::delete_many()
                         .filter(purchase_order_item::Column::PurchaseOrderId.eq(id))
                         .exec(db)
                         .await?;
-                    purchase_order_line_item::Entity::delete_many()
-                        .filter(purchase_order_line_item::Column::PurchaseOrderItemId.eq(id))
-                        .exec(db)
-                        .await?;
+                    // Finally delete the order
+                    purchase_order::Entity::delete_by_id(id).exec(db).await?;
 
                     Ok(())
                 })

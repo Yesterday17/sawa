@@ -1,8 +1,7 @@
 use std::ops::Deref;
-
 use thiserror::Error;
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize)]
 #[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[serde(transparent)]
 pub struct NonEmptyString(String);
@@ -73,5 +72,15 @@ impl Deref for NonEmptyString {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for NonEmptyString {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        NonEmptyString::new(s).map_err(serde::de::Error::custom)
     }
 }

@@ -43,6 +43,7 @@ where
 
     let session_layer = SessionManagerLayer::new(session_store)
         .with_secure(false)
+        .with_name("sawa.id")
         .with_expiry(Expiry::OnInactivity(time::Duration::hours(24)));
     let auth_backend = AuthBackend::new(state.clone());
     let auth_layer = AuthManagerLayerBuilder::new(auth_backend, session_layer).build();
@@ -52,6 +53,7 @@ where
         .api_route("/health", get(handlers::health::health_check))
         .api_route("/user/login", post(handlers::auth::login::<S>))
         .api_route("/user/logout", post(handlers::auth::logout::<S>))
+        .api_route("/user/register", post(handlers::auth::register::<S>))
         .api_route(
             "/products",
             post(handlers::product::create_product::<S>)

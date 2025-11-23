@@ -1,14 +1,15 @@
-use chrono::{DateTime, Utc};
-
 use crate::models::{
     misc::{Address, Price},
     purchase::PurchaseOrderItem,
     user::UserId,
 };
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 
 crate::create_entity_id!(PurchaseOrderId);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct PurchaseOrder {
     pub id: PurchaseOrderId,
 
@@ -41,7 +42,9 @@ pub struct PurchaseOrder {
     pub cancelled_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
+#[serde(rename_all = "snake_case")]
 pub enum PurchaseOrderStatus {
     /// Order record created, waiting for user to complete details
     /// (e.g., filling in mystery box results)

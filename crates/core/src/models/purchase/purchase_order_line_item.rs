@@ -8,11 +8,13 @@ use crate::models::{
     user::UserId,
 };
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 
 crate::create_entity_id!(PurchaseOrderLineItemId);
 
 /// A variant pending instance creation, with ownership assignment
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct PurchaseOrderLineItem {
     pub id: PurchaseOrderLineItemId,
 

@@ -9,7 +9,7 @@ use sawa_core::{
 };
 
 use crate::{
-    auth::{ApiUser, AuthSession, Credentials},
+    auth::{AuthSession, Credentials},
     error::AppError,
     state::AppState,
 };

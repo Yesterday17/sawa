@@ -1,10 +1,12 @@
 use crate::models::{misc::Price, product::ProductVariantId, purchase::PurchaseOrderLineItem};
+use serde::{Deserialize, Serialize};
 use std::num::NonZeroU32;
 
 crate::create_entity_id!(PurchaseOrderItemId);
 
 /// A single item in a purchase order.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct PurchaseOrderItem {
     pub id: PurchaseOrderItemId,
 
@@ -41,7 +43,9 @@ pub struct PurchaseOrderItem {
 ///      ↓                          ↓
 ///   Cancelled                  Cancelled
 /// ```
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
+#[serde(rename_all = "snake_case")]
 pub enum PurchaseOrderItemStatus {
     /// Waiting for user to fill in `line_items`.
     /// Regular items skip this status and go directly to `Pending`.

@@ -11,7 +11,7 @@ use axum_login::{
     AuthManagerLayerBuilder,
     tower_sessions::{Expiry, SessionManagerLayer, SessionStore},
 };
-use sawa_core::services::{ProductService, UserService};
+use sawa_core::services::{ProductService, PurchaseOrderService, UserService};
 use state::AppState;
 
 pub mod auth;
@@ -36,7 +36,7 @@ macro_rules! ensure_login {
 
 pub fn create_app<S, SS>(state: S, session_store: SS) -> Router
 where
-    S: Clone + Send + Sync + 'static + ProductService + UserService,
+    S: Clone + ProductService + UserService + PurchaseOrderService,
     SS: Clone + SessionStore,
 {
     let mut api = OpenApi::default();
@@ -77,6 +77,10 @@ where
         .api_route(
             "/products/{product_id}/variants/{variant_id}",
             get(handlers::product::get_product_variant::<S>),
+        )
+        .api_route(
+            "/orders",
+            post(handlers::purchase_order::create_order::<S>).route_layer(ensure_login!()),
         )
         .layer(auth_layer)
         .with_state(AppState::new(state));

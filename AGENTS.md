@@ -36,9 +36,15 @@ See `.cursor/rules` for complete project guidelines.
    - Child entities are embedded in parent aggregate but have their own UUID for external references
 
 5. **Snapshot pattern for historical data**
+
    - Always snapshot data that may change (price, config)
    - History arrays: don't store from_status (derive from array)
    - History records stored in separate tables with timestamp ordering
+
+6. **Service generics in handlers**
+
+   - Do not add `Send + Sync + 'static` bounds to service generics `S` in handlers
+   - Service traits already include these bounds
 
 ## Code Quality Standards
 

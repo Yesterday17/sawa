@@ -54,6 +54,7 @@ async fn test_purchase_flow() {
                 postal_code: "100-0001".to_string(),
                 country: "JP".to_string(),
             }),
+            items: vec![],
             total_price: None,
         })
         .await
@@ -149,6 +150,7 @@ async fn test_order_fulfillment_flow() {
             receiver_id: None,
             shipping_address: None,
             total_price: None,
+            items: vec![],
         })
         .await
         .expect("Failed to create order");
@@ -268,6 +270,7 @@ async fn test_order_with_different_creator_and_receiver() {
             receiver_id: Some(receiver.id),
             shipping_address: None,
             total_price: None,
+            items: vec![],
         })
         .await
         .expect("Failed to create order");
@@ -406,6 +409,7 @@ async fn test_order_cancellation_flow() {
             receiver_id: None,
             shipping_address: None,
             total_price: None,
+            items: vec![],
         })
         .await
         .expect("Failed to create order");
@@ -507,6 +511,7 @@ async fn test_fulfill_cancelled_order_fails() {
             receiver_id: None,
             shipping_address: None,
             total_price: None,
+            items: vec![],
         })
         .await
         .unwrap();
@@ -591,6 +596,7 @@ async fn test_cancel_fulfilled_order_fails() {
             receiver_id: None,
             shipping_address: None,
             total_price: None,
+            items: vec![],
         })
         .await
         .unwrap();
@@ -679,6 +685,7 @@ async fn test_fulfill_order_without_pending_items_fails() {
             receiver_id: None,
             shipping_address: None,
             total_price: None,
+            items: vec![],
         })
         .await
         .unwrap();
@@ -756,6 +763,7 @@ async fn test_fulfill_order_permission_denied() {
             receiver_id: None,
             shipping_address: None,
             total_price: None,
+            items: vec![],
         })
         .await
         .unwrap();
@@ -833,6 +841,7 @@ async fn test_cancel_order_permission_denied() {
             receiver_id: Some(receiver_user.id),
             shipping_address: None,
             total_price: None,
+            items: vec![],
         })
         .await
         .unwrap();

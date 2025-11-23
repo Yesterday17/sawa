@@ -11,6 +11,15 @@ pub enum CreateOrderError {
     #[error("User not found: {user_id:?}")]
     UserNotFound { user_id: UserId },
 
+    #[error("Variant not found: {variant_id:?}")]
+    VariantNotFound { variant_id: ProductVariantId },
+
+    #[error("Currency mismatch: expected {expected:?}, got {actual:?}")]
+    CurrencyMismatch {
+        expected: Currency,
+        actual: Currency,
+    },
+
     #[error("Repository error: {0}")]
     Repository(#[from] crate::errors::RepositoryError),
 }

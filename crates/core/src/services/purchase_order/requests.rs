@@ -22,6 +22,25 @@ pub struct CreateOrderRequest {
 
     /// The currency of the order.
     pub total_price: Option<Price>,
+
+    /// Initial items to add to the order.
+    pub items: Vec<CreateOrderItemRequest>,
+}
+
+/// Request to add an item to an order (during creation).
+pub struct CreateOrderItemRequest {
+    /// The variant to purchase.
+    pub variant_id: ProductVariantId,
+
+    /// The user who will own the instance created for this line item.
+    /// If None, defaults to the order receiver.
+    pub owner_id: Option<UserId>,
+
+    /// Quantity to purchase.
+    pub quantity: NonZeroU32,
+
+    /// Price at time of order.
+    pub unit_price: Option<Price>,
 }
 
 /// Request to add an item to an order.

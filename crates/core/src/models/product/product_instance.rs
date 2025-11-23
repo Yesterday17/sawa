@@ -11,7 +11,8 @@ crate::create_entity_id!(ProductInstanceId);
 /// For example, if "T-Shirt" is a `Product` and "Red, Size M" is a `ProductVariant`,
 /// then a `ProductInstance` would be one specific red, size M t-shirt with its own unique identifier.
 /// This allows tracking individual items, for example, for inventory or warranty purposes.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct ProductInstance {
     /// The unique identifier for this specific product instance.
     pub id: ProductInstanceId,
@@ -43,7 +44,9 @@ pub struct ProductInstance {
     pub status_history: Vec<ProductInstanceStatusHistory>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
+#[serde(rename_all = "snake_case")]
 pub enum ProductInstanceStatus {
     /// Owned by user, in their inventory
     Active,
@@ -63,7 +66,8 @@ pub enum ProductInstanceStatus {
 
 crate::create_entity_id!(ProductInstanceStatusHistoryId);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct ProductInstanceStatusHistory {
     /// The unique identifier for this status change.
     pub id: ProductInstanceStatusHistoryId,

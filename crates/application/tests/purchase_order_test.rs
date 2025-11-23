@@ -94,7 +94,7 @@ async fn test_purchase_flow() {
     let instances = service
         .list_product_instances(ListProductInstancesRequest {
             user_id: user.id,
-            query_by: ListProductInstancesQueryBy::Owner,
+            query_by: ListProductInstancesQueryBy::Owned,
             variant_id: None,
             status: None,
         })
@@ -205,7 +205,7 @@ async fn test_order_fulfillment_flow() {
     let instances = service
         .list_product_instances(ListProductInstancesRequest {
             user_id: user.id,
-            query_by: ListProductInstancesQueryBy::Owner,
+            query_by: ListProductInstancesQueryBy::Owned,
             variant_id: None,
             status: None,
         })
@@ -314,7 +314,7 @@ async fn test_order_with_different_creator_and_receiver() {
     let creator_instances = service
         .list_product_instances(ListProductInstancesRequest {
             user_id: creator.id,
-            query_by: ListProductInstancesQueryBy::Owner,
+            query_by: ListProductInstancesQueryBy::Owned,
             variant_id: None,
             status: None,
         })
@@ -333,7 +333,7 @@ async fn test_order_with_different_creator_and_receiver() {
     let receiver_instances = service
         .list_product_instances(ListProductInstancesRequest {
             user_id: receiver.id,
-            query_by: ListProductInstancesQueryBy::Owner,
+            query_by: ListProductInstancesQueryBy::Owned,
             variant_id: None,
             status: None,
         })
@@ -345,7 +345,7 @@ async fn test_order_with_different_creator_and_receiver() {
     let receiver_holds = service
         .list_product_instances(ListProductInstancesRequest {
             user_id: receiver.id,
-            query_by: ListProductInstancesQueryBy::Holder,
+            query_by: ListProductInstancesQueryBy::Held,
             variant_id: None,
             status: None,
         })
@@ -359,7 +359,7 @@ async fn test_order_with_different_creator_and_receiver() {
     let creator_holds = service
         .list_product_instances(ListProductInstancesRequest {
             user_id: creator.id,
-            query_by: ListProductInstancesQueryBy::Holder,
+            query_by: ListProductInstancesQueryBy::Held,
             variant_id: None,
             status: None,
         })
@@ -460,7 +460,7 @@ async fn test_order_cancellation_flow() {
     let instances = service
         .list_product_instances(ListProductInstancesRequest {
             user_id: user.id,
-            query_by: ListProductInstancesQueryBy::Owner,
+            query_by: ListProductInstancesQueryBy::Owned,
             variant_id: None,
             status: None,
         })

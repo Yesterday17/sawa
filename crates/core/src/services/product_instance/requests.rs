@@ -9,10 +9,11 @@ pub struct GetProductInstanceRequest {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum ListProductInstancesQueryBy {
-    Owner,
-    Holder,
+    Owned,
+    Held,
 }
 
 /// Request to list product instances.

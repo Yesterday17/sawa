@@ -2,22 +2,35 @@ import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { MantineProvider } from '@mantine/core'
+import { Notifications } from '@mantine/notifications'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { client } from './client/client.gen'
+import { theme } from './theme'
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
 
 import '@mantine/core/styles.css'
+import '@mantine/notifications/styles.css'
 import './styles.css'
 import reportWebVitals from './reportWebVitals.ts'
+
+// Configure API client
+client.setConfig({ baseUrl: '/api' })
+
+const queryClient = new QueryClient()
 
 // Create a new router instance
 const router = createRouter({
   routeTree,
-  context: {},
+  context: {
+    queryClient,
+  },
   defaultPreload: 'intent',
   scrollRestoration: true,
   defaultStructuralSharing: true,
   defaultPreloadStaleTime: 0,
+  defaultViewTransition: true,
 })
 
 // Register the router instance for type safety
@@ -33,9 +46,12 @@ if (rootElement && !rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
     <StrictMode>
-      <MantineProvider>
-        <RouterProvider router={router} />
-      </MantineProvider>
+      <QueryClientProvider client={queryClient}>
+        <MantineProvider theme={theme}>
+          <Notifications />
+          <RouterProvider router={router} />
+        </MantineProvider>
+      </QueryClientProvider>
     </StrictMode>,
   )
 }

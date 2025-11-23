@@ -53,7 +53,7 @@ async fn test_list_product_instances_by_holder() {
     let owner_instances = service
         .list_product_instances(ListProductInstancesRequest {
             user_id: alice.id,
-            query_by: ListProductInstancesQueryBy::Owner,
+            query_by: ListProductInstancesQueryBy::Owned,
             variant_id: None,
             status: None,
         })
@@ -68,7 +68,7 @@ async fn test_list_product_instances_by_holder() {
     let holder_instances = service
         .list_product_instances(ListProductInstancesRequest {
             user_id: alice.id,
-            query_by: ListProductInstancesQueryBy::Holder,
+            query_by: ListProductInstancesQueryBy::Held,
             variant_id: None,
             status: None,
         })
@@ -94,7 +94,7 @@ async fn test_list_product_instances_by_holder() {
     let locked_holder_instances = service
         .list_product_instances(ListProductInstancesRequest {
             user_id: alice.id,
-            query_by: ListProductInstancesQueryBy::Holder,
+            query_by: ListProductInstancesQueryBy::Held,
             variant_id: None,
             status: Some(ProductInstanceStatus::Locked),
         })
@@ -121,7 +121,7 @@ async fn test_list_product_instances_by_holder() {
     let bob_owner_instances = service
         .list_product_instances(ListProductInstancesRequest {
             user_id: bob.id,
-            query_by: ListProductInstancesQueryBy::Owner,
+            query_by: ListProductInstancesQueryBy::Owned,
             variant_id: None,
             status: None,
         })
@@ -136,7 +136,7 @@ async fn test_list_product_instances_by_holder() {
     let bob_holder_instances = service
         .list_product_instances(ListProductInstancesRequest {
             user_id: bob.id,
-            query_by: ListProductInstancesQueryBy::Holder,
+            query_by: ListProductInstancesQueryBy::Held,
             variant_id: None,
             status: None,
         })
@@ -151,7 +151,7 @@ async fn test_list_product_instances_by_holder() {
     let alice_holder_instances = service
         .list_product_instances(ListProductInstancesRequest {
             user_id: alice.id,
-            query_by: ListProductInstancesQueryBy::Holder,
+            query_by: ListProductInstancesQueryBy::Held,
             variant_id: None,
             status: None,
         })

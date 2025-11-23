@@ -1,10 +1,10 @@
-use chrono::{DateTime, Utc};
-
 use crate::models::user::UserId;
+use chrono::{DateTime, Utc};
 
 crate::create_entity_id!(ProductInstanceTransferHistoryId);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub struct ProductInstanceTransferHistory {
     /// The unique identifier for this transfer history.
     pub id: ProductInstanceTransferHistoryId,
@@ -26,7 +26,8 @@ pub struct ProductInstanceTransferHistory {
     pub transferred_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
 pub enum TransferReason {
     ///  Initial purchase from external supplier
     Purchase,

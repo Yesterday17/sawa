@@ -40,7 +40,7 @@ where
         req: sawa_core::services::ListProductInstancesRequest,
     ) -> Result<Vec<ProductInstance>, ListProductInstancesError> {
         let instances = match req.query_by {
-            ListProductInstancesQueryBy::Owner => {
+            ListProductInstancesQueryBy::Owned => {
                 if let Some(variant_id) = req.variant_id {
                     let mut instances = self
                         .product_instance
@@ -59,7 +59,7 @@ where
                     self.product_instance.find_by_owner(&req.user_id).await?
                 }
             }
-            ListProductInstancesQueryBy::Holder => {
+            ListProductInstancesQueryBy::Held => {
                 if let Some(variant_id) = req.variant_id {
                     let mut instances = self
                         .product_instance

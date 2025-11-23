@@ -68,9 +68,6 @@ pub enum GetOrderError {
     #[error("Order not found")]
     NotFound,
 
-    #[error("Permission denied: user {user_id:?} cannot view this order")]
-    PermissionDenied { user_id: UserId },
-
     #[error("Repository error: {0}")]
     Repository(#[from] crate::errors::RepositoryError),
 }

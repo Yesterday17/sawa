@@ -1,7 +1,7 @@
 use crate::{
     errors::RepositoryError,
     models::{
-        transfer::{UserTransactionStatus, UserTransaction, UserTransactionId},
+        transfer::{UserTransaction, UserTransactionId, UserTransactionStatus},
         user::UserId,
     },
 };

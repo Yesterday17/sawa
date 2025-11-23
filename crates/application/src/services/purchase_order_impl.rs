@@ -81,11 +81,13 @@ where
         req: AddOrderItemRequest,
     ) -> Result<PurchaseOrderItemId, AddOrderItemError> {
         // Load and verify order exists
-        let mut order = self.order.find_by_id(&req.order_id).await?.ok_or(
-            AddOrderItemError::OrderNotFound {
+        let mut order = self
+            .order
+            .find_by_id(&req.order_id, &req.user_id)
+            .await?
+            .ok_or(AddOrderItemError::OrderNotFound {
                 order_id: req.order_id,
-            },
-        )?;
+            })?;
 
         // Verify user has permission to modify this order
         if order.creator_id != req.user_id {
@@ -169,7 +171,7 @@ where
         // Load and verify order exists
         let mut order = self
             .order
-            .find_by_id(&req.order_id)
+            .find_by_id(&req.order_id, &req.user_id)
             .await?
             .ok_or(SubmitMysteryBoxResultsError::OrderNotFound)?;
 
@@ -230,17 +232,9 @@ where
     async fn get_order(&self, req: GetOrderRequest) -> Result<PurchaseOrder, GetOrderError> {
         let order = self
             .order
-            .find_by_id(&req.order_id)
+            .find_by_id(&req.order_id, &req.user_id)
             .await?
             .ok_or(GetOrderError::NotFound)?;
-
-        // Verify user has permission to view this order
-        // TODO: Owner of any child line items should also have permission
-        if order.creator_id != req.user_id && order.receiver_id != req.user_id {
-            return Err(GetOrderError::PermissionDenied {
-                user_id: req.user_id,
-            });
-        }
 
         Ok(order)
     }

@@ -46,7 +46,7 @@ pub async fn test_save_and_find_by_id<R: PurchaseOrderRepository>(repo: R) {
 
     repo.save(&order).await.unwrap();
 
-    let found = repo.find_by_id(&order_id).await.unwrap();
+    let found = repo.find_by_id(&order_id, &order.creator_id).await.unwrap();
     assert!(found.is_some());
     assert_eq!(found.unwrap().id, order_id);
 
@@ -114,7 +114,7 @@ pub async fn test_delete<R: PurchaseOrderRepository>(repo: R) {
     repo.save(&order).await.unwrap();
     repo.delete(&order_id).await.unwrap();
 
-    let after_delete = repo.find_by_id(&order_id).await.unwrap();
+    let after_delete = repo.find_by_id(&order_id, &order.creator_id).await.unwrap();
     assert!(after_delete.is_none());
 }
 

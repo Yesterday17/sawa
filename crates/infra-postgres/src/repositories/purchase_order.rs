@@ -10,7 +10,7 @@ use sawa_core::{
     },
     repositories::PurchaseOrderRepository,
 };
-use sea_orm::{QueryFilter, TransactionTrait, prelude::*};
+use sea_orm::{ExprTrait, QueryFilter, TransactionTrait, prelude::*, sea_query::Query};
 
 pub struct PostgresPurchaseOrderRepository {
     db: DatabaseConnection,
@@ -26,14 +26,39 @@ impl PurchaseOrderRepository for PostgresPurchaseOrderRepository {
     async fn find_by_id(
         &self,
         id: &PurchaseOrderId,
+        user_id: &UserId,
     ) -> Result<Option<PurchaseOrder>, RepositoryError> {
+        pub use purchase_order::Column;
+
         let entity = purchase_order::Entity::load()
             .with(purchase_order_item::Entity)
             .with((
                 purchase_order_item::Entity,
                 purchase_order_line_item::Entity,
             ))
-            .filter(purchase_order::Column::Id.eq(Uuid::from(id.0)))
+            .filter(
+                Column::Id.eq(Uuid::from(id.0)).and(
+                    Column::CreatorId.eq(Uuid::from(user_id.0)) // Creator can access the order
+                        .or(Column::ReceiverId.eq(Uuid::from(user_id.0))) // Receiver can access the order
+                        .or(Column::Id.in_subquery( // Owners of any line item can access the order
+                            Query::select()
+                                .column(purchase_order_item::Column::PurchaseOrderId)
+                                .from(purchase_order_item::Entity)
+                                .and_where(
+                                    purchase_order_item::Column::Id.in_subquery(
+                                        Query::select()
+                                            .column(purchase_order_line_item::Column::PurchaseOrderItemId)
+                                            .from(purchase_order_line_item::Entity)
+                                            .and_where(
+                                                purchase_order_line_item::Column::OwnerId
+                                                    .eq(Uuid::from(user_id.0)),
+                                            ).to_owned()
+                                    ),
+                                )
+                                .to_owned(),
+                        )),
+                ),
+            )
             .one(&self.db)
             .await
             .map_err(DatabaseError)?;

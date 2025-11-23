@@ -13,6 +13,12 @@ pub trait UserService: Send + Sync + 'static {
         req: GetUserRequest,
     ) -> impl Future<Output = Result<User, GetUserError>> + Send;
 
+    /// Login a user.
+    fn login_user(
+        &self,
+        req: LoginRequest,
+    ) -> impl Future<Output = Result<User, LoginError>> + Send;
+
     /// Create a new user.
     fn create_user(
         &self,

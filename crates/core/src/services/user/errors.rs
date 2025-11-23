@@ -19,3 +19,15 @@ pub enum CreateUserError {
     #[error("User already exists")]
     AlreadyExists,
 }
+
+#[derive(Debug, Error)]
+pub enum LoginError {
+    #[error("User not found")]
+    NotFound,
+    #[error("Invalid password")]
+    InvalidPassword,
+    #[error("Failed to verify password: {0}")]
+    FailedToVerifyPassword(String),
+    #[error(transparent)]
+    Repository(#[from] RepositoryError),
+}

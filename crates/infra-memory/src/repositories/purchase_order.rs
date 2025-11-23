@@ -36,9 +36,17 @@ impl PurchaseOrderRepository for InMemoryPurchaseOrderRepository {
     async fn find_by_id(
         &self,
         id: &PurchaseOrderId,
+        user_id: &UserId,
     ) -> Result<Option<PurchaseOrder>, RepositoryError> {
         let orders = self.orders.read().unwrap();
-        Ok(orders.get(id).cloned())
+        let order = orders.get(id);
+        if let Some(o) = order {
+            if &o.creator_id == user_id || &o.receiver_id == user_id {
+                return Ok(Some(o.clone()));
+            }
+        }
+
+        Ok(None)
     }
 
     async fn find_by_user(

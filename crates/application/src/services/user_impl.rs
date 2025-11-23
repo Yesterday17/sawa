@@ -5,7 +5,10 @@ use sawa_core::{
         user::{User, UserId},
     },
     repositories::*,
-    services::{CreateUserError, CreateUserRequest, GetUserError, GetUserRequest, UserService},
+    services::{
+        CreateUserError, CreateUserRequest, GetUserError, GetUserRequest, LoginError, LoginRequest,
+        UserService,
+    },
 };
 
 use super::Service;
@@ -22,10 +25,47 @@ where
     M: MediaRepository,
 {
     async fn get_user(&self, req: GetUserRequest) -> Result<User, GetUserError> {
-        self.user
-            .find_by_id(&req.id)
+        match req {
+            GetUserRequest::ById(user_id) => self
+                .user
+                .find_by_id(&user_id)
+                .await?
+                .ok_or(GetUserError::NotFound),
+            GetUserRequest::ByUsername(username) => self
+                .user
+                .find_by_username(&username)
+                .await?
+                .ok_or(GetUserError::NotFound),
+            GetUserRequest::ByEmail(email) => self
+                .user
+                .find_by_email(&email)
+                .await?
+                .ok_or(GetUserError::NotFound),
+        }
+    }
+
+    async fn login_user(&self, req: LoginRequest) -> Result<User, LoginError> {
+        // Find user by username
+        let user = self
+            .user
+            .find_by_username(&req.username)
             .await?
-            .ok_or(GetUserError::NotFound)
+            .ok_or(sawa_core::services::LoginError::NotFound)?;
+
+        let password_hash = user.password_hash.clone();
+        // Verify password
+        let is_valid = tokio::task::spawn_blocking(move || {
+            bcrypt::verify(req.password.as_str(), &password_hash)
+        })
+        .await
+        .map_err(|e| LoginError::FailedToVerifyPassword(e.to_string()))?
+        .map_err(|e| LoginError::FailedToVerifyPassword(e.to_string()))?;
+
+        if !is_valid {
+            return Err(LoginError::InvalidPassword);
+        }
+
+        Ok(user)
     }
 
     async fn create_user(&self, req: CreateUserRequest) -> Result<User, CreateUserError> {

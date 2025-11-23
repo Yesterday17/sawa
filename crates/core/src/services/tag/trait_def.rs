@@ -8,10 +8,7 @@ use crate::models::misc::Tag;
 /// - Retrieving tags
 pub trait TagService: Send + Sync + 'static {
     /// Get a tag by its ID.
-    fn get_tag(
-        &self,
-        req: GetTagRequest,
-    ) -> impl Future<Output = Result<Tag, GetTagError>> + Send;
+    fn get_tag(&self, req: GetTagRequest) -> impl Future<Output = Result<Tag, GetTagError>> + Send;
 
     /// Create a new tag.
     fn create_tag(

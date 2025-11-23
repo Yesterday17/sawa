@@ -24,21 +24,14 @@ where
         &self,
         req: &sawa_core::services::FulfillOrderRequest,
     ) -> Result<PurchaseOrder, FulfillOrderError> {
-        // 1. Load order
+        // Load order
         let mut order = self
             .order
-            .find_by_id(&req.order_id)
+            .find_by_id(&req.order_id, &req.user_id)
             .await?
             .ok_or(FulfillOrderError::OrderNotFound)?;
 
-        // 2. Check permission
-        if order.creator_id != req.user_id && order.receiver_id != req.user_id {
-            return Err(FulfillOrderError::PermissionDenied {
-                user_id: req.user_id,
-            });
-        }
-
-        // 3. Validate order is ready for fulfillment
+        // Validate order is ready for fulfillment
         match order.status {
             PurchaseOrderStatus::Incomplete => {}
             PurchaseOrderStatus::Fulfilled => {
@@ -49,14 +42,14 @@ where
             }
         }
 
-        // 4. Validate all items are in Pending status
+        // Validate all items are in Pending status
         for item in &order.items {
             if item.status != PurchaseOrderItemStatus::Pending {
                 return Err(FulfillOrderError::ItemNotPending);
             }
         }
 
-        // 5. Create ProductInstances for all line items
+        // Create ProductInstances for all line items
         let receiver_id = order.receiver_id;
 
         for item in &mut order.items {
@@ -100,11 +93,11 @@ where
             item.status = PurchaseOrderItemStatus::Fulfilled;
         }
 
-        // 7. Update order status
+        // Update order status
         order.status = PurchaseOrderStatus::Fulfilled;
         order.completed_at = Some(Utc::now());
 
-        // 8. Save order
+        // Save order
         self.order.save(&order).await?;
 
         Ok(order)
@@ -115,21 +108,21 @@ where
         &self,
         req: &sawa_core::services::CancelOrderRequest,
     ) -> Result<PurchaseOrder, CancelOrderError> {
-        // 1. Load order
+        // Load order
         let mut order = self
             .order
-            .find_by_id(&req.order_id)
+            .find_by_id(&req.order_id, &req.user_id)
             .await?
             .ok_or(CancelOrderError::OrderNotFound)?;
 
-        // 2. Check permission
-        if order.creator_id != req.user_id && order.receiver_id != req.user_id {
+        // Only creator can cancel the order
+        if order.creator_id != req.user_id {
             return Err(CancelOrderError::PermissionDenied {
                 user_id: req.user_id,
             });
         }
 
-        // 3. Validate order can be cancelled
+        // Validate order can be cancelled
         match order.status {
             PurchaseOrderStatus::Incomplete => {}
             PurchaseOrderStatus::Fulfilled => {
@@ -141,11 +134,11 @@ where
             }
         }
 
-        // 4. Update order status
+        // Update order status
         order.status = PurchaseOrderStatus::Cancelled;
         order.cancelled_at = Some(Utc::now());
 
-        // 5. Update all items to cancelled
+        // Update all items to cancelled
         for item in &mut order.items {
             match item.status {
                 PurchaseOrderItemStatus::Fulfilled => {
@@ -158,7 +151,7 @@ where
             }
         }
 
-        // 5. Save order
+        // Save order
         self.order.save(&order).await?;
 
         Ok(order)

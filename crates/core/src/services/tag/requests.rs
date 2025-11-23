@@ -1,4 +1,4 @@
-use crate::models::misc::{TagId, NonEmptyString};
+use crate::models::misc::{NonEmptyString, TagId};
 
 /// Request to get a tag by ID.
 pub struct GetTagRequest {

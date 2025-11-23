@@ -784,12 +784,10 @@ async fn test_fulfill_order_permission_denied() {
         .await;
 
     assert!(result.is_err());
-    match result.unwrap_err() {
-        FulfillOrderError::PermissionDenied { user_id } => {
-            assert_eq!(user_id, other_user.id);
-        }
-        _ => panic!("Expected PermissionDenied error"),
-    }
+    assert!(matches!(
+        result.unwrap_err(),
+        FulfillOrderError::OrderNotFound
+    ));
 }
 
 #[tokio::test]
@@ -798,9 +796,9 @@ async fn test_cancel_order_permission_denied() {
 
     // Setup: Two users
     let creator = create_user("creator");
-    let other_user = create_user("other");
+    let receiver_user = create_user("receiver");
     let creator = service.user.create(creator).await.unwrap();
-    let other_user = service.user.create(other_user).await.unwrap();
+    let receiver_user = service.user.create(receiver_user).await.unwrap();
 
     let product = service
         .create_product(CreateProductRequest {
@@ -832,7 +830,7 @@ async fn test_cancel_order_permission_denied() {
     let order = service
         .create_order(CreateOrderRequest {
             user_id: creator.id,
-            receiver_id: None,
+            receiver_id: Some(receiver_user.id),
             shipping_address: None,
             total_price: None,
         })
@@ -857,7 +855,7 @@ async fn test_cancel_order_permission_denied() {
     // Other user tries to cancel - should fail
     let result = service
         .cancel_order(&CancelOrderRequest {
-            user_id: other_user.id,
+            user_id: receiver_user.id,
             order_id: order.id,
             reason: None,
         })
@@ -866,7 +864,7 @@ async fn test_cancel_order_permission_denied() {
     assert!(result.is_err());
     match result.unwrap_err() {
         CancelOrderError::PermissionDenied { user_id } => {
-            assert_eq!(user_id, other_user.id);
+            assert_eq!(user_id, receiver_user.id);
         }
         _ => panic!("Expected PermissionDenied error"),
     }

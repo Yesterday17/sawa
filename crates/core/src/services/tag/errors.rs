@@ -1,5 +1,5 @@
-use thiserror::Error;
 use crate::errors::RepositoryError;
+use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum GetTagError {

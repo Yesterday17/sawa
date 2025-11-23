@@ -8,7 +8,7 @@ sawa-core.workspace = true
 chrono.workspace = true
 uuid.workspace = true
 bcrypt.workspace = true
+tokio.workspace = true
 
 [dev-dependencies]
 sawa-infra-memory.workspace = true
-tokio.workspace = true

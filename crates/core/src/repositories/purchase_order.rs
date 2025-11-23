@@ -11,10 +11,11 @@ use crate::{
 /// PurchaseOrder is the aggregate root that contains PurchaseOrderItems.
 /// Items should only be accessed through the PurchaseOrder aggregate.
 pub trait PurchaseOrderRepository: Send + Sync + 'static {
-    /// Find an order by its ID.
+    /// Find an order by its ID and verify permission based on user ID.
     fn find_by_id(
         &self,
         id: &PurchaseOrderId,
+        user_id: &UserId,
     ) -> impl Future<Output = Result<Option<PurchaseOrder>, RepositoryError>> + Send;
 
     /// Find all orders for a specific user.

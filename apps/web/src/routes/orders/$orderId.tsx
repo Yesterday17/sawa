@@ -3,8 +3,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   getOrdersByOrderIdQueryKey,
   postOrdersByOrderIdItemsByItemIdMysteryBoxMutation,
+  postOrdersByOrderIdFulfillMutation,
+  postOrdersByOrderIdCancelMutation,
+  getOrdersByOrderIdOptions,
+  getProductsVariantsOptions,
 } from '../../client/@tanstack/react-query.gen'
-import { getOrdersByOrderId, getProductsVariants } from '../../client/sdk.gen'
 import {
   Container,
   Title,
@@ -37,7 +40,10 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
+  Check,
+  X,
 } from 'lucide-react'
+import { notifications } from '@mantine/notifications'
 
 export const Route = createFileRoute('/orders/$orderId')({
   component: OrderDetailsPage,
@@ -47,27 +53,71 @@ function OrderDetailsPage() {
   const { orderId } = Route.useParams()
   const queryClient = useQueryClient()
 
+  const fulfillOrderMutation = useMutation(postOrdersByOrderIdFulfillMutation())
+  const cancelOrderMutation = useMutation(postOrdersByOrderIdCancelMutation())
+
   const {
     data: order,
     isLoading,
     error,
-  } = useQuery({
-    queryKey: getOrdersByOrderIdQueryKey({
-      // @ts-ignore
+  } = useQuery(
+    getOrdersByOrderIdOptions({
       path: { order_id: orderId },
     }),
-    queryFn: () =>
-      getOrdersByOrderId({
-        // @ts-ignore
-        path: { order_id: orderId },
-      }).then((res) => res.data),
-  })
+  )
 
-  // Fetch all variants to map IDs to names (optimization: should fetch specific ones)
-  const { data: allVariants } = useQuery({
-    queryKey: ['allVariants'],
-    queryFn: () => getProductsVariants().then((res) => res.data),
-  })
+  const { data: allVariants } = useQuery(getProductsVariantsOptions())
+
+  const handleFulfill = async () => {
+    try {
+      await fulfillOrderMutation.mutateAsync({
+        path: { order_id: orderId },
+      })
+      notifications.show({
+        title: 'Order Fulfilled',
+        message: 'Your order has been successfully fulfilled.',
+        color: 'green',
+      })
+      queryClient.invalidateQueries({
+        queryKey: getOrdersByOrderIdQueryKey({
+          path: { order_id: orderId },
+        }),
+      })
+    } catch (error) {
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to fulfill order',
+        color: 'red',
+      })
+    }
+  }
+
+  const handleCancel = async () => {
+    if (!confirm('Are you sure you want to cancel this order?')) return
+
+    try {
+      await cancelOrderMutation.mutateAsync({
+        path: { order_id: orderId },
+        body: { reason: 'User cancelled' },
+      })
+      notifications.show({
+        title: 'Order Cancelled',
+        message: 'Your order has been cancelled.',
+        color: 'blue',
+      })
+      queryClient.invalidateQueries({
+        queryKey: getOrdersByOrderIdQueryKey({
+          path: { order_id: orderId },
+        }),
+      })
+    } catch (error) {
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to cancel order',
+        color: 'red',
+      })
+    }
+  }
 
   if (isLoading)
     return (
@@ -131,6 +181,28 @@ function OrderDetailsPage() {
               {new Date(order.created_at).toLocaleTimeString()}
             </Text>
           </div>
+
+          {order.status === 'incomplete' && (
+            <Group>
+              <Button
+                color="red"
+                variant="light"
+                leftSection={<X size={16} />}
+                onClick={handleCancel}
+                loading={cancelOrderMutation.isPending}
+              >
+                Cancel Order
+              </Button>
+              <Button
+                color="green"
+                leftSection={<Check size={16} />}
+                onClick={handleFulfill}
+                loading={fulfillOrderMutation.isPending}
+              >
+                Fulfill Order
+              </Button>
+            </Group>
+          )}
         </Group>
 
         <SimpleGrid cols={{ base: 1, md: 3 }} spacing="lg">
@@ -155,7 +227,6 @@ function OrderDetailsPage() {
                   onUpdate={() =>
                     queryClient.invalidateQueries({
                       queryKey: getOrdersByOrderIdQueryKey({
-                        // @ts-ignore
                         path: { order_id: orderId },
                       }),
                     })
@@ -277,7 +348,6 @@ function OrderItemCard({
   const handleSubmit = async () => {
     try {
       await submitMysteryBoxMutation.mutateAsync({
-        // @ts-ignore
         path: { order_id: orderId, item_id: item.id },
         body: {
           owner_id: item.line_items?.[0]?.owner_id || user?.id || '',

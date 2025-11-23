@@ -1,10 +1,9 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import {
-  getProductsQueryKey,
-  getProductsVariantsQueryKey,
+  getProductsOptions,
+  getProductsVariantsOptions,
 } from '../../client/@tanstack/react-query.gen'
-import { getProducts, getProductsVariants } from '../../client/sdk.gen'
 import {
   ActionIcon,
   Badge,
@@ -41,8 +40,7 @@ function ProductsPage() {
     isLoading: isLoadingProducts,
     error: productsError,
   } = useQuery({
-    queryKey: getProductsQueryKey(),
-    queryFn: () => getProducts().then((res) => res.data),
+    ...getProductsOptions(),
     enabled: viewMode === 'products',
   })
 
@@ -51,8 +49,7 @@ function ProductsPage() {
     isLoading: isLoadingVariants,
     error: variantsError,
   } = useQuery({
-    queryKey: getProductsVariantsQueryKey(),
-    queryFn: () => getProductsVariants().then((res) => res.data),
+    ...getProductsVariantsOptions(),
     enabled: viewMode === 'variants',
   })
 

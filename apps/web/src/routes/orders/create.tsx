@@ -15,9 +15,8 @@ import { useForm } from '@mantine/form'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import {
   postOrdersMutation,
-  getProductsVariantsQueryKey,
+  getProductsVariantsOptions,
 } from '../../client/@tanstack/react-query.gen'
-import { getProductsVariants } from '../../client/sdk.gen'
 import type { CreateOrderItemBody } from '../../client/types.gen'
 
 export const Route = createFileRoute('/orders/create')({
@@ -30,10 +29,7 @@ function CreateOrderPage() {
   const createOrderMutation = useMutation(postOrdersMutation())
 
   // Fetch variants to select from
-  const { data: variants } = useQuery({
-    queryKey: getProductsVariantsQueryKey(),
-    queryFn: () => getProductsVariants().then((res) => res.data),
-  })
+  const { data: variants } = useQuery(getProductsVariantsOptions())
 
   const form = useForm({
     initialValues: {

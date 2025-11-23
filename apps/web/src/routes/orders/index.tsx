@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { getOrdersQueryKey } from '../../client/@tanstack/react-query.gen'
-import { getOrders } from '../../client/sdk.gen'
+import { getOrdersOptions } from '../../client/@tanstack/react-query.gen'
 import {
   Container,
   Title,
@@ -24,11 +23,9 @@ export const Route = createFileRoute('/orders/')({
 })
 
 function OrdersPage() {
-  const { data, isLoading, error } = useQuery({
-    queryKey: getOrdersQueryKey({ query: { role: 'creator' } }),
-    queryFn: () =>
-      getOrders({ query: { role: 'creator' } }).then((res) => res.data),
-  })
+  const { data, isLoading, error } = useQuery(
+    getOrdersOptions({ query: { role: 'creator' } }),
+  )
 
   if (isLoading)
     return (

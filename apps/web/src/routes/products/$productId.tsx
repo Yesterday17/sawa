@@ -1,13 +1,9 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import {
-  getProductsByProductIdQueryKey,
-  getProductsByProductIdVariantsQueryKey,
+  getProductsByProductIdOptions,
+  getProductsByProductIdVariantsOptions,
 } from '../../client/@tanstack/react-query.gen'
-import {
-  getProductsByProductId,
-  getProductsByProductIdVariants,
-} from '../../client/sdk.gen'
 import {
   Container,
   Title,
@@ -40,29 +36,21 @@ function ProductDetailPage() {
     data: product,
     isLoading: isLoadingProduct,
     error: productError,
-  } = useQuery({
-    queryKey: getProductsByProductIdQueryKey({
+  } = useQuery(
+    getProductsByProductIdOptions({
       path: { product_id: productId },
     }),
-    queryFn: () =>
-      getProductsByProductId({ path: { product_id: productId } }).then(
-        (res) => res.data,
-      ),
-  })
+  )
 
   const {
     data: variants,
     isLoading: isLoadingVariants,
     error: variantsError,
-  } = useQuery({
-    queryKey: getProductsByProductIdVariantsQueryKey({
+  } = useQuery(
+    getProductsByProductIdVariantsOptions({
       path: { product_id: productId },
     }),
-    queryFn: () =>
-      getProductsByProductIdVariants({
-        path: { product_id: productId },
-      }).then((res) => res.data),
-  })
+  )
 
   if (isLoadingProduct || isLoadingVariants)
     return (

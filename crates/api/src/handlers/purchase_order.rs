@@ -17,8 +17,9 @@ use sawa_core::{
         user::UserId,
     },
     services::{
-        AddOrderItemRequest, CreateOrderItemRequest, CreateOrderRequest, GetOrderRequest,
-        ListOrdersRequest, PurchaseOrderService, SubmitMysteryBoxResultsRequest, UserService,
+        AddOrderItemRequest, CancelOrderRequest, CreateOrderItemRequest, CreateOrderRequest,
+        FulfillOrderRequest, GetOrderRequest, ListOrdersRequest, PurchaseOrderLifecycleService,
+        PurchaseOrderService, SubmitMysteryBoxResultsRequest, UserService,
     },
 };
 use schemars::JsonSchema;
@@ -252,4 +253,71 @@ pub fn create_submit_mystery_box_results_docs(op: TransformOperation) -> Transfo
         .description("Submit results for a mystery box item.")
         .tag("Purchase Order")
         .response::<200, ()>()
+}
+
+pub async fn fulfill_order<S>(
+    State(state): State<AppState<S>>,
+    auth_session: AuthSession<S>,
+    Path(OrderIdPath { order_id }): Path<OrderIdPath>,
+) -> Result<impl IntoApiResponse, AppError>
+where
+    S: PurchaseOrderLifecycleService + UserService + Clone,
+{
+    let user = auth_session.user.as_ref().ok_or(AppError::Unauthorized)?;
+
+    let req = FulfillOrderRequest {
+        user_id: user.id(),
+        order_id,
+    };
+
+    let order = state
+        .service
+        .fulfill_order(&req)
+        .await
+        .map_err(|_| AppError::InternalServerError)?;
+
+    Ok((StatusCode::OK, Json(order)))
+}
+
+pub fn create_fulfill_order_docs(op: TransformOperation) -> TransformOperation {
+    op.summary("Fulfill order")
+        .description("Fulfill a purchase order.")
+        .tag("Purchase Order")
+        .response::<200, Json<PurchaseOrder>>()
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct CancelOrderBody {
+    pub reason: Option<String>,
+}
+
+pub async fn cancel_order<S>(
+    State(state): State<AppState<S>>,
+    auth_session: AuthSession<S>,
+    Path(OrderIdPath { order_id }): Path<OrderIdPath>,
+    Json(CancelOrderBody { reason }): Json<CancelOrderBody>,
+) -> Result<impl IntoApiResponse, AppError>
+where
+    S: PurchaseOrderLifecycleService + UserService + Clone,
+{
+    let user = auth_session.user.as_ref().ok_or(AppError::Unauthorized)?;
+    let req = CancelOrderRequest {
+        user_id: user.id(),
+        order_id,
+        reason,
+    };
+    let order = state
+        .service
+        .cancel_order(&req)
+        .await
+        .map_err(|_| AppError::InternalServerError)?;
+
+    Ok((StatusCode::OK, Json(order)))
+}
+
+pub fn create_cancel_order_docs(op: TransformOperation) -> TransformOperation {
+    op.summary("Cancel order")
+        .description("Cancel a purchase order.")
+        .tag("Purchase Order")
+        .response::<200, Json<PurchaseOrder>>()
 }

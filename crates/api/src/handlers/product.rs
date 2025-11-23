@@ -79,10 +79,15 @@ pub fn create_create_product_docs(op: TransformOperation) -> TransformOperation 
         .response::<201, Json<Product>>()
 }
 
+#[derive(Deserialize, JsonSchema)]
+pub struct ProductIdPath {
+    pub product_id: ProductId,
+}
+
 /// GET /products/{product_id}
 pub async fn get_product<S>(
     State(state): State<AppState<S>>,
-    Path(product_id): Path<ProductId>,
+    Path(ProductIdPath { product_id }): Path<ProductIdPath>,
 ) -> Result<impl IntoApiResponse, AppError>
 where
     S: ProductService,
@@ -116,17 +121,44 @@ pub struct CreateProductVariantBody {
     pub sort_order: i32,
 }
 
-/// GET /products/{product_id}/variants
 /// GET /products/variants
-pub async fn list_product_variants<S>(
-    Path(product_id): Path<Option<ProductId>>,
+pub async fn list_all_product_variants<S>(
     State(state): State<AppState<S>>,
 ) -> Result<impl IntoApiResponse, AppError>
 where
     S: ProductService,
 {
     let req = ListProductVariantsRequest {
-        product_id,
+        product_id: None,
+        tags: None,
+        match_all_tags: false,
+    };
+    let variants = state
+        .service
+        .list_product_variants(req)
+        .await
+        .map_err(|_| AppError::InternalServerError)?;
+
+    Ok((StatusCode::OK, Json(variants)))
+}
+
+pub fn create_list_all_product_variants_docs(op: TransformOperation) -> TransformOperation {
+    op.summary("List all product variants")
+        .description("List all product variants.")
+        .tag("Product Variant")
+        .response::<200, Json<Vec<ProductVariant>>>()
+}
+
+/// GET /products/{product_id}/variants
+pub async fn list_product_variants<S>(
+    Path(ProductIdPath { product_id }): Path<ProductIdPath>,
+    State(state): State<AppState<S>>,
+) -> Result<impl IntoApiResponse, AppError>
+where
+    S: ProductService,
+{
+    let req = ListProductVariantsRequest {
+        product_id: Some(product_id),
         tags: None,
         match_all_tags: false,
     };
@@ -149,7 +181,7 @@ pub fn create_list_product_variants_docs(op: TransformOperation) -> TransformOpe
 /// POST /products/{product_id}/variants
 pub async fn create_product_variant<S>(
     State(state): State<AppState<S>>,
-    Path(product_id): Path<ProductId>,
+    Path(ProductIdPath { product_id }): Path<ProductIdPath>,
     Json(body): Json<CreateProductVariantBody>,
 ) -> Result<impl IntoApiResponse, AppError>
 where
@@ -187,7 +219,7 @@ pub fn create_create_product_variant_docs(op: TransformOperation) -> TransformOp
 }
 
 #[derive(Deserialize, JsonSchema)]
-pub struct GetProductVariantPath {
+pub struct ProductIdVariantIdPath {
     pub product_id: ProductId,
     pub variant_id: ProductVariantId,
 }
@@ -195,10 +227,10 @@ pub struct GetProductVariantPath {
 /// GET /products/{product_id}/variants/{variant_id}
 pub async fn get_product_variant<S>(
     State(state): State<AppState<S>>,
-    Path(GetProductVariantPath {
+    Path(ProductIdVariantIdPath {
         product_id: _,
         variant_id,
-    }): Path<GetProductVariantPath>,
+    }): Path<ProductIdVariantIdPath>,
 ) -> Result<impl IntoApiResponse, AppError>
 where
     S: ProductService,

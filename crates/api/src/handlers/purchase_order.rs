@@ -2,7 +2,7 @@ use crate::{auth::AuthSession, error::AppError, state::AppState};
 use aide::{axum::IntoApiResponse, transform::TransformOperation};
 use axum::{
     Json,
-    extract::{Query, State},
+    extract::{Path, Query, State},
     http::StatusCode,
 };
 use axum_login::AuthUser;
@@ -10,12 +10,15 @@ use sawa_core::{
     models::{
         misc::{Address, Price},
         product::ProductVariantId,
-        purchase::{OrderRoleFilter, PurchaseOrder, PurchaseOrderStatus},
+        purchase::{
+            OrderRoleFilter, PurchaseOrder, PurchaseOrderId, PurchaseOrderItemId,
+            PurchaseOrderStatus,
+        },
         user::UserId,
     },
     services::{
-        CreateOrderItemRequest, CreateOrderRequest, ListOrdersRequest, PurchaseOrderService,
-        UserService,
+        AddOrderItemRequest, CreateOrderItemRequest, CreateOrderRequest, GetOrderRequest,
+        ListOrdersRequest, PurchaseOrderService, SubmitMysteryBoxResultsRequest, UserService,
     },
 };
 use schemars::JsonSchema;
@@ -36,6 +39,20 @@ pub struct CreateOrderItemBody {
     pub owner_id: Option<UserId>,
     pub quantity: NonZeroU32,
     pub unit_price: Option<Price>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct AddOrderItemBody {
+    pub variant_id: ProductVariantId,
+    pub owner_id: UserId,
+    pub quantity: NonZeroU32,
+    pub unit_price: Option<Price>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct SubmitMysteryBoxResultsBody {
+    pub owner_id: UserId,
+    pub received_variants: Vec<ProductVariantId>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -119,4 +136,120 @@ pub fn create_list_orders_docs(op: TransformOperation) -> TransformOperation {
         .description("List purchase orders for the authenticated user.")
         .tag("Purchase Order")
         .response::<200, Json<Vec<PurchaseOrder>>>()
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct OrderIdPath {
+    pub order_id: PurchaseOrderId,
+}
+
+/// GET /orders/{order_id}
+pub async fn get_order<S>(
+    State(state): State<AppState<S>>,
+    auth_session: AuthSession<S>,
+    Path(OrderIdPath { order_id }): Path<OrderIdPath>,
+) -> Result<impl IntoApiResponse, AppError>
+where
+    S: PurchaseOrderService + UserService + Clone,
+{
+    let user = auth_session.user.as_ref().ok_or(AppError::Unauthorized)?;
+
+    let req = GetOrderRequest {
+        user_id: user.id(),
+        order_id,
+    };
+
+    let order = state
+        .service
+        .get_order(req)
+        .await
+        .map_err(|_| AppError::InternalServerError)?;
+
+    Ok((StatusCode::OK, Json(order)))
+}
+
+pub fn create_get_order_docs(op: TransformOperation) -> TransformOperation {
+    op.summary("Get order")
+        .description("Get a purchase order by ID.")
+        .tag("Purchase Order")
+        .response::<200, Json<PurchaseOrder>>()
+}
+
+/// POST /orders/{order_id}/items
+pub async fn add_order_item<S>(
+    State(state): State<AppState<S>>,
+    auth_session: AuthSession<S>,
+    Path(OrderIdPath { order_id }): Path<OrderIdPath>,
+    Json(body): Json<AddOrderItemBody>,
+) -> Result<impl IntoApiResponse, AppError>
+where
+    S: PurchaseOrderService + UserService + Clone,
+{
+    let user = auth_session.user.as_ref().ok_or(AppError::Unauthorized)?;
+
+    let req = AddOrderItemRequest {
+        user_id: user.id(),
+        order_id,
+        variant_id: body.variant_id,
+        owner_id: body.owner_id,
+        quantity: body.quantity,
+        unit_price: body.unit_price,
+    };
+
+    let item_id = state
+        .service
+        .add_order_item(req)
+        .await
+        .map_err(|_| AppError::InternalServerError)?;
+
+    Ok((StatusCode::CREATED, Json(item_id)))
+}
+
+pub fn create_add_order_item_docs(op: TransformOperation) -> TransformOperation {
+    op.summary("Add order item")
+        .description("Add an item to a purchase order.")
+        .tag("Purchase Order")
+        .response::<201, Json<PurchaseOrderItemId>>()
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct OrderIdPathItemIdPath {
+    pub order_id: PurchaseOrderId,
+    pub item_id: PurchaseOrderItemId,
+}
+
+/// POST /orders/{order_id}/items/{item_id}/mystery-box
+pub async fn submit_mystery_box_results<S>(
+    State(state): State<AppState<S>>,
+    auth_session: AuthSession<S>,
+    Path(OrderIdPathItemIdPath { order_id, item_id }): Path<OrderIdPathItemIdPath>,
+    Json(body): Json<SubmitMysteryBoxResultsBody>,
+) -> Result<impl IntoApiResponse, AppError>
+where
+    S: PurchaseOrderService + UserService + Clone,
+{
+    let user = auth_session.user.as_ref().ok_or(AppError::Unauthorized)?;
+
+    let req = SubmitMysteryBoxResultsRequest {
+        user_id: user.id(),
+        order_id,
+        order_item_id: item_id,
+        owner_id: body.owner_id,
+        received_variants: body.received_variants,
+    };
+
+    state
+        .service
+        .submit_mystery_box_results(req)
+        .await
+        .map_err(|_| AppError::InternalServerError)?;
+
+    Ok(StatusCode::OK)
+}
+
+pub fn create_submit_mystery_box_results_docs(op: TransformOperation) -> TransformOperation {
+    op.summary("Submit mystery box results")
+        .description("Submit results for a mystery box item.")
+        .tag("Purchase Order")
+        .response::<200, ()>()
 }

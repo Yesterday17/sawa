@@ -52,3 +52,7 @@ See `.cursor/rules` for complete project guidelines.
 - Newtype wrappers over raw primitives
 - Explicit modeling over implicit behavior
 - Simple aggregates over complex hierarchies
+
+## Web App Rules (apps/web)
+
+- **Do not use inline styles (`style={{ ... }}`)**. Use Tailwind CSS classes instead.

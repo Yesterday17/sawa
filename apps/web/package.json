@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --port 3000",
+    "dev": "vite --port 3005",
     "build": "vite build && tsc",
     "serve": "vite preview",
     "test": "vitest run",
@@ -15,9 +15,12 @@
   },
   "dependencies": {
     "@mantine/core": "^8.3.9",
+    "@mantine/form": "^8.3.9",
     "@mantine/hooks": "^8.3.9",
+    "@mantine/notifications": "^8.3.9",
     "@tailwindcss/vite": "^4.0.6",
     "@tanstack/react-devtools": "^0.7.0",
+    "@tanstack/react-query": "^5.90.10",
     "@tanstack/react-router": "^1.132.0",
     "@tanstack/react-router-devtools": "^1.132.0",
     "@tanstack/router-plugin": "^1.132.0",

@@ -1,11 +1,12 @@
 use aide::{axum::IntoApiResponse, transform::TransformOperation};
 use axum::{Json, extract::State, http::StatusCode};
+use axum_login::AuthUser;
 use sawa_core::{
     models::{
         misc::{MediaId, NonEmptyString},
         user::{Email, UserId, Username},
     },
-    services::{CreateUserRequest, UserService},
+    services::{CreateUserRequest, GetUserRequest, UserService},
 };
 
 use crate::{
@@ -122,4 +123,34 @@ pub fn create_register_docs(op: TransformOperation) -> TransformOperation {
         .description("Register a new user.")
         .tag("User")
         .response::<201, Json<PublicUser>>()
+}
+
+pub async fn me<S>(
+    auth_session: AuthSession<S>,
+    State(state): State<AppState<S>>,
+) -> Result<impl IntoApiResponse, AppError>
+where
+    S: Clone + UserService,
+{
+    let api_user = auth_session.user.as_ref().ok_or(AppError::Unauthorized)?;
+
+    let user = state
+        .service
+        .get_user(GetUserRequest::ById(api_user.id()))
+        .await
+        .map_err(|_| AppError::InternalServerError)?;
+
+    Ok(Json(PublicUser {
+        id: user.id,
+        username: user.username,
+        email: Some(user.email),
+        avatar: user.avatar,
+    }))
+}
+
+pub fn create_me_docs(op: TransformOperation) -> TransformOperation {
+    op.summary("Get current user")
+        .description("Get the currently authenticated user.")
+        .tag("User")
+        .response::<200, Json<PublicUser>>()
 }

@@ -73,6 +73,11 @@ where
             ),
         )
         .api_route(
+            "/user/me",
+            get_with(handlers::auth::me::<S>, handlers::auth::create_me_docs)
+                .route_layer(ensure_login!()),
+        )
+        .api_route(
             "/products",
             post_with(
                 handlers::product::create_product::<S>,
@@ -94,8 +99,8 @@ where
         .api_route(
             "/products/variants",
             get_with(
-                handlers::product::list_product_variants::<S>,
-                handlers::product::create_list_product_variants_docs,
+                handlers::product::list_all_product_variants::<S>,
+                handlers::product::create_list_all_product_variants_docs,
             ),
         )
         .api_route(
@@ -127,6 +132,30 @@ where
             .get_with(
                 handlers::purchase_order::list_orders::<S>,
                 handlers::purchase_order::create_list_orders_docs,
+            )
+            .route_layer(ensure_login!()),
+        )
+        .api_route(
+            "/orders/{order_id}",
+            get_with(
+                handlers::purchase_order::get_order::<S>,
+                handlers::purchase_order::create_get_order_docs,
+            )
+            .route_layer(ensure_login!()),
+        )
+        .api_route(
+            "/orders/{order_id}/items",
+            post_with(
+                handlers::purchase_order::add_order_item::<S>,
+                handlers::purchase_order::create_add_order_item_docs,
+            )
+            .route_layer(ensure_login!()),
+        )
+        .api_route(
+            "/orders/{order_id}/items/{item_id}/mystery-box",
+            post_with(
+                handlers::purchase_order::submit_mystery_box_results::<S>,
+                handlers::purchase_order::create_submit_mystery_box_results_docs,
             )
             .route_layer(ensure_login!()),
         )

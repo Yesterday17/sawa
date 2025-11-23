@@ -80,3 +80,9 @@ pub enum GetOrderError {
     #[error("Repository error: {0}")]
     Repository(#[from] crate::errors::RepositoryError),
 }
+
+#[derive(Debug, thiserror::Error)]
+pub enum ListOrdersError {
+    #[error("Repository error: {0}")]
+    Repository(#[from] crate::errors::RepositoryError),
+}

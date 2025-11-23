@@ -27,6 +27,7 @@ axum = { version = "0.8", features = ["macros"] }
 aide = { version = "0.16.0-alpha.1", features = [
     "axum",
     "axum-json",
+    "axum-query",
     "macros",
 ] }
 schemars = { version = "1.0.4", features = ["uuid1", "chrono04", "url2"] }

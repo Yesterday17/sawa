@@ -5,7 +5,7 @@ use crate::{
 use sawa_core::{
     errors::RepositoryError,
     models::{
-        purchase::{PurchaseOrder, PurchaseOrderId, PurchaseOrderStatus},
+        purchase::{OrderRoleFilter, PurchaseOrder, PurchaseOrderId, PurchaseOrderStatus},
         user::UserId,
     },
     repositories::PurchaseOrderRepository,
@@ -70,10 +70,44 @@ impl PurchaseOrderRepository for PostgresPurchaseOrderRepository {
     async fn find_by_user(
         &self,
         user_id: &UserId,
+        role: OrderRoleFilter,
         status: Option<PurchaseOrderStatus>,
     ) -> Result<Vec<PurchaseOrder>, RepositoryError> {
-        let mut query = purchase_order::Entity::load()
-            .filter(purchase_order::Column::CreatorId.eq(Uuid::from(user_id.0)));
+        let mut query = purchase_order::Entity::load();
+
+        match role {
+            OrderRoleFilter::Creator => {
+                query = query.filter(purchase_order::Column::CreatorId.eq(Uuid::from(user_id.0)));
+            }
+            OrderRoleFilter::Receiver => {
+                query = query.filter(purchase_order::Column::ReceiverId.eq(Uuid::from(user_id.0)));
+            }
+            OrderRoleFilter::Participant => {
+                query = query.filter(
+                    purchase_order::Column::CreatorId
+                        .eq(Uuid::from(user_id.0))
+                        .or(purchase_order::Column::ReceiverId.eq(Uuid::from(user_id.0)))
+                        .or(purchase_order::Column::Id.in_subquery(
+                            Query::select()
+                                .column(purchase_order_item::Column::PurchaseOrderId)
+                                .from(purchase_order_item::Entity)
+                                .and_where(
+                                    purchase_order_item::Column::Id.in_subquery(
+                                        Query::select()
+                                            .column(purchase_order_line_item::Column::PurchaseOrderItemId)
+                                            .from(purchase_order_line_item::Entity)
+                                            .and_where(
+                                                purchase_order_line_item::Column::OwnerId
+                                                    .eq(Uuid::from(user_id.0)),
+                                            )
+                                            .to_owned(),
+                                    ),
+                                )
+                                .to_owned(),
+                        )),
+                );
+            }
+        }
 
         if let Some(status) = status {
             let db_status = match status {

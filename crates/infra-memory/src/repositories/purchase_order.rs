@@ -6,7 +6,7 @@ use std::{
 use sawa_core::{
     errors::RepositoryError,
     models::{
-        purchase::{PurchaseOrder, PurchaseOrderId, PurchaseOrderStatus},
+        purchase::{OrderRoleFilter, PurchaseOrder, PurchaseOrderId, PurchaseOrderStatus},
         user::UserId,
     },
     repositories::PurchaseOrderRepository,
@@ -61,14 +61,30 @@ impl PurchaseOrderRepository for InMemoryPurchaseOrderRepository {
     async fn find_by_user(
         &self,
         user_id: &UserId,
+        role: OrderRoleFilter,
         status: Option<PurchaseOrderStatus>,
     ) -> Result<Vec<PurchaseOrder>, RepositoryError> {
         let orders = self.orders.read().unwrap();
         Ok(orders
             .values()
             .filter(|o| {
-                (o.creator_id == *user_id || o.receiver_id == *user_id)
-                    && status.map_or(true, |s| o.status == s)
+                if !status.map_or(true, |s| o.status == s) {
+                    return false;
+                }
+
+                match role {
+                    OrderRoleFilter::Creator => &o.creator_id == user_id,
+                    OrderRoleFilter::Receiver => &o.receiver_id == user_id,
+                    OrderRoleFilter::Participant => {
+                        o.creator_id == *user_id
+                            || o.receiver_id == *user_id
+                            || o.items.iter().any(|item| {
+                                item.line_items
+                                    .iter()
+                                    .any(|line_item| &line_item.owner_id == user_id)
+                            })
+                    }
+                }
             })
             .cloned()
             .collect())

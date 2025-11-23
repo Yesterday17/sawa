@@ -13,8 +13,8 @@ use sawa_core::{
     repositories::*,
     services::{
         AddOrderItemError, AddOrderItemRequest, CreateOrderError, CreateOrderRequest,
-        GetOrderError, GetOrderRequest, PurchaseOrderService, SubmitMysteryBoxResultsError,
-        SubmitMysteryBoxResultsRequest,
+        GetOrderError, GetOrderRequest, ListOrdersError, ListOrdersRequest, PurchaseOrderService,
+        SubmitMysteryBoxResultsError, SubmitMysteryBoxResultsRequest,
     },
 };
 use std::num::NonZeroU32;
@@ -294,5 +294,16 @@ where
             .ok_or(GetOrderError::NotFound)?;
 
         Ok(order)
+    }
+
+    async fn list_orders(
+        &self,
+        req: ListOrdersRequest,
+    ) -> Result<Vec<PurchaseOrder>, ListOrdersError> {
+        let orders = self
+            .order
+            .find_by_user(&req.user_id, req.role, req.status)
+            .await?;
+        Ok(orders)
     }
 }

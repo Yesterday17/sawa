@@ -80,7 +80,9 @@ where
         )
         .api_route(
             "/orders",
-            post(handlers::purchase_order::create_order::<S>).route_layer(ensure_login!()),
+            post(handlers::purchase_order::create_order::<S>)
+                .get(handlers::purchase_order::list_orders::<S>)
+                .route_layer(ensure_login!()),
         )
         .layer(auth_layer)
         .with_state(AppState::new(state));

@@ -2,7 +2,8 @@ use crate::models::purchase::{PurchaseOrder, PurchaseOrderItemId};
 
 use super::{
     AddOrderItemError, AddOrderItemRequest, CreateOrderError, CreateOrderRequest, GetOrderError,
-    GetOrderRequest, SubmitMysteryBoxResultsError, SubmitMysteryBoxResultsRequest,
+    GetOrderRequest, ListOrdersError, ListOrdersRequest, SubmitMysteryBoxResultsError,
+    SubmitMysteryBoxResultsRequest,
 };
 
 /// Service for managing purchase orders (Port).
@@ -36,4 +37,10 @@ pub trait PurchaseOrderService: Send + Sync + 'static {
         &self,
         req: GetOrderRequest,
     ) -> impl Future<Output = Result<PurchaseOrder, GetOrderError>> + Send;
+
+    /// List orders for a user.
+    fn list_orders(
+        &self,
+        req: ListOrdersRequest,
+    ) -> impl Future<Output = Result<Vec<PurchaseOrder>, ListOrdersError>> + Send;
 }

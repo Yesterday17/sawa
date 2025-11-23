@@ -3,7 +3,7 @@ use std::num::NonZeroU32;
 use crate::models::{
     misc::{Address, Price},
     product::ProductVariantId,
-    purchase::{PurchaseOrderId, PurchaseOrderItemId},
+    purchase::{OrderRoleFilter, PurchaseOrderId, PurchaseOrderItemId, PurchaseOrderStatus},
     user::UserId,
 };
 
@@ -89,4 +89,16 @@ pub struct GetOrderRequest {
 
     /// The order to retrieve.
     pub order_id: PurchaseOrderId,
+}
+
+/// Request to list orders for a user.
+pub struct ListOrdersRequest {
+    /// The user requesting the orders.
+    pub user_id: UserId,
+
+    /// Filter by user role in the order.
+    pub role: OrderRoleFilter,
+
+    /// Filter by order status.
+    pub status: Option<PurchaseOrderStatus>,
 }

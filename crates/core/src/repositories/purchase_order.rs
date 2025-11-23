@@ -1,7 +1,7 @@
 use crate::{
     errors::RepositoryError,
     models::{
-        purchase::{PurchaseOrder, PurchaseOrderId, PurchaseOrderStatus},
+        purchase::{OrderRoleFilter, PurchaseOrder, PurchaseOrderId, PurchaseOrderStatus},
         user::UserId,
     },
 };
@@ -25,6 +25,7 @@ pub trait PurchaseOrderRepository: Send + Sync + 'static {
     fn find_by_user(
         &self,
         user_id: &UserId,
+        role: OrderRoleFilter,
         status: Option<PurchaseOrderStatus>,
     ) -> impl Future<Output = Result<Vec<PurchaseOrder>, RepositoryError>> + Send;
 

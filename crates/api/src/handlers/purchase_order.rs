@@ -1,14 +1,22 @@
 use crate::{auth::AuthSession, error::AppError, state::AppState};
 use aide::axum::IntoApiResponse;
-use axum::{Json, extract::State, http::StatusCode};
+use axum::{
+    Json,
+    extract::{Query, State},
+    http::StatusCode,
+};
 use axum_login::AuthUser;
 use sawa_core::{
     models::{
         misc::{Address, Price},
         product::ProductVariantId,
+        purchase::{OrderRoleFilter, PurchaseOrderStatus},
         user::UserId,
     },
-    services::{CreateOrderItemRequest, CreateOrderRequest, PurchaseOrderService, UserService},
+    services::{
+        CreateOrderItemRequest, CreateOrderRequest, ListOrdersRequest, PurchaseOrderService,
+        UserService,
+    },
 };
 use schemars::JsonSchema;
 use serde::Deserialize;
@@ -28,6 +36,12 @@ pub struct CreateOrderItemBody {
     pub owner_id: Option<UserId>,
     pub quantity: NonZeroU32,
     pub unit_price: Option<Price>,
+}
+
+#[derive(Deserialize, JsonSchema)]
+pub struct ListOrdersQuery {
+    pub role: OrderRoleFilter,
+    pub status: Option<PurchaseOrderStatus>,
 }
 
 /// POST /orders
@@ -65,4 +79,30 @@ where
         .map_err(|_| AppError::InternalServerError)?;
 
     Ok((StatusCode::CREATED, Json(order)))
+}
+
+/// GET /orders
+pub async fn list_orders<S>(
+    State(state): State<AppState<S>>,
+    auth_session: AuthSession<S>,
+    Query(query): Query<ListOrdersQuery>,
+) -> Result<impl IntoApiResponse, AppError>
+where
+    S: PurchaseOrderService + UserService + Clone,
+{
+    let user = auth_session.user.as_ref().ok_or(AppError::Unauthorized)?;
+
+    let req = ListOrdersRequest {
+        user_id: user.id(),
+        role: query.role,
+        status: query.status,
+    };
+
+    let orders = state
+        .service
+        .list_orders(req)
+        .await
+        .map_err(|_| AppError::InternalServerError)?;
+
+    Ok((StatusCode::OK, Json(orders)))
 }

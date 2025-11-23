@@ -3,8 +3,9 @@ use sawa_core::{
         misc::{Currency, Price},
         product::ProductVariantId,
         purchase::{
-            PurchaseOrder, PurchaseOrderId, PurchaseOrderItem, PurchaseOrderItemId,
-            PurchaseOrderItemStatus, PurchaseOrderLineItem, PurchaseOrderStatus,
+            OrderRoleFilter, PurchaseOrder, PurchaseOrderId, PurchaseOrderItem,
+            PurchaseOrderItemId, PurchaseOrderItemStatus, PurchaseOrderLineItem,
+            PurchaseOrderStatus,
         },
         user::UserId,
     },
@@ -100,7 +101,10 @@ pub async fn test_find_by_user_without_status_filter<R: PurchaseOrderRepository>
     repo.save(&order2).await.unwrap();
 
     // Query without status filter should return both orders
-    let user_orders = repo.find_by_user(&user_id, None).await.unwrap();
+    let user_orders = repo
+        .find_by_user(&user_id, OrderRoleFilter::Creator, None)
+        .await
+        .unwrap();
     assert_eq!(user_orders.len(), 2);
 
     // Clean up
@@ -119,7 +123,11 @@ pub async fn test_find_by_user_with_status<R: PurchaseOrderRepository>(repo: R) 
 
     // Query incomplete only
     let incomplete_orders = repo
-        .find_by_user(&user_id, Some(PurchaseOrderStatus::Incomplete))
+        .find_by_user(
+            &user_id,
+            OrderRoleFilter::Creator,
+            Some(PurchaseOrderStatus::Incomplete),
+        )
         .await
         .unwrap();
     assert_eq!(incomplete_orders.len(), 1);
@@ -127,7 +135,11 @@ pub async fn test_find_by_user_with_status<R: PurchaseOrderRepository>(repo: R) 
 
     // Query fulfilled only
     let fulfilled_orders = repo
-        .find_by_user(&user_id, Some(PurchaseOrderStatus::Fulfilled))
+        .find_by_user(
+            &user_id,
+            OrderRoleFilter::Creator,
+            Some(PurchaseOrderStatus::Fulfilled),
+        )
         .await
         .unwrap();
     assert_eq!(fulfilled_orders.len(), 1);
@@ -212,7 +224,10 @@ pub async fn test_find_by_user_permission_isolation<R: PurchaseOrderRepository>(
     repo.save(&order_b).await.unwrap();
 
     // User A should only see their own orders (query all statuses)
-    let user_a_orders = repo.find_by_user(&user_a, None).await.unwrap();
+    let user_a_orders = repo
+        .find_by_user(&user_a, OrderRoleFilter::Participant, None)
+        .await
+        .unwrap();
     assert_eq!(user_a_orders.len(), 2);
     assert!(
         user_a_orders
@@ -226,7 +241,10 @@ pub async fn test_find_by_user_permission_isolation<R: PurchaseOrderRepository>(
     );
 
     // User B should only see their own order
-    let user_b_orders = repo.find_by_user(&user_b, None).await.unwrap();
+    let user_b_orders = repo
+        .find_by_user(&user_b, OrderRoleFilter::Participant, None)
+        .await
+        .unwrap();
     assert_eq!(user_b_orders.len(), 1);
     assert_eq!(user_b_orders[0].creator_id, user_b);
 
@@ -278,7 +296,11 @@ pub async fn test_find_by_user_and_status_permission<R: PurchaseOrderRepository>
 
     // User A queries for Incomplete status - should only see their own
     let results = repo
-        .find_by_user(&user_a, Some(PurchaseOrderStatus::Incomplete))
+        .find_by_user(
+            &user_a,
+            OrderRoleFilter::Participant,
+            Some(PurchaseOrderStatus::Incomplete),
+        )
         .await
         .unwrap();
     assert_eq!(results.len(), 1);
@@ -367,6 +389,126 @@ pub async fn test_find_by_id_access_control<R: PurchaseOrderRepository>(repo: R)
             .unwrap()
             .is_none()
     );
+
+    // Clean up
+    repo.delete(&order_id).await.unwrap();
+}
+
+/// Test find_by_user with role filter.
+pub async fn test_find_by_user_role_filter<R: PurchaseOrderRepository>(repo: R) {
+    let creator = UserId::new();
+    let receiver = UserId::new();
+    let participant = UserId::new();
+    let other = UserId::new();
+
+    let order_id = PurchaseOrderId::new();
+    let item_id = PurchaseOrderItemId::new();
+    let variant_id = ProductVariantId::new();
+
+    // Participant owns a line item
+    let line_item = PurchaseOrderLineItem::new(variant_id, item_id, participant);
+
+    let item = PurchaseOrderItem {
+        id: item_id,
+        purchased_variant_id: variant_id,
+        line_items: vec![line_item],
+        status: PurchaseOrderItemStatus::Pending,
+        quantity: NonZeroU32::new(1).unwrap(),
+        unit_price: None,
+    };
+
+    let order = PurchaseOrder {
+        id: order_id,
+        creator_id: creator,
+        receiver_id: receiver,
+        items: vec![item],
+        shipping_address: None,
+        total_price: Price {
+            currency: Currency::USD,
+            amount: 1000,
+        },
+        status: PurchaseOrderStatus::Incomplete,
+        created_at: chrono::Utc::now(),
+        completed_at: None,
+        cancelled_at: None,
+    };
+
+    repo.save(&order).await.unwrap();
+
+    // 1. Creator role
+    // Creator should find it
+    let res = repo
+        .find_by_user(&creator, OrderRoleFilter::Creator, None)
+        .await
+        .unwrap();
+    assert_eq!(res.len(), 1);
+    assert_eq!(res[0].id, order_id);
+
+    // Receiver should NOT find it as Creator
+    let res = repo
+        .find_by_user(&receiver, OrderRoleFilter::Creator, None)
+        .await
+        .unwrap();
+    assert_eq!(res.len(), 0);
+
+    // Participant should NOT find it as Creator
+    let res = repo
+        .find_by_user(&participant, OrderRoleFilter::Creator, None)
+        .await
+        .unwrap();
+    assert_eq!(res.len(), 0);
+
+    // 2. Receiver role
+    // Receiver should find it
+    let res = repo
+        .find_by_user(&receiver, OrderRoleFilter::Receiver, None)
+        .await
+        .unwrap();
+    assert_eq!(res.len(), 1);
+    assert_eq!(res[0].id, order_id);
+
+    // Creator should NOT find it as Receiver
+    let res = repo
+        .find_by_user(&creator, OrderRoleFilter::Receiver, None)
+        .await
+        .unwrap();
+    assert_eq!(res.len(), 0);
+
+    // Participant should NOT find it as Receiver
+    let res = repo
+        .find_by_user(&participant, OrderRoleFilter::Receiver, None)
+        .await
+        .unwrap();
+    assert_eq!(res.len(), 0);
+
+    // 3. Participant role (includes Creator, Receiver, and Item Owners)
+    // Creator is a participant
+    let res = repo
+        .find_by_user(&creator, OrderRoleFilter::Participant, None)
+        .await
+        .unwrap();
+    assert_eq!(res.len(), 1);
+
+    // Receiver is a participant
+    let res = repo
+        .find_by_user(&receiver, OrderRoleFilter::Participant, None)
+        .await
+        .unwrap();
+    assert_eq!(res.len(), 1);
+
+    // Item Owner is a participant
+    let res = repo
+        .find_by_user(&participant, OrderRoleFilter::Participant, None)
+        .await
+        .unwrap();
+    assert_eq!(res.len(), 1);
+
+    // Random user is NOT a participant
+    let res = repo
+        .find_by_user(&other, OrderRoleFilter::Participant, None)
+        .await
+        .unwrap();
+    assert_eq!(res.len(), 0);
 
     // Clean up
     repo.delete(&order_id).await.unwrap();

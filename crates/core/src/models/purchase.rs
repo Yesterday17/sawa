@@ -6,3 +6,6 @@ pub use purchase_order_item::*;
 
 mod purchase_order_line_item;
 pub use purchase_order_line_item::*;
+
+mod role_filter;
+pub use role_filter::*;

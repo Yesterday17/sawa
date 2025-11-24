@@ -62,6 +62,14 @@ where
             .ok_or(GetProductVariantError::NotFound)
     }
 
+    async fn load_product_variants(
+        &self,
+        req: sawa_core::services::LoadProductVariantsRequest,
+    ) -> Result<Vec<Option<ProductVariant>>, GetProductVariantError> {
+        let variants = self.product_variant.load_by_ids(&req.ids).await?;
+        Ok(variants)
+    }
+
     async fn create_product_variant(
         &self,
         req: sawa_core::services::CreateProductVariantRequest,

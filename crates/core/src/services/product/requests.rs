@@ -23,6 +23,12 @@ pub struct GetProductVariantRequest {
     pub id: ProductVariantId,
 }
 
+/// Request to load multiple product variants by their IDs.
+pub struct LoadProductVariantsRequest {
+    /// The IDs of the product variants to load.
+    pub ids: Vec<ProductVariantId>,
+}
+
 /// Request to create a new product variant.
 pub struct CreateProductVariantRequest {
     pub product_id: ProductId,

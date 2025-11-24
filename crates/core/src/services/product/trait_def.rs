@@ -31,6 +31,12 @@ pub trait ProductService: Send + Sync + 'static {
         req: GetProductVariantRequest,
     ) -> impl Future<Output = Result<ProductVariant, GetProductVariantError>> + Send;
 
+    /// Load multiple product variants by their IDs.
+    fn load_product_variants(
+        &self,
+        req: LoadProductVariantsRequest,
+    ) -> impl Future<Output = Result<Vec<Option<ProductVariant>>, GetProductVariantError>> + Send;
+
     /// Create a new product variant.
     fn create_product_variant(
         &self,

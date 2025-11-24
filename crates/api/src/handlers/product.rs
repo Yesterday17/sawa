@@ -12,7 +12,8 @@ use sawa_core::{
     },
     services::{
         CreateProductRequest, CreateProductVariantRequest, GetProductRequest,
-        GetProductVariantRequest, ListProductVariantsRequest, ListProductsRequest, ProductService,
+        GetProductVariantRequest, ListProductVariantsRequest, ListProductsRequest,
+        LoadProductVariantsRequest, ProductService,
     },
 };
 use schemars::JsonSchema;
@@ -251,4 +252,29 @@ pub fn create_get_product_variant_docs(op: TransformOperation) -> TransformOpera
         .description("Get a product variant by its ID.")
         .tag("Product Variant")
         .response::<200, Json<ProductVariant>>()
+}
+
+/// POST /products/{product_id}/variants/batch
+pub async fn load_product_variants<S>(
+    State(state): State<AppState<S>>,
+    Json(variant_ids): Json<Vec<ProductVariantId>>,
+) -> Result<impl IntoApiResponse, AppError>
+where
+    S: ProductService,
+{
+    let req = LoadProductVariantsRequest { ids: variant_ids };
+    let variants = state
+        .service
+        .load_product_variants(req)
+        .await
+        .map_err(|_| AppError::NotFound)?;
+
+    Ok((StatusCode::OK, Json(variants)))
+}
+
+pub fn create_load_product_variants_docs(op: TransformOperation) -> TransformOperation {
+    op.summary("Load product variants in batch")
+        .description("Load multiple product variants by their IDs.")
+        .tag("Product Variant")
+        .response::<200, Json<Vec<ProductVariant>>>()
 }

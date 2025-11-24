@@ -131,6 +131,13 @@ where
             ),
         )
         .api_route(
+            "/products/{product_id}/variants/batch",
+            post_with(
+                handlers::product::load_product_variants::<S>,
+                handlers::product::create_load_product_variants_docs,
+            ),
+        )
+        .api_route(
             "/orders",
             post_with(
                 handlers::purchase_order::create_order::<S>,

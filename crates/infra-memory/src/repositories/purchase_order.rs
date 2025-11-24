@@ -58,6 +58,15 @@ impl PurchaseOrderRepository for InMemoryPurchaseOrderRepository {
         Ok(None)
     }
 
+    async fn load_by_ids(
+        &self,
+        ids: &[PurchaseOrderId],
+    ) -> Result<Vec<Option<PurchaseOrder>>, RepositoryError> {
+        let orders = self.orders.read().unwrap();
+        let result = ids.iter().map(|id| orders.get(id).cloned()).collect();
+        Ok(result)
+    }
+
     async fn find_by_user(
         &self,
         user_id: &UserId,

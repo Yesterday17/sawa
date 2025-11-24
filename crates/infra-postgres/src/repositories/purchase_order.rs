@@ -67,6 +67,39 @@ impl PurchaseOrderRepository for PostgresPurchaseOrderRepository {
             .transpose()
     }
 
+    async fn load_by_ids(
+        &self,
+        ids: &[PurchaseOrderId],
+    ) -> Result<Vec<Option<PurchaseOrder>>, RepositoryError> {
+        let uuid_ids: Vec<Uuid> = ids.iter().map(|id| Uuid::from(id.0)).collect();
+
+        let entities = purchase_order::Entity::load()
+            .with((
+                purchase_order_item::Entity,
+                purchase_order_line_item::Entity,
+            ))
+            .filter(purchase_order::Column::Id.is_in(uuid_ids))
+            .all(&self.db)
+            .await
+            .map_err(DatabaseError)?;
+
+        let entity_map: std::collections::HashMap<Uuid, PurchaseOrder> = entities
+            .into_iter()
+            .filter_map(|e| {
+                e.try_into_domain_model_simple()
+                    .ok()
+                    .map(|model| (Uuid::from(model.id.0), model))
+            })
+            .collect();
+
+        let result = ids
+            .iter()
+            .map(|id| entity_map.get(&Uuid::from(id.0)).cloned())
+            .collect();
+
+        Ok(result)
+    }
+
     async fn find_by_user(
         &self,
         user_id: &UserId,

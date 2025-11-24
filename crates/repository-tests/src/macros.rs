@@ -201,6 +201,12 @@ macro_rules! test_all_repositories {
                 let repo = $order_repo;
                 $crate::suites::purchase_order::test_find_by_user_role_filter(repo).await;
             }
+
+            #[$crate::tokio::test]
+            async fn load_by_ids() {
+                let repo = $order_repo;
+                $crate::suites::purchase_order::test_load_by_ids(repo).await;
+            }
         }
 
         mod user_repository_tests {

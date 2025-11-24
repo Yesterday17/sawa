@@ -18,6 +18,12 @@ pub trait PurchaseOrderRepository: Send + Sync + 'static {
         user_id: &UserId,
     ) -> impl Future<Output = Result<Option<PurchaseOrder>, RepositoryError>> + Send;
 
+    /// Load multiple orders by their IDs.
+    fn load_by_ids(
+        &self,
+        ids: &[PurchaseOrderId],
+    ) -> impl Future<Output = Result<Vec<Option<PurchaseOrder>>, RepositoryError>> + Send;
+
     /// Find all orders for a specific user.
     ///
     /// If status is Some, only returns orders with that status.

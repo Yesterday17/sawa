@@ -513,3 +513,32 @@ pub async fn test_find_by_user_role_filter<R: PurchaseOrderRepository>(repo: R) 
     // Clean up
     repo.delete(&order_id).await.unwrap();
 }
+
+/// Test load_by_ids.
+pub async fn test_load_by_ids<R: PurchaseOrderRepository>(repo: R) {
+    let user_id = UserId::new();
+    let order1 = create_test_order(user_id, user_id, PurchaseOrderStatus::Incomplete);
+    let order2 = create_test_order(user_id, user_id, PurchaseOrderStatus::Fulfilled);
+    let order3 = create_test_order(user_id, user_id, PurchaseOrderStatus::Cancelled);
+
+    repo.save(&order1).await.unwrap();
+    repo.save(&order2).await.unwrap();
+    repo.save(&order3).await.unwrap();
+
+    let non_existent_id = PurchaseOrderId::new();
+
+    let ids = vec![order1.id, non_existent_id, order3.id, order2.id];
+
+    let results = repo.load_by_ids(&ids).await.unwrap();
+
+    assert_eq!(results.len(), 4);
+    assert_eq!(results[0].as_ref().unwrap().id, order1.id);
+    assert!(results[1].is_none());
+    assert_eq!(results[2].as_ref().unwrap().id, order3.id);
+    assert_eq!(results[3].as_ref().unwrap().id, order2.id);
+
+    // Clean up
+    repo.delete(&order1.id).await.unwrap();
+    repo.delete(&order2.id).await.unwrap();
+    repo.delete(&order3.id).await.unwrap();
+}

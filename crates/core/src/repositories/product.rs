@@ -43,6 +43,11 @@ pub trait ProductVariantRepository: Send + Sync + 'static {
         id: &ProductVariantId,
     ) -> impl Future<Output = Result<Option<ProductVariant>, RepositoryError>> + Send;
 
+    fn load_by_ids(
+        &self,
+        ids: &[ProductVariantId],
+    ) -> impl Future<Output = Result<Vec<Option<ProductVariant>>, RepositoryError>> + Send;
+
     /// Find all variants for a specific product.
     fn find_by_product_id(
         &self,

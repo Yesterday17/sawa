@@ -16,6 +16,7 @@ use sea_orm::{
     FromQueryResult, QueryFilter, QueryOrder, TransactionTrait, prelude::*, raw_sql,
     sea_query::OnConflict,
 };
+use std::collections::HashMap;
 
 pub struct PostgresProductRepository {
     db: DatabaseConnection,
@@ -106,6 +107,32 @@ impl ProductVariantRepository for PostgresProductVariantRepository {
         entity
             .map(TryIntoDomainModelSimple::try_into_domain_model_simple)
             .transpose()
+    }
+
+    async fn load_by_ids(
+        &self,
+        ids: &[ProductVariantId],
+    ) -> Result<Vec<Option<ProductVariant>>, RepositoryError> {
+        let uuid_ids: Vec<Uuid> = ids.iter().map(|id| Uuid::from(id.0)).collect();
+        let entities = product_variant::Entity::load()
+            .filter(product_variant::Column::Id.is_in(uuid_ids))
+            .with(tag::Entity)
+            .all(&self.db)
+            .await
+            .map_err(DatabaseError)?;
+
+        let mut entity_map: HashMap<_, _> = entities.into_iter().map(|e| (e.id, e)).collect();
+
+        let result = ids
+            .into_iter()
+            .map(|id| {
+                entity_map
+                    .remove(&Uuid::from(id.0))
+                    .and_then(|e| e.try_into_domain_model_simple().ok())
+            })
+            .collect();
+
+        Ok(result)
     }
 
     async fn find_by_product_id(

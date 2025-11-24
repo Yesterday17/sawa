@@ -41,6 +41,15 @@ impl ProductVariantRepository for InMemoryProductVariantRepository {
         Ok(variants.get(id).cloned())
     }
 
+    async fn load_by_ids(
+        &self,
+        ids: &[ProductVariantId],
+    ) -> Result<Vec<Option<ProductVariant>>, RepositoryError> {
+        let variants = self.variants.read().unwrap();
+        let result = ids.iter().map(|id| variants.get(id).cloned()).collect();
+        Ok(result)
+    }
+
     async fn find_by_product_id(
         &self,
         product_id: &ProductId,

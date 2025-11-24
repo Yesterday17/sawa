@@ -11,6 +11,7 @@ use sawa_core::{
     repositories::PurchaseOrderRepository,
 };
 use sea_orm::{ExprTrait, QueryFilter, TransactionTrait, prelude::*, sea_query::Query};
+use std::collections::HashMap;
 
 pub struct PostgresPurchaseOrderRepository {
     db: DatabaseConnection,
@@ -106,7 +107,7 @@ impl PurchaseOrderRepository for PostgresPurchaseOrderRepository {
             .await
             .map_err(DatabaseError)?;
 
-        let entity_map: std::collections::HashMap<Uuid, PurchaseOrder> = entities
+        let mut entity_map: HashMap<Uuid, PurchaseOrder> = entities
             .into_iter()
             .filter_map(|e| {
                 e.try_into_domain_model_simple()
@@ -116,8 +117,8 @@ impl PurchaseOrderRepository for PostgresPurchaseOrderRepository {
             .collect();
 
         let result = ids
-            .iter()
-            .map(|id| entity_map.get(&Uuid::from(id.0)).cloned())
+            .into_iter()
+            .map(|id| entity_map.remove(&Uuid::from(id.0)))
             .collect();
 
         Ok(result)

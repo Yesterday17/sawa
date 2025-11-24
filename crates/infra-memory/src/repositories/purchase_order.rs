@@ -61,9 +61,30 @@ impl PurchaseOrderRepository for InMemoryPurchaseOrderRepository {
     async fn load_by_ids(
         &self,
         ids: &[PurchaseOrderId],
+        user_id: &UserId,
     ) -> Result<Vec<Option<PurchaseOrder>>, RepositoryError> {
         let orders = self.orders.read().unwrap();
-        let result = ids.iter().map(|id| orders.get(id).cloned()).collect();
+        let result = ids
+            .iter()
+            .map(|id| {
+                orders.get(id).and_then(|o| {
+                    if &o.creator_id == user_id || &o.receiver_id == user_id {
+                        return Some(o.clone());
+                    }
+
+                    // Check if user owns any line item
+                    for item in &o.items {
+                        for line_item in &item.line_items {
+                            if &line_item.owner_id == user_id {
+                                return Some(o.clone());
+                            }
+                        }
+                    }
+
+                    None
+                })
+            })
+            .collect();
         Ok(result)
     }
 

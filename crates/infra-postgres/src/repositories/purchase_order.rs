@@ -70,7 +70,10 @@ impl PurchaseOrderRepository for PostgresPurchaseOrderRepository {
     async fn load_by_ids(
         &self,
         ids: &[PurchaseOrderId],
+        user_id: &UserId,
     ) -> Result<Vec<Option<PurchaseOrder>>, RepositoryError> {
+        pub use purchase_order::Column;
+
         let uuid_ids: Vec<Uuid> = ids.iter().map(|id| Uuid::from(id.0)).collect();
 
         let entities = purchase_order::Entity::load()
@@ -78,7 +81,27 @@ impl PurchaseOrderRepository for PostgresPurchaseOrderRepository {
                 purchase_order_item::Entity,
                 purchase_order_line_item::Entity,
             ))
-            .filter(purchase_order::Column::Id.is_in(uuid_ids))
+            .filter(purchase_order::Column::Id.is_in(uuid_ids).and(
+                    Column::CreatorId.eq(Uuid::from(user_id.0)) // Creator can access the order
+                        .or(Column::ReceiverId.eq(Uuid::from(user_id.0))) // Receiver can access the order
+                        .or(Column::Id.in_subquery( // Owners of any line item can access the order
+                            Query::select()
+                                .column(purchase_order_item::Column::PurchaseOrderId)
+                                .from(purchase_order_item::Entity)
+                                .and_where(
+                                    purchase_order_item::Column::Id.in_subquery(
+                                        Query::select()
+                                            .column(purchase_order_line_item::Column::PurchaseOrderItemId)
+                                            .from(purchase_order_line_item::Entity)
+                                            .and_where(
+                                                purchase_order_line_item::Column::OwnerId
+                                                    .eq(Uuid::from(user_id.0)),
+                                            ).to_owned()
+                                    ),
+                                )
+                                .to_owned(),
+                        )),
+                ))
             .all(&self.db)
             .await
             .map_err(DatabaseError)?;

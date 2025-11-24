@@ -529,7 +529,7 @@ pub async fn test_load_by_ids<R: PurchaseOrderRepository>(repo: R) {
 
     let ids = vec![order1.id, non_existent_id, order3.id, order2.id];
 
-    let results = repo.load_by_ids(&ids).await.unwrap();
+    let results = repo.load_by_ids(&ids, &user_id).await.unwrap();
 
     assert_eq!(results.len(), 4);
     assert_eq!(results[0].as_ref().unwrap().id, order1.id);

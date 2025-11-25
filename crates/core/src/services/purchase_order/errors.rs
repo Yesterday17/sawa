@@ -1,6 +1,5 @@
-use iso_currency::Currency;
-
 use crate::models::{
+    misc::Currency,
     product::ProductVariantId,
     purchase::{PurchaseOrderId, PurchaseOrderItemId},
     user::UserId,

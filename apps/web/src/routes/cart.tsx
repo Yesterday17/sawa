@@ -27,6 +27,7 @@ import {
   postOrdersByOrderIdItems,
 } from '../client/sdk.gen'
 import type { PurchaseOrder } from '../client/types.gen'
+import { formatPrice } from '../lib/utils'
 
 export const Route = createFileRoute('/cart')({
   component: CartPage,
@@ -309,11 +310,10 @@ function CartPage() {
                     </Group>
                     {item.variant.price && (
                       <Text fw={700}>
-                        {(
-                          (item.variant.price.amount * item.quantity) /
-                          100
-                        ).toFixed(2)}{' '}
-                        {item.variant.price.currency}
+                        {formatPrice({
+                          amount: item.variant.price.amount * item.quantity,
+                          currency: item.variant.price.currency,
+                        })}
                       </Text>
                     )}
                   </Group>
@@ -336,7 +336,9 @@ function CartPage() {
               <Group justify="space-between">
                 <Text c="dimmed">Subtotal</Text>
                 <Text fw={700}>
-                  {(totalPrice / 100).toFixed(2)} {currency || 'USD'}
+                  {currency
+                    ? formatPrice({ amount: totalPrice, currency })
+                    : `${totalPrice}`}
                 </Text>
               </Group>
               <Divider />
@@ -345,7 +347,9 @@ function CartPage() {
                   Total
                 </Text>
                 <Text size="lg" fw={700} c="violet">
-                  {(totalPrice / 100).toFixed(2)} {currency || 'USD'}
+                  {currency
+                    ? formatPrice({ amount: totalPrice, currency })
+                    : `${totalPrice}`}
                 </Text>
               </Group>
               <Button

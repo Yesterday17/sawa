@@ -12,8 +12,8 @@ use axum_login::{
     tower_sessions::{Expiry, SessionManagerLayer, SessionStore},
 };
 use sawa_core::services::{
-    ProductInstanceService, ProductService, PurchaseOrderLifecycleService, PurchaseOrderService,
-    UserService,
+    MediaService, ProductInstanceService, ProductService, PurchaseOrderLifecycleService,
+    PurchaseOrderService, UserService,
 };
 use state::AppState;
 
@@ -44,7 +44,8 @@ where
         + UserService
         + PurchaseOrderService
         + PurchaseOrderLifecycleService
-        + ProductInstanceService,
+        + ProductInstanceService
+        + MediaService,
     SS: Clone + SessionStore,
 {
     let mut api = OpenApi::default();
@@ -197,6 +198,21 @@ where
                 handlers::product_instance::create_list_product_instances_docs,
             )
             .route_layer(ensure_login!()),
+        )
+        .api_route(
+            "/media/batch",
+            post_with(
+                handlers::media::create_media_batch::<S>,
+                handlers::media::create_create_media_batch_docs,
+            )
+            .route_layer(ensure_login!()),
+        )
+        .api_route(
+            "/media/{media_id}",
+            get_with(
+                handlers::media::get_media::<S>,
+                handlers::media::create_get_media_docs,
+            ),
         )
         .layer(auth_layer)
         .with_state(AppState::new(state));

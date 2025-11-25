@@ -17,6 +17,7 @@ import {
   Stack,
 } from '@mantine/core'
 import { Plus, ShoppingBag, ChevronRight, Package } from 'lucide-react'
+import { formatPrice } from '../../lib/utils'
 
 export const Route = createFileRoute('/orders/')({
   component: OrdersPage,
@@ -141,9 +142,7 @@ function OrdersPage() {
                   </Table.Td>
                   <Table.Td>
                     <Text fw={600} size="sm">
-                      {order.total_price
-                        ? `${order.total_price.amount} ${order.total_price.currency}`
-                        : '-'}
+                      {order.total_price ? formatPrice(order.total_price) : '-'}
                     </Text>
                   </Table.Td>
                   <Table.Td>

@@ -2,7 +2,8 @@ use sawa_core::{
     models::misc::{Media, MediaId},
     repositories::*,
     services::{
-        CreateMediaError, CreateMediaRequest, GetMediaError, GetMediaRequest, MediaService,
+        CreateMediaBatchRequest, CreateMediaError, CreateMediaRequest, GetMediaError,
+        GetMediaRequest, MediaService,
     },
 };
 
@@ -35,5 +36,23 @@ where
         self.media.save(&media).await?;
 
         Ok(media)
+    }
+
+    async fn create_media_batch(
+        &self,
+        req: CreateMediaBatchRequest,
+    ) -> Result<Vec<Media>, CreateMediaError> {
+        let mut medias = Vec::with_capacity(req.urls.len());
+
+        for url in req.urls {
+            let media = Media {
+                id: MediaId::new(),
+                url,
+            };
+            self.media.save(&media).await?;
+            medias.push(media);
+        }
+
+        Ok(medias)
     }
 }

@@ -26,6 +26,7 @@ import {
   ThemeIcon,
   Divider,
   Timeline,
+  Image,
 } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import { useState } from 'react'
@@ -44,10 +45,17 @@ import {
   X,
 } from 'lucide-react'
 import { notifications } from '@mantine/notifications'
+import { client } from '../../client/client.gen'
+import { formatPrice } from '../../lib/utils'
 
 export const Route = createFileRoute('/orders/$orderId')({
   component: OrderDetailsPage,
 })
+
+const getImageUrl = (mediaId: string) => {
+  const baseUrl = client.getConfig().baseUrl
+  return `${baseUrl}/media/${mediaId}`
+}
 
 function OrderDetailsPage() {
   const { orderId } = Route.useParams()
@@ -252,9 +260,7 @@ function OrderDetailsPage() {
                 <Group justify="space-between">
                   <Text c="dimmed">Subtotal</Text>
                   <Text fw={500}>
-                    {order.total_price
-                      ? `${order.total_price.amount} ${order.total_price.currency}`
-                      : '-'}
+                    {order.total_price ? formatPrice(order.total_price) : '-'}
                   </Text>
                 </Group>
                 <Divider my="xs" />
@@ -263,9 +269,7 @@ function OrderDetailsPage() {
                     Total
                   </Text>
                   <Text fw={700} size="lg" c="violet">
-                    {order.total_price
-                      ? `${order.total_price.amount} ${order.total_price.currency}`
-                      : '-'}
+                    {order.total_price ? formatPrice(order.total_price) : '-'}
                   </Text>
                 </Group>
               </Stack>
@@ -376,14 +380,23 @@ function OrderItemCard({
     >
       <Group justify="space-between" align="start" mb="xs">
         <Group>
-          <ThemeIcon
-            variant="light"
-            color={isMysteryBox ? 'violet' : 'gray'}
-            size="lg"
-            radius="md"
-          >
-            {isMysteryBox ? <Box size={20} /> : <Package size={20} />}
-          </ThemeIcon>
+          {variant?.medias && variant.medias.length > 0 ? (
+            <Image
+              src={getImageUrl(variant.medias[0])}
+              w={60}
+              h={60}
+              radius="md"
+            />
+          ) : (
+            <ThemeIcon
+              variant="light"
+              color={isMysteryBox ? 'violet' : 'gray'}
+              size="lg"
+              radius="md"
+            >
+              {isMysteryBox ? <Box size={20} /> : <Package size={20} />}
+            </ThemeIcon>
+          )}
           <div>
             <Text fw={600}>{variant?.name || item.purchased_variant_id}</Text>
             <Text size="xs" c="dimmed">

@@ -10,3 +10,8 @@ pub struct GetMediaRequest {
 pub struct CreateMediaRequest {
     pub url: Url,
 }
+
+/// Request to create multiple media entries in batch.
+pub struct CreateMediaBatchRequest {
+    pub urls: Vec<Url>,
+}

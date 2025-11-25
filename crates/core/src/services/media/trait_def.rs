@@ -18,4 +18,10 @@ pub trait MediaService: Send + Sync + 'static {
         &self,
         req: CreateMediaRequest,
     ) -> impl Future<Output = Result<Media, CreateMediaError>> + Send;
+
+    /// Create multiple media entries in batch.
+    fn create_media_batch(
+        &self,
+        req: CreateMediaBatchRequest,
+    ) -> impl Future<Output = Result<Vec<Media>, CreateMediaError>> + Send;
 }

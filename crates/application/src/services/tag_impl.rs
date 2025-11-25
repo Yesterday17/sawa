@@ -2,7 +2,10 @@ use sawa_core::{
     errors::RepositoryError,
     models::misc::{NonEmptyString, Tag, TagId},
     repositories::*,
-    services::{CreateTagError, CreateTagRequest, GetTagError, GetTagRequest, TagService},
+    services::{
+        CreateTagError, CreateTagRequest, GetTagError, GetTagRequest, LoadTagsError,
+        LoadTagsRequest, TagService,
+    },
 };
 
 use super::Service;
@@ -23,6 +26,15 @@ where
             .find_by_id(&req.id)
             .await?
             .ok_or(GetTagError::NotFound)
+    }
+
+    async fn load_tags(&self, req: LoadTagsRequest) -> Result<Vec<Option<Tag>>, LoadTagsError> {
+        let mut tags = Vec::new();
+        for id in req.ids {
+            let tag = self.tag.find_by_id(&id).await?;
+            tags.push(tag);
+        }
+        Ok(tags)
     }
 
     async fn create_tag(&self, req: CreateTagRequest) -> Result<Tag, CreateTagError> {

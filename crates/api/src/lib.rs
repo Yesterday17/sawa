@@ -13,7 +13,7 @@ use axum_login::{
 };
 use sawa_core::services::{
     MediaService, ProductInstanceService, ProductService, PurchaseOrderLifecycleService,
-    PurchaseOrderService, UserService,
+    PurchaseOrderService, TagService, UserService,
 };
 use state::AppState;
 
@@ -45,7 +45,8 @@ where
         + PurchaseOrderService
         + PurchaseOrderLifecycleService
         + ProductInstanceService
-        + MediaService,
+        + MediaService
+        + TagService,
     SS: Clone + SessionStore,
 {
     let mut api = OpenApi::default();
@@ -136,6 +137,13 @@ where
             post_with(
                 handlers::product::load_product_variants::<S>,
                 handlers::product::create_load_product_variants_docs,
+            ),
+        )
+        .api_route(
+            "/tags/batch",
+            post_with(
+                handlers::tag::get_tags_batch::<S>,
+                handlers::tag::create_get_tags_batch_docs,
             ),
         )
         .api_route(

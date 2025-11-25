@@ -27,7 +27,7 @@ import {
   postOrdersByOrderIdItems,
 } from '../client/sdk.gen'
 import type { PurchaseOrder } from '../client/types.gen'
-import { formatPrice } from '../lib/utils'
+import { formatPrice, getImageUrl } from '../lib/utils'
 
 export const Route = createFileRoute('/cart')({
   component: CartPage,
@@ -270,11 +270,15 @@ function CartPage() {
                   mt="xl"
                 />
                 <Image
-                  src="https://placehold.co/200x200/f3f4f6/a78bfa?text=Variant"
+                  src={
+                    item.variant.medias && item.variant.medias.length > 0
+                      ? getImageUrl(item.variant.medias[0])
+                      : 'https://placehold.co/200x200/f3f4f6/a78bfa?text=Variant'
+                  }
                   w={100}
                   h={100}
                   radius="md"
-                  fit="cover"
+                  fit="contain"
                 />
                 <Stack flex={1} gap="xs">
                   <Group justify="space-between" align="start">

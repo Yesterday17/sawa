@@ -10,6 +10,12 @@ pub trait TagService: Send + Sync + 'static {
     /// Get a tag by its ID.
     fn get_tag(&self, req: GetTagRequest) -> impl Future<Output = Result<Tag, GetTagError>> + Send;
 
+    /// Get multiple tags by their IDs.
+    fn load_tags(
+        &self,
+        req: LoadTagsRequest,
+    ) -> impl Future<Output = Result<Vec<Option<Tag>>, LoadTagsError>> + Send;
+
     /// Create a new tag.
     fn create_tag(
         &self,

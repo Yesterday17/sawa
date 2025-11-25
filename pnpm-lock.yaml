@@ -40,6 +40,9 @@ importers:
       '@tanstack/router-plugin':
         specifier: ^1.132.0
         version: 1.139.3(@tanstack/react-router@1.139.3(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(vite@7.2.4(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)(sugarss@5.0.1(postcss@8.5.6))(tsx@4.20.6))
+      '@yornaath/batshit':
+        specifier: ^0.12.0
+        version: 0.12.0
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -1256,6 +1259,12 @@ packages:
 
   '@vitest/utils@3.2.4':
     resolution: {integrity: sha512-fB2V0JFrQSMsCo9HiSq3Ezpdv4iYaXRG1Sx8edX3MwxfyNn83mKiGzOcH+Fkxt4MHxr3y42fQi1oeAInqgX2QA==}
+
+  '@yornaath/batshit-devtools@1.7.1':
+    resolution: {integrity: sha512-AyttV1Njj5ug+XqEWY1smV45dTWMlWKtj1B8jcFYgBKUFyUlF/qEhD+iP1E5UaRYW6hQRYD9T2WNDwFTrOMWzQ==}
+
+  '@yornaath/batshit@0.12.0':
+    resolution: {integrity: sha512-f8nNUQsnvUFudeuNVkhcWmZKxNkpeuq1oTreY5Ud7o6oMKTUGfSd8AUvywudzNUoj+kCm+3NJBWkCmifWJ1y9A==}
 
   acorn-jsx@5.3.2:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
@@ -3915,6 +3924,12 @@ snapshots:
       '@vitest/pretty-format': 3.2.4
       loupe: 3.2.1
       tinyrainbow: 2.0.0
+
+  '@yornaath/batshit-devtools@1.7.1': {}
+
+  '@yornaath/batshit@0.12.0':
+    dependencies:
+      '@yornaath/batshit-devtools': 1.7.1
 
   acorn-jsx@5.3.2(acorn@8.15.0):
     dependencies:

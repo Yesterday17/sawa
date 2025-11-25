@@ -4,3 +4,4 @@ pub mod media;
 pub mod product;
 pub mod product_instance;
 pub mod purchase_order;
+pub mod tag;

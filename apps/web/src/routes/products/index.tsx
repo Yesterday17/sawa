@@ -17,19 +17,61 @@ import {
   Text,
   ThemeIcon,
   Title,
+  Badge,
+  ActionIcon,
+  Modal,
 } from '@mantine/core'
-import { Plus, Package, Layers, Upload } from 'lucide-react'
-import { useState } from 'react'
+import { Plus, Package, Layers, Upload, X } from 'lucide-react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { flushSync } from 'react-dom'
 import { ProductCard } from '../../components/products/ProductCard'
 import { VariantCard } from '../../components/products/VariantCard'
+import { VariantSwipeView } from '../../components/products/VariantSwipeView'
+import { useTag } from '../../hooks/useTags'
+import type { ProductVariant } from '../../client/types.gen'
 
 export const Route = createFileRoute('/products/')({
   component: ProductsPage,
 })
 
+function SelectedTagBadge({
+  id,
+  onRemove,
+}: {
+  id: string
+  onRemove: (id: string) => void
+}) {
+  const { data: tag } = useTag(id)
+  return (
+    <Badge
+      variant="filled"
+      color="violet"
+      size="lg"
+      rightSection={
+        <ActionIcon
+          size="sm"
+          color="white"
+          variant="transparent"
+          onClick={() => onRemove(id)}
+        >
+          <X size={14} />
+        </ActionIcon>
+      }
+    >
+      {tag?.name || id}
+    </Badge>
+  )
+}
+
 function ProductsPage() {
   const [viewMode, setViewMode] = useState<'products' | 'variants'>('products')
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
+    null,
+  )
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right' | null>(
+    null,
+  )
 
   const {
     data: products,
@@ -48,6 +90,63 @@ function ProductsPage() {
     ...getProductsVariantsOptions(),
     enabled: viewMode === 'variants',
   })
+
+  const filteredVariants = useMemo(() => {
+    if (!variants) return []
+    if (selectedTags.length === 0) return variants
+    return variants.filter((variant) =>
+      selectedTags.every((tagId) => variant.tags?.includes(tagId)),
+    )
+  }, [variants, selectedTags])
+
+  const handleTagClick = (tagId: string) => {
+    if (!selectedTags.includes(tagId)) {
+      setSelectedTags([...selectedTags, tagId])
+      if (viewMode !== 'variants') {
+        setViewMode('variants')
+      }
+    }
+  }
+
+  const handleRemoveTag = (tagId: string) => {
+    setSelectedTags(selectedTags.filter((id) => id !== tagId))
+  }
+
+  const handleNextVariant = useCallback(() => {
+    if (!selectedVariant || !filteredVariants.length) return
+    setSlideDirection('right')
+    const currentIndex = filteredVariants.findIndex(
+      (v) => v.id === selectedVariant.id,
+    )
+    const nextIndex = (currentIndex + 1) % filteredVariants.length
+    setSelectedVariant(filteredVariants[nextIndex])
+  }, [selectedVariant, filteredVariants])
+
+  const handlePrevVariant = useCallback(() => {
+    if (!selectedVariant || !filteredVariants.length) return
+    setSlideDirection('left')
+    const currentIndex = filteredVariants.findIndex(
+      (v) => v.id === selectedVariant.id,
+    )
+    const prevIndex =
+      (currentIndex - 1 + filteredVariants.length) % filteredVariants.length
+    setSelectedVariant(filteredVariants[prevIndex])
+  }, [selectedVariant, filteredVariants])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!selectedVariant) return
+
+      if (e.key === 'ArrowRight') {
+        handleNextVariant()
+      } else if (e.key === 'ArrowLeft') {
+        handlePrevVariant()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedVariant, handleNextVariant, handlePrevVariant])
 
   const isLoading =
     viewMode === 'products' ? isLoadingProducts : isLoadingVariants
@@ -132,6 +231,29 @@ function ProductsPage() {
         </Group>
       </Group>
 
+      {selectedTags.length > 0 && (
+        <Group mb="md">
+          <Text size="sm" fw={500}>
+            Filtered by:
+          </Text>
+          {selectedTags.map((tagId) => (
+            <SelectedTagBadge
+              key={tagId}
+              id={tagId}
+              onRemove={handleRemoveTag}
+            />
+          ))}
+          <Button
+            variant="subtle"
+            size="xs"
+            color="red"
+            onClick={() => setSelectedTags([])}
+          >
+            Clear all
+          </Button>
+        </Group>
+      )}
+
       {viewMode === 'products' ? (
         <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="md">
           <Card
@@ -174,11 +296,41 @@ function ProductsPage() {
         </SimpleGrid>
       ) : (
         <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="md">
-          {variants?.map((variant) => (
-            <VariantCard key={variant.id} variant={variant} />
+          {filteredVariants?.map((variant) => (
+            <VariantCard
+              key={variant.id}
+              variant={variant}
+              onTagClick={handleTagClick}
+              onClick={() => {
+                setSlideDirection(null)
+                setSelectedVariant(variant)
+              }}
+            />
           ))}
         </SimpleGrid>
       )}
+
+      <Modal
+        opened={!!selectedVariant}
+        onClose={() => setSelectedVariant(null)}
+        fullScreen
+        transitionProps={{ transition: 'fade', duration: 200 }}
+        padding={0}
+        withCloseButton={false}
+        zIndex={200}
+      >
+        {selectedVariant && (
+          <div className="h-screen flex flex-col bg-white dark:bg-black text-black dark:text-white relative">
+            <VariantSwipeView
+              variant={selectedVariant}
+              onNext={handleNextVariant}
+              onPrev={handlePrevVariant}
+              onClose={() => setSelectedVariant(null)}
+              direction={slideDirection}
+            />
+          </div>
+        )}
+      </Modal>
     </Container>
   )
 }

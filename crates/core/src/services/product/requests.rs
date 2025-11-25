@@ -47,6 +47,16 @@ pub struct ListProductVariantsRequest {
     pub product_id: Option<ProductId>,
     /// Filter by tags.
     pub tags: Option<Vec<TagId>>,
-    /// If true, match all tags. If false, match any tag.
-    pub match_all_tags: bool,
+    /// The tag match policy.
+    pub tag_match_policy: TagMatchPolicy,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schemars", derive(schemars::JsonSchema))]
+#[serde(rename_all = "snake_case")]
+pub enum TagMatchPolicy {
+    /// Match any of the specified tags.
+    Any,
+    /// Match all of the specified tags.
+    All,
 }

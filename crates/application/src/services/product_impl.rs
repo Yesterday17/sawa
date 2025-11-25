@@ -123,10 +123,11 @@ where
             // If tags are also provided, filter in memory
             if let Some(tags) = req.tags {
                 if !tags.is_empty() {
-                    variants.retain(|v| {
-                        if req.match_all_tags {
+                    variants.retain(|v| match req.tag_match_policy {
+                        sawa_core::services::TagMatchPolicy::All => {
                             tags.iter().all(|t| v.has_tag(t))
-                        } else {
+                        }
+                        sawa_core::services::TagMatchPolicy::Any => {
                             tags.iter().any(|t| v.has_tag(t))
                         }
                     });
@@ -137,10 +138,15 @@ where
             // Filter by tags only
             if tags.is_empty() {
                 self.product_variant.find_all().await?
-            } else if req.match_all_tags {
-                self.product_variant.find_by_tags_all(&tags).await?
             } else {
-                self.product_variant.find_by_tags_any(&tags).await?
+                match req.tag_match_policy {
+                    sawa_core::services::TagMatchPolicy::All => {
+                        self.product_variant.find_by_tags_all(&tags).await?
+                    }
+                    sawa_core::services::TagMatchPolicy::Any => {
+                        self.product_variant.find_by_tags_any(&tags).await?
+                    }
+                }
             }
         } else {
             // No filters

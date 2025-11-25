@@ -27,7 +27,7 @@ export function ProductCard({ product }: ProductCardProps) {
           }
           h={200}
           w="100%"
-          fit="cover"
+          fit="contain"
           alt={product.name}
           className="transition-transform hover:scale-105 duration-500"
         />

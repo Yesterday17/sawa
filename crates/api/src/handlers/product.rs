@@ -2,18 +2,18 @@ use crate::{error::AppError, state::AppState};
 use aide::{axum::IntoApiResponse, transform::TransformOperation};
 use axum::{
     Json,
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::StatusCode,
 };
 use sawa_core::{
     models::{
-        misc::{MediaId, NonEmptyString, Price},
+        misc::{MediaId, NonEmptyString, Price, TagId},
         product::{MysteryBoxConfig, Product, ProductId, ProductVariant, ProductVariantId},
     },
     services::{
         CreateProductRequest, CreateProductVariantRequest, GetProductRequest,
         GetProductVariantRequest, ListProductVariantsRequest, ListProductsRequest,
-        LoadProductVariantsRequest, ProductService,
+        LoadProductVariantsRequest, ProductService, TagMatchPolicy,
     },
 };
 use schemars::JsonSchema;
@@ -122,17 +122,24 @@ pub struct CreateProductVariantBody {
     pub sort_order: i32,
 }
 
+#[derive(Deserialize, JsonSchema)]
+pub struct ListProductVariantsQuery {
+    pub tags: Option<Vec<TagId>>,
+    pub tag_match: Option<TagMatchPolicy>,
+}
+
 /// GET /products/variants
 pub async fn list_all_product_variants<S>(
     State(state): State<AppState<S>>,
+    Query(query): Query<ListProductVariantsQuery>,
 ) -> Result<impl IntoApiResponse, AppError>
 where
     S: ProductService,
 {
     let req = ListProductVariantsRequest {
         product_id: None,
-        tags: None,
-        match_all_tags: false,
+        tags: query.tags,
+        tag_match_policy: query.tag_match.unwrap_or(TagMatchPolicy::Any),
     };
     let variants = state
         .service
@@ -154,14 +161,15 @@ pub fn create_list_all_product_variants_docs(op: TransformOperation) -> Transfor
 pub async fn list_product_variants<S>(
     Path(ProductIdPath { product_id }): Path<ProductIdPath>,
     State(state): State<AppState<S>>,
+    Query(query): Query<ListProductVariantsQuery>,
 ) -> Result<impl IntoApiResponse, AppError>
 where
     S: ProductService,
 {
     let req = ListProductVariantsRequest {
         product_id: Some(product_id),
-        tags: None,
-        match_all_tags: false,
+        tags: query.tags,
+        tag_match_policy: query.tag_match.unwrap_or(TagMatchPolicy::Any),
     };
     let variants = state
         .service

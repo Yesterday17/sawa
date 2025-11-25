@@ -10,6 +10,12 @@ pub enum GetTagError {
 }
 
 #[derive(Debug, Error)]
+pub enum LoadTagsError {
+    #[error(transparent)]
+    Repository(#[from] RepositoryError),
+}
+
+#[derive(Debug, Error)]
 pub enum CreateTagError {
     #[error(transparent)]
     Repository(#[from] RepositoryError),

@@ -45,17 +45,11 @@ import {
   X,
 } from 'lucide-react'
 import { notifications } from '@mantine/notifications'
-import { client } from '../../client/client.gen'
-import { formatPrice } from '../../lib/utils'
+import { formatPrice, getImageUrl } from '../../lib/utils'
 
 export const Route = createFileRoute('/orders/$orderId')({
   component: OrderDetailsPage,
 })
-
-const getImageUrl = (mediaId: string) => {
-  const baseUrl = client.getConfig().baseUrl
-  return `${baseUrl}/media/${mediaId}`
-}
 
 function OrderDetailsPage() {
   const { orderId } = Route.useParams()

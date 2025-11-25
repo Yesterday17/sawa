@@ -1,4 +1,10 @@
 import type { Price } from '../client/types.gen'
+import { client } from '../client/client.gen'
+
+export function getImageUrl(mediaId: string) {
+  const baseUrl = client.getConfig().baseUrl
+  return `${baseUrl}/media/${mediaId}`
+}
 
 export function formatPrice(price: Price): string {
   const { amount, currency } = price

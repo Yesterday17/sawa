@@ -141,7 +141,7 @@ function OrderDetailsPage() {
     )
 
   return (
-    <Container size="xl" py="xl">
+    <Container size="lg" py="xl">
       <Button
         variant="subtle"
         color="gray"
@@ -149,77 +149,91 @@ function OrderDetailsPage() {
         component={Link}
         to="/orders"
         viewTransition
-        leftSection={<ArrowLeft size={16} />}
+        leftSection={<ArrowLeft size={18} />}
+        radius="xl"
+        size="sm"
       >
         Back to Orders
       </Button>
 
       <Stack gap="xl">
-        <Group justify="space-between" align="start">
-          <div>
-            <Group gap="sm" mb="xs">
-              <Title
-                order={2}
-                className="font-bold text-gray-900 dark:text-white"
-              >
-                Order #{order.id.substring(0, 8)}
-              </Title>
-              <Badge
-                size="lg"
-                variant="light"
-                color={
-                  order.status === 'fulfilled'
-                    ? 'green'
-                    : order.status === 'cancelled'
-                      ? 'red'
-                      : 'blue'
-                }
-              >
-                {order.status}
-              </Badge>
-            </Group>
-            <Text c="dimmed" size="sm">
-              Placed on {new Date(order.created_at).toLocaleDateString()} at{' '}
-              {new Date(order.created_at).toLocaleTimeString()}
-            </Text>
-          </div>
+        <div className="bg-white dark:bg-zinc-900 p-6 md:p-8 rounded-3xl border border-zinc-100 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-none">
+          <Group justify="space-between" align="start">
+            <div>
+              <Group gap="sm" mb="xs">
+                <Title
+                  order={2}
+                  className="font-bold text-zinc-900 dark:text-white"
+                >
+                  Order #{order.id.substring(0, 8)}
+                </Title>
+                <Badge
+                  size="lg"
+                  variant="light"
+                  radius="md"
+                  color={
+                    order.status === 'fulfilled'
+                      ? 'green'
+                      : order.status === 'cancelled'
+                        ? 'red'
+                        : 'blue'
+                  }
+                >
+                  {order.status}
+                </Badge>
+              </Group>
+              <Text c="dimmed" size="md">
+                Placed on {new Date(order.created_at).toLocaleDateString()} at{' '}
+                {new Date(order.created_at).toLocaleTimeString()}
+              </Text>
+            </div>
 
-          {order.status === 'incomplete' && (
-            <Group>
-              <Button
-                color="red"
-                variant="light"
-                leftSection={<X size={16} />}
-                onClick={handleCancel}
-                loading={cancelOrderMutation.isPending}
-              >
-                Cancel Order
-              </Button>
-              <Button
-                color="green"
-                leftSection={<Check size={16} />}
-                onClick={handleFulfill}
-                loading={fulfillOrderMutation.isPending}
-              >
-                Fulfill Order
-              </Button>
-            </Group>
-          )}
-        </Group>
+            {order.status === 'incomplete' && (
+              <Group>
+                <Button
+                  color="red"
+                  variant="light"
+                  radius="xl"
+                  leftSection={<X size={18} />}
+                  onClick={handleCancel}
+                  loading={cancelOrderMutation.isPending}
+                >
+                  Cancel Order
+                </Button>
+                <Button
+                  color="green"
+                  radius="xl"
+                  leftSection={<Check size={18} />}
+                  onClick={handleFulfill}
+                  loading={fulfillOrderMutation.isPending}
+                  className="shadow-lg shadow-green-500/20 hover:shadow-green-500/40 transition-all hover:-translate-y-0.5"
+                >
+                  Fulfill Order
+                </Button>
+              </Group>
+            )}
+          </Group>
+        </div>
 
         <SimpleGrid cols={{ base: 1, md: 3 }} spacing="lg">
           <Paper
             shadow="sm"
-            radius="md"
-            p="lg"
-            withBorder
-            className="bg-white dark:bg-gray-800 md:col-span-2"
+            radius="xl"
+            p="xl"
+            className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 md:col-span-2 shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-none"
           >
-            <Title order={4} mb="md" className="flex items-center gap-2">
-              <Package size={20} className="text-violet-500" />
+            <Title
+              order={4}
+              mb="lg"
+              className="flex items-center gap-3"
+              fw={700}
+            >
+              <ThemeIcon size="lg" radius="md" variant="light" color="violet">
+                <Package size={20} />
+              </ThemeIcon>
               Order Items
             </Title>
-            <Stack gap="md">
+            <Stack gap="lg">
               {order.items.map((item) => (
                 <OrderItemCard
                   key={item.id}
@@ -241,28 +255,34 @@ function OrderDetailsPage() {
           <Stack gap="lg">
             <Paper
               shadow="sm"
-              radius="md"
-              p="lg"
-              withBorder
-              className="bg-white dark:bg-gray-800"
+              radius="xl"
+              p="xl"
+              className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-none"
             >
-              <Title order={4} mb="md" className="flex items-center gap-2">
-                <CreditCard size={20} className="text-violet-500" />
+              <Title
+                order={4}
+                mb="lg"
+                className="flex items-center gap-3"
+                fw={700}
+              >
+                <ThemeIcon size="lg" radius="md" variant="light" color="violet">
+                  <CreditCard size={20} />
+                </ThemeIcon>
                 Summary
               </Title>
-              <Stack gap="xs">
+              <Stack gap="md">
                 <Group justify="space-between">
                   <Text c="dimmed">Subtotal</Text>
-                  <Text fw={500}>
+                  <Text fw={600}>
                     {order.total_price ? formatPrice(order.total_price) : '-'}
                   </Text>
                 </Group>
-                <Divider my="xs" />
+                <Divider color="gray.2" />
                 <Group justify="space-between">
                   <Text fw={700} size="lg">
                     Total
                   </Text>
-                  <Text fw={700} size="lg" c="violet">
+                  <Text fw={800} size="xl" c="violet">
                     {order.total_price ? formatPrice(order.total_price) : '-'}
                   </Text>
                 </Group>
@@ -271,42 +291,48 @@ function OrderDetailsPage() {
 
             <Paper
               shadow="sm"
-              radius="md"
-              p="lg"
-              withBorder
-              className="bg-white dark:bg-gray-800"
+              radius="xl"
+              p="xl"
+              className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-none"
             >
-              <Title order={4} mb="md" className="flex items-center gap-2">
-                <Calendar size={20} className="text-violet-500" />
+              <Title
+                order={4}
+                mb="lg"
+                className="flex items-center gap-3"
+                fw={700}
+              >
+                <ThemeIcon size="lg" radius="md" variant="light" color="violet">
+                  <Calendar size={20} />
+                </ThemeIcon>
                 Timeline
               </Title>
               <Timeline
                 active={order.status === 'fulfilled' ? 2 : 1}
-                bulletSize={24}
+                bulletSize={28}
                 lineWidth={2}
               >
                 <Timeline.Item
-                  bullet={<Clock size={12} />}
+                  bullet={<Clock size={14} />}
                   title="Order Placed"
                 >
-                  <Text c="dimmed" size="xs" mt={4}>
+                  <Text c="dimmed" size="sm" mt={4}>
                     {new Date(order.created_at).toLocaleString()}
                   </Text>
                 </Timeline.Item>
                 <Timeline.Item
-                  bullet={<Package size={12} />}
+                  bullet={<Package size={14} />}
                   title="Processing"
                 >
-                  <Text c="dimmed" size="xs" mt={4}>
+                  <Text c="dimmed" size="sm" mt={4}>
                     Order is being prepared
                   </Text>
                 </Timeline.Item>
                 <Timeline.Item
-                  bullet={<CheckCircle2 size={12} />}
+                  bullet={<CheckCircle2 size={14} />}
                   title="Fulfilled"
                   color="green"
                 >
-                  <Text c="dimmed" size="xs" mt={4}>
+                  <Text c="dimmed" size="sm" mt={4}>
                     {order.completed_at
                       ? new Date(order.completed_at).toLocaleString()
                       : 'Pending'}
@@ -367,39 +393,55 @@ function OrderItemCard({
 
   return (
     <Card
-      withBorder
-      padding="md"
-      radius="md"
-      className="bg-gray-50 dark:bg-gray-900/50"
+      padding="lg"
+      radius="lg"
+      className="bg-zinc-50/50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-700"
     >
-      <Group justify="space-between" align="start" mb="xs">
-        <Group>
-          {variant?.medias && variant.medias.length > 0 ? (
-            <Image
-              src={getImageUrl(variant.medias[0])}
-              w={60}
-              h={60}
-              radius="md"
-            />
-          ) : (
-            <ThemeIcon
-              variant="light"
-              color={isMysteryBox ? 'violet' : 'gray'}
-              size="lg"
-              radius="md"
-            >
-              {isMysteryBox ? <Box size={20} /> : <Package size={20} />}
-            </ThemeIcon>
-          )}
+      <Group justify="space-between" align="start" mb="md">
+        <Group align="start" wrap="nowrap">
+          <div className="bg-white dark:bg-zinc-800 p-2 rounded-xl border border-zinc-100 dark:border-zinc-700">
+            {variant?.medias && variant.medias.length > 0 ? (
+              <Image
+                src={getImageUrl(variant.medias[0])}
+                w={64}
+                h={64}
+                radius="md"
+                fit="contain"
+              />
+            ) : (
+              <ThemeIcon
+                variant="light"
+                color={isMysteryBox ? 'violet' : 'gray'}
+                size={64}
+                radius="md"
+              >
+                {isMysteryBox ? <Box size={32} /> : <Package size={32} />}
+              </ThemeIcon>
+            )}
+          </div>
           <div>
-            <Text fw={600}>{variant?.name || item.purchased_variant_id}</Text>
-            <Text size="xs" c="dimmed">
+            <Text fw={600} size="lg" className="text-gray-900 dark:text-white">
+              {variant?.name || item.purchased_variant_id}
+            </Text>
+            <Text size="sm" c="dimmed" mt={2}>
               Quantity: {item.quantity}
             </Text>
+            {isMysteryBox && (
+              <Badge
+                size="sm"
+                variant="gradient"
+                gradient={{ from: 'violet', to: 'blue' }}
+                mt="xs"
+              >
+                Mystery Box
+              </Badge>
+            )}
           </div>
         </Group>
         <Badge
+          size="lg"
           variant={needsInput ? 'filled' : 'light'}
+          radius="md"
           color={
             needsInput
               ? 'orange'
@@ -412,14 +454,6 @@ function OrderItemCard({
         </Badge>
       </Group>
 
-      {isMysteryBox && (
-        <Group gap="xs" mt="xs">
-          <Badge size="xs" variant="dot" color="violet">
-            Mystery Box
-          </Badge>
-        </Group>
-      )}
-
       {needsInput && isMysteryBox && (
         <>
           <Button
@@ -427,8 +461,9 @@ function OrderItemCard({
             fullWidth
             onClick={open}
             color="violet"
-            leftSection={<AlertCircle size={16} />}
-            className="animate-pulse"
+            radius="xl"
+            leftSection={<AlertCircle size={18} />}
+            className="animate-pulse shadow-lg shadow-violet-500/20"
           >
             Fill Mystery Box Contents
           </Button>
@@ -437,9 +472,10 @@ function OrderItemCard({
             onClose={close}
             title="Fill Mystery Box"
             centered
-            radius="md"
+            radius="lg"
+            overlayProps={{ blur: 3 }}
           >
-            <Text mb="md" size="sm" c="dimmed">
+            <Text mb="lg" size="sm" c="dimmed">
               Select the variants that were received in this mystery box.
             </Text>
             <MultiSelect
@@ -450,12 +486,17 @@ function OrderItemCard({
               onChange={setSelectedVariants}
               searchable
               mb="xl"
+              size="md"
+              radius="md"
+              classNames={{ input: 'focus:border-violet-500' }}
             />
             <Button
               fullWidth
               onClick={handleSubmit}
               loading={submitMysteryBoxMutation.isPending}
               color="violet"
+              size="md"
+              radius="xl"
             >
               Submit Results
             </Button>

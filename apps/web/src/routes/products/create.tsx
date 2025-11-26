@@ -141,10 +141,12 @@ function CreateProductPage() {
         variant="subtle"
         color="gray"
         mb="lg"
-        leftSection={<ArrowLeft size={16} />}
+        leftSection={<ArrowLeft size={18} />}
         component={Link}
         to="/products"
         viewTransition
+        radius="xl"
+        size="sm"
       >
         Back to Products
       </Button>
@@ -154,7 +156,7 @@ function CreateProductPage() {
           <Title order={2} className="font-bold text-gray-900 dark:text-white">
             Create Product
           </Title>
-          <Text c="dimmed" size="sm">
+          <Text c="dimmed" size="lg">
             Add a new item to your catalog
           </Text>
         </div>
@@ -164,25 +166,26 @@ function CreateProductPage() {
         <Stack gap="xl">
           <Paper
             shadow="sm"
-            radius="md"
+            radius="xl"
             p="xl"
-            withBorder
-            className="bg-white dark:bg-gray-800"
+            className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800"
           >
-            <Group mb="md">
-              <ThemeIcon size="lg" radius="md" variant="light" color="violet">
-                <Package size={20} />
+            <Group mb="lg">
+              <ThemeIcon size="xl" radius="lg" variant="light" color="violet">
+                <Package size={24} />
               </ThemeIcon>
-              <Text fw={600} size="lg">
+              <Text fw={700} size="xl">
                 Basic Information
               </Text>
             </Group>
 
-            <Stack gap="md">
+            <Stack gap="lg">
               <TextInput
                 label="Product Name"
                 placeholder="e.g. Premium Wireless Headphones"
                 required
+                size="md"
+                radius="md"
                 classNames={{ input: 'focus:border-violet-500' }}
                 {...form.getInputProps('name')}
               />
@@ -191,6 +194,8 @@ function CreateProductPage() {
                 label="Description"
                 placeholder="Describe your product..."
                 minRows={4}
+                size="md"
+                radius="md"
                 classNames={{ input: 'focus:border-violet-500' }}
                 {...form.getInputProps('description')}
               />
@@ -199,25 +204,25 @@ function CreateProductPage() {
 
           <Paper
             shadow="sm"
-            radius="md"
+            radius="xl"
             p="xl"
-            withBorder
-            className="bg-white dark:bg-gray-800"
+            className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800"
           >
-            <Group justify="space-between" mb="md">
+            <Group justify="space-between" mb="lg">
               <Group>
-                <ThemeIcon size="lg" radius="md" variant="light" color="violet">
-                  <Layers size={20} />
+                <ThemeIcon size="xl" radius="lg" variant="light" color="violet">
+                  <Layers size={24} />
                 </ThemeIcon>
-                <Text fw={600} size="lg">
+                <Text fw={700} size="xl">
                   Variants
                 </Text>
               </Group>
               <Button
                 variant="light"
                 color="violet"
-                size="xs"
-                leftSection={<Plus size={14} />}
+                size="sm"
+                radius="xl"
+                leftSection={<Plus size={16} />}
                 onClick={() =>
                   form.insertListItem('variants', {
                     name: '',
@@ -235,38 +240,40 @@ function CreateProductPage() {
               {form.values.variants.map((_, index) => (
                 <Card
                   key={form.key(`variants.${index}`)}
-                  withBorder
-                  padding="md"
-                  radius="md"
-                  className="bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700"
+                  padding="lg"
+                  radius="lg"
+                  className="bg-gray-50 dark:bg-zinc-800/50 border border-gray-200 dark:border-zinc-700"
                 >
-                  <Group justify="space-between" mb="sm">
-                    <Text fw={600} size="sm" c="violet">
+                  <Group justify="space-between" mb="md">
+                    <Text fw={600} size="sm" c="violet" tt="uppercase">
                       Variant #{index + 1}
                     </Text>
                     {form.values.variants.length > 1 && (
                       <ActionIcon
                         color="red"
                         variant="subtle"
-                        size="sm"
+                        size="md"
+                        radius="xl"
                         onClick={() => form.removeListItem('variants', index)}
+                        className="hover:bg-red-50 dark:hover:bg-red-900/20"
                       >
-                        <Trash size={16} />
+                        <Trash size={18} />
                       </ActionIcon>
                     )}
                   </Group>
 
-                  <Stack gap="sm">
+                  <Stack gap="md">
                     <TextInput
                       label="Variant Name"
                       placeholder="e.g. Red, Large"
                       required
-                      size="sm"
+                      size="md"
+                      radius="md"
                       classNames={{ input: 'focus:border-violet-500' }}
                       {...form.getInputProps(`variants.${index}.name`)}
                     />
 
-                    <Group grow>
+                    <Group grow align="flex-start">
                       <NumberInput
                         label="Price"
                         placeholder="0.00"
@@ -277,9 +284,10 @@ function CreateProductPage() {
                         fixedDecimalScale={
                           form.values.variants[index].currency !== 'JPY'
                         }
-                        size="sm"
+                        size="md"
+                        radius="md"
                         leftSection={
-                          <Text size="xs" c="dimmed">
+                          <Text size="sm" c="dimmed">
                             {getCurrencySymbol(
                               form.values.variants[index].currency,
                             )}
@@ -291,7 +299,8 @@ function CreateProductPage() {
                       <Select
                         label="Currency"
                         data={['USD', 'CNY', 'EUR', 'JPY']}
-                        size="sm"
+                        size="md"
+                        radius="md"
                         classNames={{ input: 'focus:border-violet-500' }}
                         {...form.getInputProps(`variants.${index}.currency`)}
                       />
@@ -301,7 +310,8 @@ function CreateProductPage() {
                       label="Description"
                       placeholder="Variant specific description"
                       minRows={2}
-                      size="sm"
+                      size="md"
+                      radius="md"
                       classNames={{ input: 'focus:border-violet-500' }}
                       {...form.getInputProps(`variants.${index}.description`)}
                     />
@@ -315,9 +325,10 @@ function CreateProductPage() {
             <Button
               type="submit"
               loading={mutation.isPending}
-              size="md"
+              size="lg"
+              radius="xl"
               color="violet"
-              className="bg-violet-600 hover:bg-violet-700 transition-colors duration-200"
+              className="bg-violet-600 hover:bg-violet-700 transition-all duration-200 shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 hover:-translate-y-0.5"
             >
               Create Product
             </Button>

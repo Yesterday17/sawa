@@ -166,7 +166,7 @@ function ProductsPage() {
     )
 
   return (
-    <Container size="md" py="xl">
+    <Container size="lg" py="xl">
       <Group
         justify="space-between"
         mb={40}
@@ -176,7 +176,7 @@ function ProductsPage() {
           <Title order={2} className="font-bold text-gray-900 dark:text-white">
             {viewMode === 'products' ? 'Products' : 'Variants'}
           </Title>
-          <Text c="dimmed" size="sm">
+          <Text c="dimmed" size="lg">
             Manage your{' '}
             {viewMode === 'products' ? 'product catalog' : 'product variants'}
           </Text>
@@ -189,12 +189,15 @@ function ProductsPage() {
               color="violet"
               component={Link}
               to="/products/import"
+              radius="xl"
             >
               Import
             </Button>
           )}
           <SegmentedControl
             value={viewMode}
+            radius="xl"
+            size="md"
             onChange={(value) => {
               const nextValue = value as 'products' | 'variants'
               if (!document.startViewTransition) {
@@ -248,6 +251,7 @@ function ProductsPage() {
             size="xs"
             color="red"
             onClick={() => setSelectedTags([])}
+            radius="xl"
           >
             Clear all
           </Button>
@@ -255,14 +259,14 @@ function ProductsPage() {
       )}
 
       {viewMode === 'products' ? (
-        <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="md">
+        <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="lg">
           <Card
             component={Link}
             to="/products/create"
             viewTransition
             padding="md"
-            radius="md"
-            className="flex justify-center items-center cursor-pointer border-2 border-dashed border-gray-300 dark:border-gray-700 hover:border-violet-500 dark:hover:border-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all duration-300 group min-h-[220px] h-full"
+            radius="lg"
+            className="flex justify-center items-center cursor-pointer border-2 border-dashed border-gray-200 dark:border-zinc-800 hover:border-violet-500 dark:hover:border-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all duration-300 group min-h-[220px] h-full bg-transparent"
             withBorder={false}
           >
             <Stack align="center" gap="md">
@@ -295,7 +299,7 @@ function ProductsPage() {
           ))}
         </SimpleGrid>
       ) : (
-        <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="md">
+        <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="lg">
           {filteredVariants?.map((variant) => (
             <VariantCard
               key={variant.id}

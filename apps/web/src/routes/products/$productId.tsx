@@ -185,7 +185,7 @@ function ProductDetailPage() {
 
   return (
     <Container
-      size="md"
+      size="lg"
       py="xl"
       className="[view-transition-name:products-page]"
     >
@@ -193,41 +193,58 @@ function ProductDetailPage() {
         component={Link}
         to="/products"
         variant="subtle"
-        leftSection={<ArrowLeft size={16} />}
-        mb="md"
+        color="gray"
+        leftSection={<ArrowLeft size={18} />}
+        mb="lg"
         viewTransition
+        radius="xl"
+        size="sm"
       >
         Back to Products
       </Button>
 
-      <Group align="start" mb="xl">
-        <Image
-          src={
-            product.medias && product.medias.length > 0
-              ? getImageUrl(product.medias[0])
-              : 'https://placehold.co/600x400/f3f4f6/a78bfa?text=Product'
-          }
-          radius="md"
-          h={300}
-          w={400}
-          fit="contain"
-          className="hidden md:block"
-        />
-        <Stack flex={1}>
-          <Title order={1}>{product.name}</Title>
-          <Text size="lg" c="dimmed">
-            {product.description}
-          </Text>
-          <Group>
-            <Badge size="lg" variant="light" color="violet">
-              {variants?.length || 0} Variants
-            </Badge>
-          </Group>
-        </Stack>
-      </Group>
+      <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-none border border-zinc-100 dark:border-zinc-800 mb-12">
+        <Group align="start" wrap="nowrap">
+          <div className="bg-zinc-50/50 dark:bg-zinc-800/50 p-6 rounded-2xl hidden md:block">
+            <Image
+              src={
+                product.medias && product.medias.length > 0
+                  ? getImageUrl(product.medias[0])
+                  : 'https://placehold.co/600x400/f3f4f6/a78bfa?text=Product'
+              }
+              radius="lg"
+              h={280}
+              w={380}
+              fit="contain"
+              className="mix-blend-multiply dark:mix-blend-normal"
+            />
+          </div>
+          <Stack flex={1} gap="lg" py="xs">
+            <div>
+              <Title order={1} fw={800} className="text-3xl md:text-4xl mb-2">
+                {product.name}
+              </Title>
+              <Text size="lg" c="dimmed" lh={1.6}>
+                {product.description}
+              </Text>
+            </div>
+            <Group mt="auto">
+              <Badge
+                size="xl"
+                variant="light"
+                color="violet"
+                radius="md"
+                className="normal-case font-medium"
+              >
+                {variants?.length || 0} Variants Available
+              </Badge>
+            </Group>
+          </Stack>
+        </Group>
+      </div>
 
-      <Title order={3} mb="md">
-        Variants
+      <Title order={3} mb="lg" fw={700}>
+        Available Variants
       </Title>
 
       {selectedTags.length > 0 && (
@@ -247,13 +264,14 @@ function ProductDetailPage() {
             size="xs"
             color="red"
             onClick={() => setSelectedTags([])}
+            radius="xl"
           >
             Clear all
           </Button>
         </Group>
       )}
 
-      <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="md">
+      <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} spacing="lg">
         {filteredVariants?.map((variant) => (
           <VariantCard
             key={variant.id}

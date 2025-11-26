@@ -67,26 +67,26 @@ function VariantCardContent({
 
   return (
     <>
-      <Card.Section className="relative">
+      <Card.Section className="relative bg-zinc-50/50 dark:bg-zinc-800/50 p-4">
         <Image
           src={
             variant.medias && variant.medias.length > 0
               ? getImageUrl(variant.medias[0])
               : 'https://placehold.co/600x400/f3f4f6/a78bfa?text=Variant'
           }
-          h={200}
+          h={180}
           w="100%"
           fit="contain"
           alt={variant.name}
-          className="transition-transform hover:scale-105 duration-500"
+          className="transition-transform hover:scale-105 duration-500 mix-blend-multiply dark:mix-blend-normal"
         />
       </Card.Section>
 
-      <Stack gap="xs" p="md" className="flex-1">
+      <Stack gap="xs" p="lg" className="flex-1">
         <Group justify="space-between" align="start" wrap="nowrap">
           <Text
-            fw={700}
-            size="md"
+            fw={600}
+            size="lg"
             lineClamp={1}
             className="text-gray-900 dark:text-white"
           >
@@ -105,9 +105,9 @@ function VariantCardContent({
         <Group mt="auto" justify="space-between">
           <Group gap="xs">
             {variant.price && (
-              <Badge variant="light" color="green" size="sm">
+              <Text fw={700} size="lg" c="violet">
                 {formatPrice(variant.price)}
-              </Badge>
+              </Text>
             )}
           </Group>
 
@@ -118,11 +118,15 @@ function VariantCardContent({
             }
             size={16}
             disabled={!items.find((item) => item.variant.id === variant.id)}
+            color="violet"
+            offset={4}
           >
             <ActionIcon
               variant="light"
               color="violet"
               size="lg"
+              radius="xl"
+              className="hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors"
               onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
@@ -152,10 +156,9 @@ export function VariantCard({
   const commonProps = {
     id,
     padding: '0' as const,
-    radius: 'md' as const,
-    withBorder: true,
+    radius: 'lg' as const,
     className:
-      'cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden bg-white dark:bg-gray-800 h-full flex flex-col',
+      'cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-none hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] dark:hover:shadow-none transition-all duration-300 hover:-translate-y-1 overflow-hidden bg-white dark:bg-zinc-900 h-full flex flex-col border border-zinc-100 dark:border-zinc-800',
   }
 
   if (onClick) {

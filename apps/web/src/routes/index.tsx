@@ -123,17 +123,23 @@ function FeatureCard({
   return (
     <Paper
       p="xl"
-      radius="lg"
-      withBorder
-      className="bg-white dark:bg-gray-800 hover:shadow-xl transition-shadow duration-300"
+      radius="xl"
+      className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
     >
-      <ThemeIcon size={60} radius="md" variant="light" color={color} mb="lg">
+      <ThemeIcon
+        size={60}
+        radius="xl"
+        variant="light"
+        color={color}
+        mb="lg"
+        className="bg-opacity-10"
+      >
         {icon}
       </ThemeIcon>
-      <Title order={3} mb="sm" size="h4">
+      <Title order={3} mb="sm" size="h4" fw={700}>
         {title}
       </Title>
-      <Text c="dimmed" size="sm" lh={1.6}>
+      <Text c="dimmed" size="md" lh={1.6}>
         {description}
       </Text>
     </Paper>

@@ -29,7 +29,7 @@ interface VariantSwipeViewProps {
 function TagBadge({ id }: { id: string }) {
   const { data: tag } = useTag(id)
   return (
-    <Badge variant="filled" color="violet" size="lg">
+    <Badge variant="light" color="violet" size="lg" radius="md">
       {tag?.name || id}
     </Badge>
   )
@@ -109,13 +109,14 @@ export function VariantSwipeView({
         }
       `}</style>
       <ActionIcon
-        variant="transparent"
+        variant="default"
         color="gray"
         size="xl"
-        className="absolute top-4 left-2 z-50 hover:bg-gray-100 dark:hover:bg-white/10"
+        radius="xl"
+        className="absolute top-4 left-4 z-50 shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-none hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] dark:hover:shadow-none transition-all bg-white/80 dark:bg-black/50 backdrop-blur-sm border-zinc-100 dark:border-zinc-800"
         onClick={onClose}
       >
-        <X size={32} />
+        <X size={20} />
       </ActionIcon>
 
       <button
@@ -135,7 +136,7 @@ export function VariantSwipeView({
             variant="default"
             size="xl"
             radius="xl"
-            className="absolute top-1/2 z-50 -translate-y-1/2 pointer-events-auto hidden md:flex shadow-md"
+            className="absolute top-1/2 z-50 -translate-y-1/2 pointer-events-auto hidden md:flex shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-none border-zinc-100 dark:border-zinc-800 bg-white/80 dark:bg-black/50 backdrop-blur-sm hover:scale-110 transition-transform"
             onClick={(e) => {
               e.stopPropagation()
               onPrev()
@@ -148,7 +149,7 @@ export function VariantSwipeView({
             variant="default"
             size="xl"
             radius="xl"
-            className="absolute top-1/2 z-50 -translate-y-1/2 right-4 pointer-events-auto hidden md:flex shadow-md"
+            className="absolute top-1/2 z-50 -translate-y-1/2 right-4 pointer-events-auto hidden md:flex shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-none border-zinc-100 dark:border-zinc-800 bg-white/80 dark:bg-black/50 backdrop-blur-sm hover:scale-110 transition-transform"
             onClick={(e) => {
               e.stopPropagation()
               onNext()
@@ -168,7 +169,7 @@ export function VariantSwipeView({
           }`}
         >
           <div
-            className="size-full flex items-center justify-center"
+            className="size-full flex items-center justify-center p-4 md:p-12"
             style={{
               transform: isDragging
                 ? `translateX(${dragOffset}px)`
@@ -185,42 +186,37 @@ export function VariantSwipeView({
               fit="contain"
               h="auto"
               w="auto"
-              className="max-h-full max-w-full object-contain"
+              className="max-h-full max-w-full object-contain drop-shadow-2xl"
             />
           </div>
         </div>
       </button>
 
-      <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm p-6 md:p-8 border-t border-gray-200 dark:border-gray-800 w-full z-50">
+      <div className="bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-6 md:p-8 border-t border-zinc-100 dark:border-zinc-800 w-full z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.2)]">
         <Container size="lg" px={0}>
           <div className="flex flex-col md:flex-row justify-between items-start gap-6 md:gap-10">
             <Stack gap="sm" className="flex-1 w-full">
               <Title
                 order={2}
-                className="text-2xl md:text-3xl text-gray-900 dark:text-white"
+                className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white"
               >
                 {variant.name}
               </Title>
-              <Text c="dimmed" size="md" lineClamp={3}>
+              <Text c="dimmed" size="lg" lineClamp={3} lh={1.6}>
                 {variant.description ||
                   'No description available for this variant.'}
               </Text>
               {variant.tags && variant.tags.length > 0 && (
-                <Group gap={6}>
+                <Group gap={8}>
                   {variant.tags.map((tagId) => (
                     <TagBadge key={tagId} id={tagId} />
                   ))}
                 </Group>
               )}
             </Stack>
-            <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-6 mt-4 md:mt-0 border-t border-gray-200 dark:border-gray-800 md:border-t-0 pt-6 md:pt-0">
+            <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-6 mt-4 md:mt-0 border-t border-zinc-100 dark:border-zinc-800 md:border-t-0 pt-6 md:pt-0">
               {variant.price && (
-                <Text
-                  size="2xl"
-                  fw={700}
-                  c="green.6"
-                  className="dark:text-green-400"
-                >
+                <Text size="3xl" fw={800} c="violet" className="tracking-tight">
                   {formatPrice(variant.price)}
                 </Text>
               )}
@@ -229,16 +225,19 @@ export function VariantSwipeView({
                 label={
                   items.find((item) => item.variant.id === variant.id)?.quantity
                 }
-                size={18}
+                size={20}
                 disabled={!items.find((item) => item.variant.id === variant.id)}
                 className="flex-1 md:flex-none"
+                color="violet"
+                offset={6}
               >
                 <Button
-                  leftSection={<ShoppingCart size={24} />}
+                  leftSection={<ShoppingCart size={20} />}
                   color="violet"
-                  size="lg"
+                  size="xl"
+                  radius="xl"
                   fullWidth
-                  className="md:w-auto"
+                  className="md:w-auto shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 transition-all hover:-translate-y-0.5"
                   onClick={() => {
                     addToCart(variant)
                     notifications.show({

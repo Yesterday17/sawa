@@ -4,11 +4,14 @@ export const theme = createTheme({
   primaryColor: 'violet',
   fontFamily:
     'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
-  defaultRadius: 'md',
+  defaultRadius: 'lg',
   shadows: {
+    xs: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+    sm: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
     md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
     lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
     xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+    xxl: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
   },
   headings: {
     fontFamily:
@@ -23,11 +26,11 @@ export const theme = createTheme({
     Button: {
       defaultProps: {
         size: 'md',
+        radius: 'xl',
       },
       styles: {
         root: {
-          transition:
-            'background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.1s ease',
+          transition: 'all 0.2s ease',
           '&:active': {
             transform: 'translateY(1px)',
           },
@@ -35,24 +38,12 @@ export const theme = createTheme({
       },
     },
     ActionIcon: {
+      defaultProps: {
+        radius: 'xl',
+      },
       styles: {
         root: {
-          transition:
-            'background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease',
-        },
-      },
-    },
-    NavLink: {
-      styles: {
-        root: {
-          transition: 'background-color 0.2s ease, color 0.2s ease',
-        },
-      },
-    },
-    MenuItem: {
-      styles: {
-        item: {
-          transition: 'background-color 0.2s ease, color 0.2s ease',
+          transition: 'all 0.2s ease',
         },
       },
     },
@@ -60,17 +51,27 @@ export const theme = createTheme({
       defaultProps: {
         shadow: 'sm',
         withBorder: true,
+        radius: 'lg',
       },
       styles: (theme: MantineTheme) => ({
         root: {
-          transition:
-            'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease',
-          '&:hover': {
-            transform: 'translateY(-4px)',
-            boxShadow: theme.shadows.lg,
-          },
+          transition: 'all 0.3s ease',
+          backgroundColor: 'var(--mantine-color-body)',
         },
       }),
+    },
+    Paper: {
+      defaultProps: {
+        radius: 'lg',
+      },
+    },
+    Modal: {
+      defaultProps: {
+        radius: 'lg',
+        overlayProps: {
+          blur: 4,
+        },
+      },
     },
     Container: {
       defaultProps: {

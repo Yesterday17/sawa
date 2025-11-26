@@ -6,12 +6,10 @@ import {
   Button,
   Group,
   Stack,
-  Card,
   Image,
   ActionIcon,
   NumberInput,
   Divider,
-  Checkbox,
   Modal,
   LoadingOverlay,
 } from '@mantine/core'
@@ -19,7 +17,7 @@ import { useDisclosure } from '@mantine/hooks'
 import { Trash, ArrowLeft, ShoppingCart } from 'lucide-react'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { notifications } from '@mantine/notifications'
 import {
   getOrders,
@@ -39,41 +37,12 @@ function CartPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
 
-  const [selectedItems, setSelectedItems] = useState<string[]>(
-    items.map((i) => i.variant.id),
-  )
   const [pendingOrder, setPendingOrder] = useState<PurchaseOrder | null>(null)
   const [modalOpened, { open: openModal, close: closeModal }] =
     useDisclosure(false)
   const [loading, setLoading] = useState(false)
 
-  // Sync selection when items are removed
-  useEffect(() => {
-    setSelectedItems((prev) => {
-      const currentIds = items.map((i) => i.variant.id)
-      return prev.filter((id) => currentIds.includes(id))
-    })
-  }, [items])
-
-  const toggleAll = () => {
-    if (selectedItems.length === items.length) {
-      setSelectedItems([])
-    } else {
-      setSelectedItems(items.map((i) => i.variant.id))
-    }
-  }
-
-  const toggleItem = (id: string) => {
-    setSelectedItems((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
-    )
-  }
-
-  const selectedCartItems = items.filter((i) =>
-    selectedItems.includes(i.variant.id),
-  )
-
-  const totalPrice = selectedCartItems.reduce((acc, item) => {
+  const totalPrice = items.reduce((acc, item) => {
     if (item.variant.price) {
       return acc + item.variant.price.amount * item.quantity
     }
@@ -84,9 +53,9 @@ function CartPage() {
     ?.currency
 
   const handleCheckout = async () => {
-    if (selectedItems.length === 0) {
+    if (items.length === 0) {
       notifications.show({
-        message: 'Please select items to checkout',
+        message: 'Cart is empty',
         color: 'red',
       })
       return
@@ -123,7 +92,7 @@ function CartPage() {
     try {
       await postOrders({
         body: {
-          items: selectedCartItems.map((item) => ({
+          items: items.map((item) => ({
             variant_id: item.variant.id,
             quantity: item.quantity,
             owner_id: user?.id,
@@ -131,11 +100,7 @@ function CartPage() {
         },
       })
 
-      // Remove selected items from cart
-      for (const id of selectedItems) {
-        removeFromCart(id)
-      }
-      setSelectedItems([])
+      clearCart()
 
       notifications.show({
         title: 'Success',
@@ -161,7 +126,7 @@ function CartPage() {
 
     setLoading(true)
     try {
-      for (const item of selectedCartItems) {
+      for (const item of items) {
         await postOrdersByOrderIdItems({
           path: { order_id: pendingOrder.id },
           body: {
@@ -172,10 +137,7 @@ function CartPage() {
         })
       }
 
-      for (const id of selectedItems) {
-        removeFromCart(id)
-      }
-      setSelectedItems([])
+      clearCart()
 
       notifications.show({
         title: 'Success',
@@ -200,18 +162,25 @@ function CartPage() {
     return (
       <Container size="md" py="xl">
         <Stack align="center" gap="xl" py={100}>
-          <ShoppingCart size={64} className="text-gray-300" />
-          <Title order={2} c="dimmed">
+          <div className="bg-gray-50 dark:bg-gray-800 p-8 rounded-full">
+            <ShoppingCart size={64} className="text-gray-400" />
+          </div>
+          <Title order={2} fw={600}>
             Your cart is empty
           </Title>
+          <Text c="dimmed" ta="center" maw={400}>
+            Looks like you haven't added anything to your cart yet. Explore our
+            products and find something you love!
+          </Text>
           <Button
             component={Link}
             to="/products"
-            variant="light"
+            size="md"
+            radius="xl"
             color="violet"
-            leftSection={<ArrowLeft size={16} />}
+            leftSection={<ArrowLeft size={18} />}
           >
-            Browse Products
+            Start Shopping
           </Button>
         </Stack>
       </Container>
@@ -219,7 +188,7 @@ function CartPage() {
   }
 
   return (
-    <Container size="md" py="xl" pos="relative">
+    <Container size="lg" py="xl" pos="relative">
       <LoadingOverlay visible={loading} overlayProps={{ blur: 2 }} />
 
       <Modal
@@ -227,63 +196,56 @@ function CartPage() {
         onClose={closeModal}
         title="Pending Order Found"
         centered
+        radius="lg"
       >
         <Text mb="md">
           You have an existing pending order. Do you want to add these items to
           it, or create a new order?
         </Text>
         <Group justify="flex-end">
-          <Button variant="default" onClick={createNewOrder}>
+          <Button variant="default" radius="md" onClick={createNewOrder}>
             Create New Order
           </Button>
-          <Button color="violet" onClick={addToPendingOrder}>
+          <Button color="violet" radius="md" onClick={addToPendingOrder}>
             Add to Existing Order
           </Button>
         </Group>
       </Modal>
 
-      <Title order={2} mb="xl">
-        Shopping Cart ({totalItems} items)
+      <Title order={2} mb="xl" fw={800}>
+        Shopping Cart
+        <Text span c="dimmed" size="lg" ml="sm" fw={500}>
+          ({totalItems} items)
+        </Text>
       </Title>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-4">
-          <Card withBorder padding="sm" radius="md">
-            <Checkbox
-              checked={
-                selectedItems.length === items.length && items.length > 0
-              }
-              indeterminate={
-                selectedItems.length > 0 && selectedItems.length < items.length
-              }
-              onChange={toggleAll}
-              label="Select All Items"
-            />
-          </Card>
-
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div className="lg:col-span-2 space-y-6">
           {items.map((item) => (
-            <Card key={item.variant.id} withBorder padding="md" radius="md">
+            <div
+              key={item.variant.id}
+              className="bg-white dark:bg-zinc-900 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-zinc-800 transition-shadow hover:shadow-md"
+            >
               <Group align="start" wrap="nowrap">
-                <Checkbox
-                  checked={selectedItems.includes(item.variant.id)}
-                  onChange={() => toggleItem(item.variant.id)}
-                  mt="xl"
-                />
-                <Image
-                  src={
-                    item.variant.medias && item.variant.medias.length > 0
-                      ? getImageUrl(item.variant.medias[0])
-                      : 'https://placehold.co/200x200/f3f4f6/a78bfa?text=Variant'
-                  }
-                  w={100}
-                  h={100}
-                  radius="md"
-                  fit="contain"
-                />
+                <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-2">
+                  <Image
+                    src={
+                      item.variant.medias && item.variant.medias.length > 0
+                        ? getImageUrl(item.variant.medias[0])
+                        : 'https://placehold.co/200x200/f3f4f6/a78bfa?text=Variant'
+                    }
+                    w={100}
+                    h={100}
+                    radius="md"
+                    fit="contain"
+                  />
+                </div>
                 <Stack flex={1} gap="xs">
                   <Group justify="space-between" align="start">
                     <div>
-                      <Text fw={700}>{item.variant.name}</Text>
+                      <Text fw={600} size="lg">
+                        {item.variant.name}
+                      </Text>
                       <Text size="sm" c="dimmed" lineClamp={1}>
                         {item.variant.description}
                       </Text>
@@ -291,7 +253,9 @@ function CartPage() {
                     <ActionIcon
                       variant="subtle"
                       color="red"
+                      radius="xl"
                       onClick={() => removeFromCart(item.variant.id)}
+                      className="opacity-50 hover:opacity-100 transition-opacity"
                     >
                       <Trash size={18} />
                     </ActionIcon>
@@ -309,11 +273,12 @@ function CartPage() {
                         allowNegative={false}
                         allowDecimal={false}
                         size="xs"
-                        w={60}
+                        w={70}
+                        radius="md"
                       />
                     </Group>
                     {item.variant.price && (
-                      <Text fw={700}>
+                      <Text fw={700} size="lg">
                         {formatPrice({
                           amount: item.variant.price.amount * item.quantity,
                           currency: item.variant.price.currency,
@@ -323,34 +288,34 @@ function CartPage() {
                   </Group>
                 </Stack>
               </Group>
-            </Card>
+            </div>
           ))}
         </div>
 
-        <div className="lg:col-span-1">
-          <Card withBorder padding="xl" radius="md">
-            <Title order={4} mb="md">
+        <div className="lg:col-span-1 sticky top-4">
+          <div className="bg-gray-50 dark:bg-zinc-900/50 p-6 rounded-3xl border border-gray-100 dark:border-zinc-800">
+            <Title order={4} mb="lg" fw={700}>
               Order Summary
             </Title>
             <Stack gap="md">
               <Group justify="space-between">
-                <Text c="dimmed">Selected Items</Text>
-                <Text fw={700}>{selectedCartItems.length}</Text>
+                <Text c="dimmed">Total Items</Text>
+                <Text fw={600}>{totalItems}</Text>
               </Group>
               <Group justify="space-between">
                 <Text c="dimmed">Subtotal</Text>
-                <Text fw={700}>
+                <Text fw={600}>
                   {currency
                     ? formatPrice({ amount: totalPrice, currency })
                     : `${totalPrice}`}
                 </Text>
               </Group>
-              <Divider />
+              <Divider color="gray.2" />
               <Group justify="space-between">
                 <Text size="lg" fw={700}>
                   Total
                 </Text>
-                <Text size="lg" fw={700} c="violet">
+                <Text size="xl" fw={800} c="violet">
                   {currency
                     ? formatPrice({ amount: totalPrice, currency })
                     : `${totalPrice}`}
@@ -358,23 +323,27 @@ function CartPage() {
               </Group>
               <Button
                 fullWidth
-                size="md"
+                size="lg"
+                radius="xl"
                 color="violet"
                 onClick={handleCheckout}
-                disabled={selectedItems.length === 0}
+                disabled={items.length === 0}
+                className="shadow-lg shadow-violet-500/20 hover:shadow-violet-500/40 transition-shadow"
               >
                 Checkout
               </Button>
               <Button
                 fullWidth
                 variant="subtle"
-                color="red"
+                color="gray"
+                size="sm"
+                radius="xl"
                 onClick={clearCart}
               >
                 Clear Cart
               </Button>
             </Stack>
-          </Card>
+          </div>
         </div>
       </div>
     </Container>

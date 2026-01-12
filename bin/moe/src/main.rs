@@ -23,7 +23,7 @@ struct Args {
     api_key: String,
 
     /// Model ID to use
-    #[arg(long, default_value = "gemini-3.0-flash")]
+    #[arg(long, value_enum, default_value_t = GeminiModel::Gemini3Flash)]
     model: GeminiModel,
 
     /// Trim white borders from cropped images

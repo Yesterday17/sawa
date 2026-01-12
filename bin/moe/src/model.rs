@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use gemini_rust::{Model, ThinkingConfig, ThinkingLevel};
 use serde::Deserialize;
 
@@ -11,28 +9,18 @@ pub struct BoundingBox {
     pub label: Option<String>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, clap::ValueEnum)]
 pub enum GeminiModel {
+    #[clap(name = "gemini-3.0-flash")]
     Gemini3Flash,
+    #[clap(name = "gemini-3.0-pro")]
     Gemini3Pro,
+    #[clap(name = "gemini-2.5-flash")]
     Gemini25Flash,
+    #[clap(name = "gemini-2.5-pro")]
     Gemini25Pro,
+    #[clap(name = "gemini-2.5-flash-lite")]
     Gemini25FlashLite,
-}
-
-impl FromStr for GeminiModel {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(match s {
-            "gemini-3.0-flash" => GeminiModel::Gemini3Flash,
-            "gemini-3.0-pro" => GeminiModel::Gemini3Pro,
-            "gemini-2.5-flash" => GeminiModel::Gemini25Flash,
-            "gemini-2.5-pro" => GeminiModel::Gemini25Pro,
-            "gemini-2.5-flash-lite" => GeminiModel::Gemini25FlashLite,
-            _ => anyhow::bail!("Invalid Gemini model: {}", s),
-        })
-    }
 }
 
 impl From<&GeminiModel> for Model {

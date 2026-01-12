@@ -71,8 +71,8 @@ impl GeminiModel {
 pub enum PromptPreset {
     #[clap(alias = "namashashin")]
     Photo,
-    #[clap(alias = "oshinagaki")]
-    Comiket,
+    #[clap(aliases = ["oshinagaki", "comiket"])]
+    Goods,
 }
 
 impl PromptPreset {
@@ -82,9 +82,8 @@ impl PromptPreset {
                 r#"Detect the 2d bounding boxes of all the entire Nama Shashin cards.
 Crucial: The bounding box must encompass the full physical item, strictly including the text/description area at the bottom and any borders. Do not cut off the bottom text."#
             }
-            PromptPreset::Comiket => {
+            PromptPreset::Goods => {
                 r#"Task: Detect all relevant bounding boxes on the Oshinagaki menu.
-Output: A list of JSON objects. Each object must have `box_2d` [ymin, xmin, ymax, xmax] and a `label_type`.
 
 **CRITICAL INSTRUCTION: MULTI-LEVEL DETECTION**
 You are required to detect objects at different logical levels simultaneously. **Do not suppress overlapping boxes.** A large "Set" box can and should contain smaller "Item" boxes inside it.

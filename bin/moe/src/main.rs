@@ -46,7 +46,7 @@ struct Args {
 }
 
 #[derive(clap::Args, Debug)]
-#[group(required = true, multiple = false)]
+#[group(multiple = false)]
 struct PromptsArgs {
     /// Prompt preset to use
     #[clap(long, value_enum, default_value_t = PromptPreset::Photo)]
@@ -73,7 +73,7 @@ async fn detect_bounding_boxes(
 ) -> Result<Vec<BoundingBox>> {
     let system_instruction = format!(
         r#"Return bounding boxes as a JSON array with labels. Never return masks or code fencing. Limit to {max_objects} objects.
-If an object is present multiple times, name them the same label."#
+If an object is present multiple times, name them with incrementing numbers. If the object belongs to a set, use set label as prefix."#
     );
 
     // Convert image to PNG bytes

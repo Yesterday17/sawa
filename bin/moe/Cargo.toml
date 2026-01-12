@@ -1,0 +1,23 @@
+[package]
+name = "sawa-moe"
+version = "0.1.0"
+edition.workspace = true
+
+[dependencies]
+clap = { version = "4.5.54", features = ["derive", "env"] }
+tokio.workspace = true
+anyhow = "1"
+
+image = "0.25"
+base64 = "0.22"
+gemini-rust = "1.6.1"
+
+serde = { version = "1", features = ["derive"] }
+serde_json.workspace = true
+
+log = "0.4"
+pretty_env_logger = "0.4"
+
+[[bin]]
+name = "moe"
+path = "src/main.rs"

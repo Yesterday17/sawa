@@ -34,6 +34,10 @@ struct Args {
     #[arg(long, default_value = "230")]
     white_threshold: u8,
 
+    /// Maximum number of objects to detect
+    #[arg(long, default_value = "100")]
+    max_objects: u32,
+
     #[clap(flatten)]
     prompts: PromptsArgs,
 
@@ -65,9 +69,12 @@ async fn detect_bounding_boxes(
     model: &GeminiModel,
     image: &DynamicImage,
     prompt: &str,
+    max_objects: u32,
 ) -> Result<Vec<BoundingBox>> {
-    let system_instruction = r#"Return bounding boxes as a JSON array with labels. Never return masks or code fencing. Limit to 40 objects.
-If an object is present multiple times, name them the same label."#;
+    let system_instruction = format!(
+        r#"Return bounding boxes as a JSON array with labels. Never return masks or code fencing. Limit to {max_objects} objects.
+If an object is present multiple times, name them the same label."#
+    );
 
     // Convert image to PNG bytes
     let mut image_bytes = Vec::new();
@@ -324,8 +331,14 @@ async fn main() -> Result<()> {
 
     // Detect bounding boxes
     log::info!("Detecting bounding boxes with Gemini API...");
-    let mut bounding_boxes =
-        detect_bounding_boxes(&gemini, &args.model, &image, args.prompts.prompt()).await?;
+    let mut bounding_boxes = detect_bounding_boxes(
+        &gemini,
+        &args.model,
+        &image,
+        args.prompts.prompt(),
+        args.max_objects,
+    )
+    .await?;
 
     // Log bounding boxes
     log::info!("Found {} bounding boxes", bounding_boxes.len());
